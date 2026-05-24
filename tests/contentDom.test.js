@@ -71,6 +71,30 @@ describe("Albert content DOM injection", () => {
     expect(observe).toHaveBeenCalledWith(document.body, { childList: true, subtree: true });
   });
 
+  it("scans blank child frames owned by an Albert parent page", async () => {
+    document.body.innerHTML = `<div>Instructor: Ada Lovelace</div>`;
+    const lookupProfessor = vi.fn(async () => null);
+    const observe = vi.fn();
+    const windowMock = {
+      location: new URL("about:blank"),
+      parent: {
+        location: new URL("https://albert.nyu.edu/psc/csprod/EMPLOYEE/SA/c/NUI_FRAMEWORK.PT_LANDINGPAGE.GBL"),
+      },
+      MutationObserver: class {
+        observe = observe;
+      },
+      clearTimeout: vi.fn(),
+      setTimeout: vi.fn(),
+    };
+
+    const observer = startAlbertRmpEnhancer({ document, window: windowMock, lookupProfessor });
+    await flushPromises();
+
+    expect(observer).not.toBeNull();
+    expect(lookupProfessor).toHaveBeenCalledWith("Ada Lovelace");
+    expect(observe).toHaveBeenCalledWith(document.body, { childList: true, subtree: true });
+  });
+
   it("injects one RMP card per Albert instructor and updates it with rating data", async () => {
     document.body.innerHTML = `
       <table>

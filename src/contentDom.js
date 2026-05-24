@@ -10,7 +10,7 @@ export function startAlbertRmpEnhancer({
   lookupProfessor,
   enabled = true,
 } = {}) {
-  if (!enabled || !isAlbertPage(window?.location)) {
+  if (!enabled || !isAlbertWindow(window)) {
     return null;
   }
 
@@ -26,6 +26,33 @@ export function startAlbertRmpEnhancer({
 
   observer.observe(document.body, { childList: true, subtree: true });
   return observer;
+}
+
+function isAlbertWindow(window) {
+  return candidateFrameLocations(window).some(isAlbertPage);
+}
+
+function candidateFrameLocations(window) {
+  return [window, safeFrameWindow(window, "parent"), safeFrameWindow(window, "top")]
+    .filter(Boolean)
+    .map((frameWindow) => safeFrameLocation(frameWindow))
+    .filter(Boolean);
+}
+
+function safeFrameWindow(window, property) {
+  try {
+    return window?.[property] ?? null;
+  } catch {
+    return null;
+  }
+}
+
+function safeFrameLocation(window) {
+  try {
+    return window?.location ?? null;
+  } catch {
+    return null;
+  }
 }
 
 function isAlbertPage(location) {
