@@ -121,9 +121,9 @@ function toProfessorRating(teacher, requestedName) {
     .sort((left, right) => Number(right.helpfulRating ?? 0) - Number(left.helpfulRating ?? 0))
     .map((rating) => ({
       text: rating.comment.trim(),
-      helpfulRating: numberOrNull(rating.helpfulRating),
-      clarityRating: numberOrNull(rating.clarityRating),
-      difficultyRating: numberOrNull(rating.difficultyRating),
+      helpfulRating: nonNegativeNumberOrNull(rating.helpfulRating),
+      clarityRating: nonNegativeNumberOrNull(rating.clarityRating),
+      difficultyRating: nonNegativeNumberOrNull(rating.difficultyRating),
     }))
     .filter(Boolean)
     .slice(0, 2) ?? [];

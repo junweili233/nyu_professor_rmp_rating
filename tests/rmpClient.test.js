@@ -140,6 +140,59 @@ describe("Rate My Professors client", () => {
     expect(result.topComments.map((comment) => comment.helpfulRating)).toEqual([19, 7]);
   });
 
+  it("normalizes negative useful-comment metadata as missing values", async () => {
+    const fetchImpl = vi.fn(async () => ({
+      ok: true,
+      json: async () => ({
+        data: {
+          newSearch: {
+            teachers: {
+              edges: [
+                {
+                  node: {
+                    id: "VGVhY2hlci05",
+                    legacyId: 135,
+                    firstName: "Grace",
+                    lastName: "Hopper",
+                    department: "Computer Science",
+                    avgRating: 4.8,
+                    avgDifficulty: 3.1,
+                    numRatings: 44,
+                    wouldTakeAgainPercent: 96,
+                    teacherRatingTags: [],
+                    ratings: {
+                      edges: [
+                        {
+                          node: {
+                            comment: "Helpful comment with unavailable metadata.",
+                            helpfulRating: -1,
+                            clarityRating: -1,
+                            difficultyRating: -1,
+                          },
+                        },
+                      ],
+                    },
+                  },
+                },
+              ],
+            },
+          },
+        },
+      }),
+    }));
+
+    const result = await findProfessorRating("Grace Hopper", { fetchImpl });
+
+    expect(result.topComments).toEqual([
+      {
+        text: "Helpful comment with unavailable metadata.",
+        helpfulRating: null,
+        clarityRating: null,
+        difficultyRating: null,
+      },
+    ]);
+  });
+
   it("keeps missing RMP numeric fields as null instead of fake zeroes", async () => {
     const fetchImpl = vi.fn(async () => ({
       ok: true,
