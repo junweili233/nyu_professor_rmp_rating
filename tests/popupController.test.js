@@ -64,6 +64,28 @@ describe("extension popup controller", () => {
     expect(storage.remove).not.toHaveBeenCalled();
     expect(document.getElementById("status").textContent).toBe("Cache cleared");
   });
+
+  it("shows an inline error when the background cache clear fails", async () => {
+    document.body.innerHTML = `
+      <p id="status"></p>
+      <input id="enable-overlay" type="checkbox" />
+      <button id="clear-cache"></button>
+    `;
+    const storage = createStorageMock({
+      "professor:ada lovelace": { value: { name: "Ada Lovelace" } },
+    });
+    const runtime = {
+      sendMessage: vi.fn(async () => ({ ok: false, error: "Background unavailable" })),
+    };
+
+    await initPopup({ document, storage, runtime });
+    const clearButton = document.getElementById("clear-cache");
+    clearButton.click();
+    await flushPromises();
+
+    expect(document.getElementById("status").textContent).toBe("Cache clear failed: Background unavailable");
+    expect(clearButton.disabled).toBe(false);
+  });
 });
 
 function createStorageMock(initialData = {}) {

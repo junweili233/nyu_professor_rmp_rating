@@ -30,19 +30,24 @@ export async function initPopup({
 
   if (clearButton) {
     clearButton.addEventListener("click", async () => {
-      if (runtime?.sendMessage) {
-        const response = await runtime.sendMessage({ type: "NYU_RMP_CLEAR_CACHE" });
-        if (!response?.ok) {
-          throw new Error(response?.error ?? "Cache clear failed");
+      try {
+        if (runtime?.sendMessage) {
+          const response = await runtime.sendMessage({ type: "NYU_RMP_CLEAR_CACHE" });
+          if (!response?.ok) {
+            throw new Error(response?.error ?? "Cache clear failed");
+          }
+        } else {
+          const cached = await getProfessorCacheKeys(storage);
+          if (cached.length > 0) {
+            await storage.remove(cached);
+          }
         }
-      } else {
-        const cached = await getProfessorCacheKeys(storage);
-        if (cached.length > 0) {
-          await storage.remove(cached);
-        }
+        status.textContent = "Cache cleared";
+        clearButton.disabled = true;
+      } catch (error) {
+        status.textContent = `Cache clear failed: ${error.message}`;
+        clearButton.disabled = false;
       }
-      status.textContent = "Cache cleared";
-      clearButton.disabled = true;
     });
   }
 
