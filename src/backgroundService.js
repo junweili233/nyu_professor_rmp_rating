@@ -15,23 +15,25 @@ export function createProfessorLookupService({
   const inFlightLookups = new Map();
 
   return {
-    async lookup(name) {
+    async lookup(name, { forceRefresh = false } = {}) {
       const key = professorCacheKey(name);
       const currentTime = now();
       const memoryEntry = memoryCache.get(key);
-      if (memoryEntry && isFreshCacheEntry(memoryEntry, currentTime)) {
+      if (!forceRefresh && memoryEntry && isFreshCacheEntry(memoryEntry, currentTime)) {
         return memoryEntry.value;
       }
 
-      const cached = await readStoredRating(storage, key, currentTime);
-      if (cached.status === "fresh") {
-        memoryCache.set(key, createStoredRating(cached.value, cached.cachedAt));
-        return cached.value;
-      }
+      if (!forceRefresh) {
+        const cached = await readStoredRating(storage, key, currentTime);
+        if (cached.status === "fresh") {
+          memoryCache.set(key, createStoredRating(cached.value, cached.cachedAt));
+          return cached.value;
+        }
 
-      if (cached.status === "legacy") {
-        memoryCache.set(key, createStoredRating(cached.value, currentTime));
-        return cached.value;
+        if (cached.status === "legacy") {
+          memoryCache.set(key, createStoredRating(cached.value, currentTime));
+          return cached.value;
+        }
       }
 
       if (!inFlightLookups.has(key)) {

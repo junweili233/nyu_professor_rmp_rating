@@ -66,6 +66,41 @@ describe("Albert content DOM injection", () => {
     expect(document.body.textContent).toContain("Difficulty 2.0");
   });
 
+  it("refreshes a professor card with a cache-bypassing lookup", async () => {
+    document.body.innerHTML = `<div>Instructor: Ada Lovelace</div>`;
+    const lookupProfessor = vi.fn()
+      .mockResolvedValueOnce({
+        name: "Ada Lovelace",
+        department: "Computer Science",
+        rating: 4.7,
+        difficulty: 2.4,
+        ratingsCount: 38,
+        wouldTakeAgain: 92,
+        tags: [],
+        topComments: ["Original comment."],
+        url: "https://www.ratemyprofessors.com/professor/123",
+      })
+      .mockResolvedValueOnce({
+        name: "Ada Lovelace",
+        department: "Computer Science",
+        rating: 3.1,
+        difficulty: 3.8,
+        ratingsCount: 41,
+        wouldTakeAgain: 62,
+        tags: [],
+        topComments: ["Fresh comment."],
+        url: "https://www.ratemyprofessors.com/professor/123",
+      });
+
+    await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
+    document.querySelector(".nyu-rmp-refresh").click();
+    await flushPromises();
+
+    expect(lookupProfessor).toHaveBeenLastCalledWith("Ada Lovelace", { forceRefresh: true });
+    expect(document.querySelector(".nyu-rmp-score").textContent).toBe("3.1");
+    expect(document.body.textContent).toContain("Fresh comment.");
+  });
+
   it("does not duplicate cards when Albert mutates the same processed row", async () => {
     document.body.innerHTML = `<div>Instructor: Ada Lovelace</div>`;
     const lookupProfessor = vi.fn(async () => null);
@@ -173,3 +208,8 @@ describe("Albert content DOM injection", () => {
     expect(lookupProfessor).toHaveBeenCalledTimes(1);
   });
 });
+
+async function flushPromises() {
+  await Promise.resolve();
+  await Promise.resolve();
+}

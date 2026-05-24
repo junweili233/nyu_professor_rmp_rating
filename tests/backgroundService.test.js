@@ -191,6 +191,40 @@ describe("background professor lookup service", () => {
     });
     expect(findProfessorRating).toHaveBeenCalledTimes(2);
   });
+
+  it("bypasses fresh cache entries when a force refresh is requested", async () => {
+    const now = new Date("2026-05-24T12:00:00Z").getTime();
+    const cachedRating = {
+      name: "Chee Yap",
+      rating: 2.1,
+      topComments: ["Cached comment."],
+    };
+    const refreshedRating = {
+      name: "Chee Yap",
+      rating: 3.0,
+      topComments: ["Fresh RMP comment."],
+    };
+    const storage = createStorageMock({
+      [professorCacheKey("Chee Yap")]: {
+        cachedAt: now - 1000,
+        value: cachedRating,
+      },
+    });
+    const findProfessorRating = vi.fn(async () => refreshedRating);
+    const service = createProfessorLookupService({
+      storage,
+      findProfessorRating,
+      now: () => now,
+    });
+
+    await expect(service.lookup("Chee Yap", { forceRefresh: true })).resolves.toEqual(refreshedRating);
+
+    expect(findProfessorRating).toHaveBeenCalledWith("Chee Yap");
+    expect(storage.data[professorCacheKey("Chee Yap")]).toEqual({
+      cachedAt: now,
+      value: refreshedRating,
+    });
+  });
 });
 
 function createStorageMock(initialData = {}) {

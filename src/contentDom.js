@@ -93,12 +93,7 @@ function mountRatings({ element, names, processedElements = [], document, lookup
   for (const name of names.flatMap(splitInstructorList).map(normalizeInstructorName).filter(Boolean)) {
     const card = createRatingShell(document, name);
     container.append(card);
-    const pendingLookup = lookupProfessor(name)
-      .then((result) => updateRatingCard(card, result))
-      .catch((error) => {
-        card.classList.add("is-error");
-        card.querySelector(".nyu-rmp-status").textContent = error.message;
-      });
+    const pendingLookup = loadRatingCard({ card, name, lookupProfessor });
     pendingLookups.push(pendingLookup);
   }
 
@@ -110,6 +105,17 @@ function mountRatings({ element, names, processedElements = [], document, lookup
   return pendingLookups;
 }
 
+function loadRatingCard({ card, name, lookupProfessor, forceRefresh = false }) {
+  setCardLoading(card, name, forceRefresh ? "Refreshing RMP" : "Checking RMP");
+  const lookupArgs = forceRefresh ? [name, { forceRefresh: true }] : [name];
+  return lookupProfessor(...lookupArgs)
+    .then((result) => updateRatingCard(card, result, { requestedName: name, lookupProfessor }))
+    .catch((error) => {
+      card.classList.add("is-error");
+      card.querySelector(".nyu-rmp-status").textContent = error.message;
+    });
+}
+
 function isTableCell(element) {
   return ["TD", "TH"].includes(element.tagName);
 }
@@ -117,19 +123,23 @@ function isTableCell(element) {
 function createRatingShell(document, name) {
   const card = document.createElement("article");
   card.className = "nyu-rmp-card is-loading";
+  setCardLoading(card, name, "Checking RMP");
+  return card;
+}
+
+function setCardLoading(card, name, status) {
+  card.className = "nyu-rmp-card is-loading";
   card.innerHTML = `
     <div class="nyu-rmp-card-head">
       <strong></strong>
-      <span class="nyu-rmp-status">Checking RMP</span>
+      <span class="nyu-rmp-status">${escapeHtml(status)}</span>
     </div>
     <div class="nyu-rmp-skeleton"></div>
   `;
   card.querySelector("strong").textContent = name;
-  return card;
 }
 
-function updateRatingCard(card, result) {
-  const requestedName = card.querySelector("strong")?.textContent ?? "Professor";
+function updateRatingCard(card, result, { requestedName = "Professor", lookupProfessor } = {}) {
   card.classList.remove("is-loading");
   if (!result) {
     card.classList.add("is-empty");
@@ -154,7 +164,10 @@ function updateRatingCard(card, result) {
   card.innerHTML = `
     <div class="nyu-rmp-card-head">
       <strong>${escapeHtml(result.name)}</strong>
-      <a href="${result.url}" target="_blank" rel="noreferrer">RMP</a>
+      <div class="nyu-rmp-actions">
+        <button class="nyu-rmp-refresh" type="button">Refresh</button>
+        <a href="${result.url}" target="_blank" rel="noreferrer">RMP</a>
+      </div>
     </div>
     <div class="nyu-rmp-score-row">
       <span class="nyu-rmp-score">${formatScore(result.rating)}</span>
@@ -165,6 +178,9 @@ function updateRatingCard(card, result) {
     ${tags ? `<div class="nyu-rmp-tags">${tags}</div>` : ""}
     ${comments ? `<ul class="nyu-rmp-comments">${comments}</ul>` : ""}
   `;
+  card.querySelector(".nyu-rmp-refresh").addEventListener("click", () => {
+    loadRatingCard({ card, name: requestedName, lookupProfessor, forceRefresh: true });
+  });
 }
 
 export function injectStyles(document = globalThis.document) {
@@ -212,10 +228,26 @@ export function injectStyles(document = globalThis.document) {
       letter-spacing: 0;
     }
     .nyu-rmp-card a,
+    .nyu-rmp-refresh,
     .nyu-rmp-status {
       color: #334155;
       font-size: 11px;
       text-transform: uppercase;
+    }
+    .nyu-rmp-actions {
+      align-items: center;
+      display: flex;
+      gap: 8px;
+    }
+    .nyu-rmp-refresh {
+      background: transparent;
+      border: 0;
+      cursor: pointer;
+      font-family: inherit;
+      padding: 0;
+    }
+    .nyu-rmp-refresh:active {
+      transform: translateY(1px);
     }
     .nyu-rmp-score {
       color: #111827;
@@ -295,7 +327,7 @@ function formatComment(comment) {
   return `
     <li>
       <p>${escapeHtml(normalized.text)}</p>
-      ${metadata.length > 0 ? `<span class="nyu-rmp-comment-meta">${metadata.map(escapeHtml).join(" · ")}</span>` : ""}
+      ${metadata.length > 0 ? `<span class="nyu-rmp-comment-meta">${metadata.map(escapeHtml).join(" | ")}</span>` : ""}
     </li>
   `;
 }
