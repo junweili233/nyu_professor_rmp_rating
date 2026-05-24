@@ -160,6 +160,34 @@ describe("Albert content DOM injection", () => {
     expect(document.body.textContent).toContain("Difficulty 2.0");
   });
 
+  it("omits negative useful-comment metadata from cached RMP ratings", async () => {
+    document.body.innerHTML = `<div>Instructor: Ada Lovelace</div>`;
+    const lookupProfessor = vi.fn(async (name) => ({
+      name,
+      rating: 4.7,
+      difficulty: 2.4,
+      ratingsCount: 38,
+      tags: [],
+      topComments: [
+        {
+          text: "Cached comment with malformed metadata.",
+          helpfulRating: -1,
+          clarityRating: -1,
+          difficultyRating: -1,
+        },
+      ],
+      url: "https://www.ratemyprofessors.com/professor/123",
+    }));
+
+    await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
+
+    expect(document.body.textContent).toContain("Cached comment with malformed metadata.");
+    expect(document.querySelector(".nyu-rmp-comment-meta")).toBeNull();
+    expect(document.body.textContent).not.toContain("-1 useful");
+    expect(document.body.textContent).not.toContain("Clarity -1.0");
+    expect(document.body.textContent).not.toContain("Difficulty -1.0");
+  });
+
   it("renders a singular rating count label for one RMP rating", async () => {
     document.body.innerHTML = `<div>Instructor: Ada Lovelace</div>`;
     const lookupProfessor = vi.fn(async (name) => ({

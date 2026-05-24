@@ -579,9 +579,9 @@ function normalizeComment(comment) {
 
   return {
     text: comment?.text ?? "",
-    helpfulRating: numberOrNull(comment?.helpfulRating),
-    clarityRating: numberOrNull(comment?.clarityRating),
-    difficultyRating: numberOrNull(comment?.difficultyRating),
+    helpfulRating: nonNegativeNumberOrNull(comment?.helpfulRating),
+    clarityRating: nonNegativeNumberOrNull(comment?.clarityRating),
+    difficultyRating: nonNegativeNumberOrNull(comment?.difficultyRating),
   };
 }
 
