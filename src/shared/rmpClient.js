@@ -135,7 +135,7 @@ function toProfessorRating(teacher, requestedName) {
     department: teacher.department ?? "",
     rating: nonNegativeNumberOrNull(teacher.avgRating),
     difficulty: nonNegativeNumberOrNull(teacher.avgDifficulty),
-    ratingsCount: numberOrNull(teacher.numRatings) ?? 0,
+    ratingsCount: nonNegativeCount(teacher.numRatings),
     wouldTakeAgain: nonNegativeNumberOrNull(teacher.wouldTakeAgainPercent),
     tags: teacher.teacherRatingTags?.map((tag) => tag?.tagName).filter(Boolean).slice(0, 3) ?? [],
     topComments: comments,
@@ -162,7 +162,7 @@ function teacherScore(target, teacher) {
   if (/computer|cs|courant/i.test(teacher.department ?? "")) {
     score += 10;
   }
-  score += Math.min(numberOrNull(teacher.numRatings) ?? 0, 50) / 10;
+  score += Math.min(nonNegativeCount(teacher.numRatings), 50) / 10;
   return score;
 }
 
@@ -181,6 +181,10 @@ function numberOrNull(value) {
 function nonNegativeNumberOrNull(value) {
   const number = numberOrNull(value);
   return number == null || number < 0 ? null : number;
+}
+
+function nonNegativeCount(value) {
+  return nonNegativeNumberOrNull(value) ?? 0;
 }
 
 function searchNameVariants(name) {
