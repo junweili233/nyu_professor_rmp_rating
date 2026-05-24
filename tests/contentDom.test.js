@@ -356,6 +356,32 @@ describe("Albert content DOM injection", () => {
     expect(lookupProfessor).toHaveBeenCalledTimes(1);
   });
 
+  it("reuses one RMP lookup for duplicate instructors during the same scan", async () => {
+    document.body.innerHTML = `
+      <div>Instructor: Ada Lovelace</div>
+      <div>Instructor: Ada Lovelace</div>
+    `;
+    const lookupProfessor = vi.fn(async (name) => ({
+      name,
+      rating: 4.7,
+      difficulty: 2.4,
+      ratingsCount: 38,
+      tags: [],
+      topComments: ["Clear systems explanations."],
+      url: "https://www.ratemyprofessors.com/professor/123",
+    }));
+
+    await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
+
+    expect(lookupProfessor).toHaveBeenCalledTimes(1);
+    expect(lookupProfessor).toHaveBeenCalledWith("Ada Lovelace");
+    expect(document.querySelectorAll(".nyu-rmp-card")).toHaveLength(2);
+    expect(Array.from(document.querySelectorAll(".nyu-rmp-score")).map((score) => score.textContent)).toEqual([
+      "4.7",
+      "4.7",
+    ]);
+  });
+
   it("injects ratings when Albert splits the instructor label and name into adjacent cells", async () => {
     document.body.innerHTML = `
       <table>

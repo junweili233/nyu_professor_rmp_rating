@@ -40,8 +40,26 @@ export function scanAlbertPageOnce({ document = globalThis.document, lookupProfe
 
   injectStyles(document);
   const targets = findInstructorTargets(document);
-  const pendingLookups = targets.flatMap((target) => mountRatings({ ...target, document, lookupProfessor }));
+  const cachedLookupProfessor = createScanLookupCache(lookupProfessor);
+  const pendingLookups = targets.flatMap((target) =>
+    mountRatings({ ...target, document, lookupProfessor: cachedLookupProfessor }),
+  );
   return { targets, pendingLookups };
+}
+
+function createScanLookupCache(lookupProfessor) {
+  const lookups = new Map();
+  return (name, options = {}) => {
+    if (options.forceRefresh) {
+      return lookupProfessor(name, options);
+    }
+
+    const key = compactName(name);
+    if (!lookups.has(key)) {
+      lookups.set(key, lookupProfessor(name));
+    }
+    return lookups.get(key);
+  };
 }
 
 export function findInstructorTargets(document = globalThis.document) {
