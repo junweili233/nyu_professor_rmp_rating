@@ -2,6 +2,7 @@ import { extractInstructorNamesFromText, normalizeInstructorName, splitInstructo
 
 const ROOT_CLASS = "nyu-rmp-rating-root";
 const STYLE_ID = "nyu-rmp-rating-styles";
+const COMMENT_PREVIEW_LENGTH = 150;
 
 export function startAlbertRmpEnhancer({
   document = globalThis.document,
@@ -192,6 +193,7 @@ function updateRatingCard(card, result, { requestedName = "Professor", lookupPro
     ${comments ? `<ul class="nyu-rmp-comments">${comments}</ul>` : ""}
   `;
   wireRefreshAction(card, requestedName, lookupProfessor);
+  wireCommentToggleActions(card);
 }
 
 function updateErrorCard(card, { requestedName, lookupProfessor, message }) {
@@ -324,6 +326,20 @@ export function injectStyles(document = globalThis.document) {
     .nyu-rmp-comments p {
       margin: 0;
     }
+    .nyu-rmp-comment-toggle {
+      background: transparent;
+      border: 0;
+      color: #334155;
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 11px;
+      margin-top: 3px;
+      padding: 0;
+      text-transform: uppercase;
+    }
+    .nyu-rmp-comment-toggle:active {
+      transform: translateY(1px);
+    }
     .nyu-rmp-comment-meta {
       color: #64748b;
       display: block;
@@ -367,6 +383,8 @@ function formatComment(comment) {
     return "";
   }
 
+  const preview = truncateComment(normalized.text);
+  const isTruncated = preview !== normalized.text;
   const metadata = [
     normalized.helpfulRating == null ? "" : `${normalized.helpfulRating} useful`,
     normalized.clarityRating == null ? "" : `Clarity ${formatScore(normalized.clarityRating)}`,
@@ -375,10 +393,42 @@ function formatComment(comment) {
 
   return `
     <li>
-      <p>${escapeHtml(normalized.text)}</p>
+      <p class="nyu-rmp-comment-text">${escapeHtml(preview)}</p>
+      ${isTruncated ? `
+        <button
+          class="nyu-rmp-comment-toggle"
+          type="button"
+          aria-expanded="false"
+          data-preview-text="${escapeHtml(preview)}"
+          data-full-text="${escapeHtml(normalized.text)}"
+        >Show more</button>
+      ` : ""}
       ${metadata.length > 0 ? `<span class="nyu-rmp-comment-meta">${metadata.map(escapeHtml).join(" | ")}</span>` : ""}
     </li>
   `;
+}
+
+function wireCommentToggleActions(card) {
+  for (const button of card.querySelectorAll(".nyu-rmp-comment-toggle")) {
+    button.addEventListener("click", () => {
+      const commentText = button.parentElement?.querySelector(".nyu-rmp-comment-text");
+      if (!commentText) {
+        return;
+      }
+
+      const isExpanded = button.getAttribute("aria-expanded") === "true";
+      button.setAttribute("aria-expanded", String(!isExpanded));
+      button.textContent = isExpanded ? "Show more" : "Show less";
+      commentText.textContent = isExpanded ? button.dataset.previewText : button.dataset.fullText;
+    });
+  }
+}
+
+function truncateComment(text) {
+  if (text.length <= COMMENT_PREVIEW_LENGTH) {
+    return text;
+  }
+  return `${text.slice(0, COMMENT_PREVIEW_LENGTH).trimEnd()}...`;
 }
 
 function normalizeComment(comment) {

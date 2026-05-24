@@ -68,6 +68,38 @@ describe("Albert content DOM injection", () => {
     expect(document.body.textContent).toContain("Difficulty 2.0");
   });
 
+  it("keeps long useful comments compact until expanded", async () => {
+    document.body.innerHTML = `<div>Instructor: Ada Lovelace</div>`;
+    const longComment = [
+      "This professor gives detailed systems lectures with careful examples, but the project workload is heavy",
+      "and the exams require students to understand every lab at a deep level before test day.",
+    ].join(" ");
+    const lookupProfessor = vi.fn(async (name) => ({
+      name,
+      rating: 4.1,
+      difficulty: 3.8,
+      ratingsCount: 44,
+      tags: [],
+      topComments: [{ text: longComment, helpfulRating: 18 }],
+      url: "https://www.ratemyprofessors.com/professor/123",
+    }));
+
+    await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
+
+    const commentText = document.querySelector(".nyu-rmp-comment-text");
+    const toggle = document.querySelector(".nyu-rmp-comment-toggle");
+    expect(commentText.textContent).not.toBe(longComment);
+    expect(commentText.textContent.endsWith("...")).toBe(true);
+    expect(toggle.textContent).toBe("Show more");
+    expect(toggle.getAttribute("aria-expanded")).toBe("false");
+
+    toggle.click();
+
+    expect(commentText.textContent).toBe(longComment);
+    expect(toggle.textContent).toBe("Show less");
+    expect(toggle.getAttribute("aria-expanded")).toBe("true");
+  });
+
   it("renders when the RMP data was last updated", async () => {
     document.body.innerHTML = `<div>Instructor: Ada Lovelace</div>`;
     const lookupProfessor = vi.fn(async (name) => ({
