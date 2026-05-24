@@ -179,6 +179,26 @@ describe("Albert content DOM injection", () => {
     expect(profileLink.getAttribute("href")).toBe("https://www.ratemyprofessors.com/");
   });
 
+  it("labels matched RMP profile links with the professor name", async () => {
+    document.body.innerHTML = `<div>Instructor: Ada Lovelace</div>`;
+    const lookupProfessor = vi.fn(async (name) => ({
+      name,
+      department: "Computer Science",
+      rating: 4.7,
+      difficulty: 2.4,
+      ratingsCount: 38,
+      tags: [],
+      topComments: [],
+      url: "https://www.ratemyprofessors.com/professor/123",
+    }));
+
+    await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
+
+    const profileLink = document.querySelector(".nyu-rmp-actions a");
+    expect(profileLink.textContent).toBe("RMP");
+    expect(profileLink.getAttribute("aria-label")).toBe("Open RMP profile for Ada Lovelace");
+  });
+
   it("omits negative useful-comment metadata from cached RMP ratings", async () => {
     document.body.innerHTML = `<div>Instructor: Ada Lovelace</div>`;
     const lookupProfessor = vi.fn(async (name) => ({

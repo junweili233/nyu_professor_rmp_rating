@@ -316,7 +316,7 @@ function updateRatingCard(card, result, { requestedName = "Professor", lookupPro
       <strong>${escapeHtml(professorName)}</strong>
       <div class="nyu-rmp-actions">
         <button class="nyu-rmp-refresh" type="button" aria-label="${escapeHtml(refreshLabel(requestedName))}">Refresh</button>
-        <a href="${escapeHtml(rmpUrl)}" target="_blank" rel="noreferrer">RMP</a>
+        <a href="${escapeHtml(rmpUrl)}" target="_blank" rel="noreferrer" aria-label="${escapeHtml(profileLabel(professorName))}">RMP</a>
       </div>
     </div>
     ${department ? `<div class="nyu-rmp-department">${escapeHtml(department)}</div>` : ""}
@@ -661,6 +661,10 @@ function retryLabel(name) {
 
 function searchLabel(name) {
   return `Search RMP for ${name}`;
+}
+
+function profileLabel(name) {
+  return `Open RMP profile for ${name}`;
 }
 
 function rmpSearchUrl(name) {
