@@ -557,6 +557,25 @@ describe("Rate My Professors client", () => {
     expect(`${bestMatch.firstName} ${bestMatch.lastName}`).toBe("Chee Yap");
   });
 
+  it("matches unaccented Albert names to accented RMP professor names", () => {
+    const bestMatch = pickBestTeacher("Jose Garcia", [
+      {
+        firstName: "Joseph",
+        lastName: "Garcia",
+        department: "Computer Science",
+        numRatings: 20,
+      },
+      {
+        firstName: "José",
+        lastName: "García",
+        department: "Computer Science",
+        numRatings: 4,
+      },
+    ]);
+
+    expect(`${bestMatch.firstName} ${bestMatch.lastName}`).toBe("José García");
+  });
+
   it("falls back to first-last RMP search when a full Albert middle-name search is weak", async () => {
     const fetchImpl = vi.fn()
       .mockResolvedValueOnce({
