@@ -76,6 +76,39 @@ describe("background professor lookup service", () => {
     });
   });
 
+  it("refreshes stale in-memory cache entries while the service worker stays alive", async () => {
+    let currentTime = new Date("2026-05-24T12:00:00Z").getTime();
+    const firstRating = {
+      name: "Donald Knuth",
+      rating: 3.8,
+      topComments: ["First lookup."],
+    };
+    const refreshedRating = {
+      name: "Donald Knuth",
+      rating: 4.9,
+      topComments: ["Refreshed lookup."],
+    };
+    const storage = createStorageMock();
+    const findProfessorRating = vi.fn()
+      .mockResolvedValueOnce(firstRating)
+      .mockResolvedValueOnce(refreshedRating);
+    const service = createProfessorLookupService({
+      storage,
+      findProfessorRating,
+      now: () => currentTime,
+    });
+
+    await expect(service.lookup("Donald Knuth")).resolves.toEqual(firstRating);
+    currentTime += CACHE_TTL_MS + 1;
+    await expect(service.lookup("Donald Knuth")).resolves.toEqual(refreshedRating);
+
+    expect(findProfessorRating).toHaveBeenCalledTimes(2);
+    expect(storage.data[professorCacheKey("Donald Knuth")]).toEqual({
+      cachedAt: currentTime,
+      value: refreshedRating,
+    });
+  });
+
   it("persists fresh RMP lookup results for later Albert page scans", async () => {
     const freshRating = {
       name: "Ada Lovelace",

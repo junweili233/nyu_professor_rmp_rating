@@ -16,24 +16,27 @@ export function createProfessorLookupService({
   return {
     async lookup(name) {
       const key = professorCacheKey(name);
-      if (memoryCache.has(key)) {
-        return memoryCache.get(key);
+      const currentTime = now();
+      const memoryEntry = memoryCache.get(key);
+      if (memoryEntry && isFreshCacheEntry(memoryEntry, currentTime)) {
+        return memoryEntry.value;
       }
 
-      const cached = await readStoredRating(storage, key, now());
+      const cached = await readStoredRating(storage, key, currentTime);
       if (cached.status === "fresh") {
-        memoryCache.set(key, cached.value);
+        memoryCache.set(key, createStoredRating(cached.value, cached.cachedAt));
         return cached.value;
       }
 
       if (cached.status === "legacy") {
-        memoryCache.set(key, cached.value);
+        memoryCache.set(key, createStoredRating(cached.value, currentTime));
         return cached.value;
       }
 
       const result = await findProfessorRating(name);
-      memoryCache.set(key, result);
-      await storage.set({ [key]: createStoredRating(result, now()) });
+      const storedResult = createStoredRating(result, currentTime);
+      memoryCache.set(key, storedResult);
+      await storage.set({ [key]: storedResult });
       return result;
     },
   };
@@ -51,8 +54,8 @@ async function readStoredRating(storage, key, currentTime) {
 
   const stored = result[key];
   if (isTimestampedCacheEntry(stored)) {
-    return currentTime - stored.cachedAt <= CACHE_TTL_MS
-      ? { status: "fresh", value: stored.value }
+    return isFreshCacheEntry(stored, currentTime)
+      ? { status: "fresh", value: stored.value, cachedAt: stored.cachedAt }
       : { status: "stale" };
   }
 
@@ -65,4 +68,8 @@ function createStoredRating(value, cachedAt) {
 
 function isTimestampedCacheEntry(value) {
   return value && typeof value === "object" && "cachedAt" in value && "value" in value;
+}
+
+function isFreshCacheEntry(entry, currentTime) {
+  return currentTime - entry.cachedAt <= CACHE_TTL_MS;
 }
