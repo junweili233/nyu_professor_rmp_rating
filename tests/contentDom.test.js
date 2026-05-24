@@ -34,6 +34,7 @@ describe("Albert content DOM injection", () => {
     expect(document.querySelectorAll(".nyu-rmp-card")).toHaveLength(1);
     expect(document.querySelector(".nyu-rmp-score").textContent).toBe("2.1");
     expect(document.body.textContent).toContain("Low rating");
+    expect(document.body.textContent).toContain("Computer Science");
     expect(document.body.textContent).toContain("Difficulty 4.5");
     expect(document.body.textContent).toContain("Avoid if you dislike fast lectures.");
   });

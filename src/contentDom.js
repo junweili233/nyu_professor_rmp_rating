@@ -161,6 +161,7 @@ function updateRatingCard(card, result, { requestedName = "Professor", lookupPro
   const professorName = result.name || requestedName;
   const ratingsCount = numberOrNull(result.ratingsCount) ?? 0;
   const rmpUrl = result.url || "https://www.ratemyprofessors.com/";
+  const department = String(result.department ?? "").trim();
   const comments = asArray(result.topComments)
     .map((comment) => formatComment(comment))
     .join("");
@@ -177,6 +178,7 @@ function updateRatingCard(card, result, { requestedName = "Professor", lookupPro
         <a href="${escapeHtml(rmpUrl)}" target="_blank" rel="noreferrer">RMP</a>
       </div>
     </div>
+    ${department ? `<div class="nyu-rmp-department">${escapeHtml(department)}</div>` : ""}
     <div class="nyu-rmp-score-row">
       <span class="nyu-rmp-score">${formatScore(result.rating)}</span>
       <span class="nyu-rmp-verdict">${escapeHtml(ratingVerdict.label)}</span>
@@ -254,6 +256,11 @@ export function injectStyles(document = globalThis.document) {
     .nyu-rmp-card strong {
       font-size: 13px;
       letter-spacing: 0;
+    }
+    .nyu-rmp-department {
+      color: #64748b;
+      font-size: 11px;
+      margin: -2px 0 6px;
     }
     .nyu-rmp-card a,
     .nyu-rmp-refresh,
