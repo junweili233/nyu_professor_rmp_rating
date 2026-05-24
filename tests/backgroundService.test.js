@@ -2,6 +2,17 @@ import { describe, expect, it, vi } from "vitest";
 import { CACHE_TTL_MS, createProfessorLookupService, professorCacheKey } from "../src/backgroundService.js";
 
 describe("background professor lookup service", () => {
+  it("rejects blank professor lookup names before touching RMP or cache", async () => {
+    const storage = createStorageMock();
+    const findProfessorRating = vi.fn();
+    const service = createProfessorLookupService({ storage, findProfessorRating });
+
+    await expect(service.lookup("   ")).rejects.toThrow("professor name is required");
+
+    expect(findProfessorRating).not.toHaveBeenCalled();
+    expect(storage.data).toEqual({});
+  });
+
   it("reuses persisted Chrome storage cache before calling Rate My Professors", async () => {
     const cachedRating = {
       name: "Chee Yap",

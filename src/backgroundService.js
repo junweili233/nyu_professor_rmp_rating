@@ -16,6 +16,9 @@ export function createProfessorLookupService({
 
   return {
     async lookup(name, { forceRefresh = false } = {}) {
+      if (!String(name ?? "").trim()) {
+        throw new Error("professor name is required");
+      }
       const key = professorCacheKey(name);
       const currentTime = now();
       const memoryEntry = memoryCache.get(key);
