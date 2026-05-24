@@ -29,6 +29,23 @@ describe("background professor lookup service", () => {
     expect(findProfessorRating).not.toHaveBeenCalled();
   });
 
+  it("normalizes repeated whitespace in professor cache keys", async () => {
+    const cachedRating = {
+      name: "Ada Lovelace",
+      rating: 4.7,
+      topComments: ["Clear explanations."],
+    };
+    const storage = createStorageMock({
+      [professorCacheKey("Ada Lovelace")]: cachedRating,
+    });
+    const findProfessorRating = vi.fn();
+    const service = createProfessorLookupService({ storage, findProfessorRating });
+
+    await expect(service.lookup("  Ada   Lovelace  ")).resolves.toMatchObject(cachedRating);
+
+    expect(findProfessorRating).not.toHaveBeenCalled();
+  });
+
   it("reuses fresh timestamped persisted cache entries", async () => {
     const now = new Date("2026-05-24T12:00:00Z").getTime();
     const cachedRating = {

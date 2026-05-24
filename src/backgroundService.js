@@ -60,7 +60,7 @@ export function createProfessorLookupService({
 }
 
 export function professorCacheKey(name) {
-  return `professor:${String(name).trim().toLowerCase()}`;
+  return `professor:${String(name).trim().replace(/\s+/g, " ").toLowerCase()}`;
 }
 
 async function readStoredRating(storage, key, currentTime) {
