@@ -111,8 +111,7 @@ function loadRatingCard({ card, name, lookupProfessor, forceRefresh = false }) {
   return lookupProfessor(...lookupArgs)
     .then((result) => updateRatingCard(card, result, { requestedName: name, lookupProfessor }))
     .catch((error) => {
-      card.classList.add("is-error");
-      card.querySelector(".nyu-rmp-status").textContent = error.message;
+      updateErrorCard(card, { requestedName: name, lookupProfessor, message: error.message });
     });
 }
 
@@ -186,6 +185,20 @@ function updateRatingCard(card, result, { requestedName = "Professor", lookupPro
     </div>
     ${tags ? `<div class="nyu-rmp-tags">${tags}</div>` : ""}
     ${comments ? `<ul class="nyu-rmp-comments">${comments}</ul>` : ""}
+  `;
+  wireRefreshAction(card, requestedName, lookupProfessor);
+}
+
+function updateErrorCard(card, { requestedName, lookupProfessor, message }) {
+  card.className = "nyu-rmp-card is-error";
+  card.innerHTML = `
+    <div class="nyu-rmp-card-head">
+      <strong>${escapeHtml(requestedName)}</strong>
+      <div class="nyu-rmp-actions">
+        <button class="nyu-rmp-refresh" type="button">Retry</button>
+        <span class="nyu-rmp-status">${escapeHtml(message || "RMP lookup failed")}</span>
+      </div>
+    </div>
   `;
   wireRefreshAction(card, requestedName, lookupProfessor);
 }
