@@ -164,6 +164,7 @@ function updateRatingCard(card, result, { requestedName = "Professor", lookupPro
   const rmpUrl = result.url || "https://www.ratemyprofessors.com/";
   const department = String(result.department ?? "").trim();
   const updatedAt = formatUpdatedAt(result.cacheUpdatedAt);
+  const matchNote = formatMatchNote(professorName, requestedName);
   const comments = asArray(result.topComments)
     .map((comment) => formatComment(comment))
     .join("");
@@ -181,6 +182,7 @@ function updateRatingCard(card, result, { requestedName = "Professor", lookupPro
       </div>
     </div>
     ${department ? `<div class="nyu-rmp-department">${escapeHtml(department)}</div>` : ""}
+    ${matchNote ? `<div class="nyu-rmp-match-note">${escapeHtml(matchNote)}</div>` : ""}
     ${updatedAt ? `<div class="nyu-rmp-updated">${escapeHtml(updatedAt)}</div>` : ""}
     <div class="nyu-rmp-score-row">
       <span class="nyu-rmp-score">${formatScore(result.rating)}</span>
@@ -261,7 +263,8 @@ export function injectStyles(document = globalThis.document) {
       font-size: 13px;
       letter-spacing: 0;
     }
-    .nyu-rmp-department {
+    .nyu-rmp-department,
+    .nyu-rmp-match-note {
       color: #64748b;
       font-size: 11px;
       margin: -2px 0 6px;
@@ -478,6 +481,18 @@ function formatUpdatedAt(value) {
     "Dec",
   ][date.getUTCMonth()];
   return `Updated ${month} ${date.getUTCDate()}, ${date.getUTCFullYear()}`;
+}
+
+function formatMatchNote(professorName, requestedName) {
+  const requested = String(requestedName ?? "").trim();
+  if (!requested || compactName(professorName) === compactName(requested)) {
+    return "";
+  }
+  return `Albert: ${requested}`;
+}
+
+function compactName(value) {
+  return String(value ?? "").toLowerCase().replace(/[^a-z]/g, "");
 }
 
 function asArray(value) {

@@ -118,6 +118,24 @@ describe("Albert content DOM injection", () => {
     expect(document.querySelector(".nyu-rmp-updated").textContent).toBe("Updated May 24, 2026");
   });
 
+  it("shows the original Albert instructor name when the RMP match name differs", async () => {
+    document.body.innerHTML = `<div>Instructor: Chee Keng Yap</div>`;
+    const lookupProfessor = vi.fn(async () => ({
+      name: "Chee Yap",
+      department: "Computer Science",
+      rating: 2.1,
+      difficulty: 4.5,
+      ratingsCount: 92,
+      topComments: [],
+      url: "https://www.ratemyprofessors.com/professor/419998",
+    }));
+
+    await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
+
+    expect(document.querySelector(".nyu-rmp-card strong").textContent).toBe("Chee Yap");
+    expect(document.querySelector(".nyu-rmp-match-note").textContent).toBe("Albert: Chee Keng Yap");
+  });
+
   it("refreshes a professor card with a cache-bypassing lookup", async () => {
     document.body.innerHTML = `<div>Instructor: Ada Lovelace</div>`;
     const lookupProfessor = vi.fn()
