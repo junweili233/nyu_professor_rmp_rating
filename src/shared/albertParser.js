@@ -104,7 +104,8 @@ function stripInstructorRoleAnnotations(value) {
 }
 
 function isPlaceholderInstructor(value) {
-  return STAFF_TERMS.has(String(value ?? "").trim().toLowerCase());
+  const normalized = String(value ?? "").trim().toLowerCase();
+  return STAFF_TERMS.has(normalized) || /\bstaff$/.test(normalized);
 }
 
 function pairAlbertLastFirstParts(parts) {

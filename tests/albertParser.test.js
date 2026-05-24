@@ -21,11 +21,14 @@ describe("Albert instructor parsing", () => {
     expect(normalizeInstructorName("Not Assigned")).toBe("");
     expect(normalizeInstructorName("Instructor: N/A")).toBe("");
     expect(normalizeInstructorName("None")).toBe("");
+    expect(normalizeInstructorName("Department Staff")).toBe("");
+    expect(normalizeInstructorName("Courant Staff")).toBe("");
     expect(extractInstructorNamesFromText("Instructor: No Instructor Assigned")).toEqual([]);
     expect(extractInstructorNamesFromText("Instructor: TBD")).toEqual([]);
     expect(extractInstructorNamesFromText("Instructor: Not Assigned")).toEqual([]);
     expect(extractInstructorNamesFromText("Instructor: N/A")).toEqual([]);
     expect(extractInstructorNamesFromText("Instructor: None")).toEqual([]);
+    expect(extractInstructorNamesFromText("Instructor: Department Staff")).toEqual([]);
   });
 
   it("extracts unique professor names from an Albert shopping-cart style block", () => {
