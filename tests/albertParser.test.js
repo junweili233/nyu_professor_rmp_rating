@@ -17,7 +17,11 @@ describe("Albert instructor parsing", () => {
   it("ignores Albert placeholder instructor names", () => {
     expect(normalizeInstructorName("Instructor: No Instructor Assigned")).toBe("");
     expect(normalizeInstructorName("No instructor assigned")).toBe("");
+    expect(normalizeInstructorName("Instructor: TBD")).toBe("");
+    expect(normalizeInstructorName("Not Assigned")).toBe("");
     expect(extractInstructorNamesFromText("Instructor: No Instructor Assigned")).toEqual([]);
+    expect(extractInstructorNamesFromText("Instructor: TBD")).toEqual([]);
+    expect(extractInstructorNamesFromText("Instructor: Not Assigned")).toEqual([]);
   });
 
   it("extracts unique professor names from an Albert shopping-cart style block", () => {

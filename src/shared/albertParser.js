@@ -1,8 +1,10 @@
 const STAFF_TERMS = new Set([
   "staff",
   "tba",
+  "tbd",
   "to be announced",
   "department",
+  "not assigned",
   "no instructor assigned",
 ]);
 const ROMAN_NAME_SUFFIXES = new Set(["ii", "iii", "iv", "v"]);
