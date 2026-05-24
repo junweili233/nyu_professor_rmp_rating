@@ -197,6 +197,29 @@ describe("Albert content DOM injection", () => {
     expect(scoreRowText).not.toContain("-1 ratings");
   });
 
+  it("renders negative cached RMP metrics as unavailable values", async () => {
+    document.body.innerHTML = `<div>Instructor: Ada Lovelace</div>`;
+    const lookupProfessor = vi.fn(async (name) => ({
+      name,
+      rating: -1,
+      difficulty: -1,
+      ratingsCount: 12,
+      wouldTakeAgain: -1,
+      tags: [],
+      topComments: [],
+      url: "https://www.ratemyprofessors.com/professor/123",
+    }));
+
+    await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
+
+    const scoreRowText = document.querySelector(".nyu-rmp-score-row").textContent;
+    expect(document.querySelector(".nyu-rmp-score").textContent).toBe("N/A");
+    expect(scoreRowText).toContain("No rating");
+    expect(scoreRowText).toContain("Difficulty N/A");
+    expect(scoreRowText).not.toContain("-1.0");
+    expect(scoreRowText).not.toContain("-1% take again");
+  });
+
   it("keeps long useful comments compact until expanded", async () => {
     document.body.innerHTML = `<div>Instructor: Ada Lovelace</div>`;
     const longComment = [

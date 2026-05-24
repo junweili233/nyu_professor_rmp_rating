@@ -279,7 +279,10 @@ function updateRatingCard(card, result, { requestedName = "Professor", lookupPro
     return;
   }
 
-  const ratingVerdict = getRatingVerdict(result.rating);
+  const rating = nonNegativeNumberOrNull(result.rating);
+  const difficulty = nonNegativeNumberOrNull(result.difficulty);
+  const wouldTakeAgain = nonNegativeNumberOrNull(result.wouldTakeAgain);
+  const ratingVerdict = getRatingVerdict(rating);
   const ratingClass = ratingVerdict.className;
   const professorName = result.name || requestedName;
   const ratingsCount = nonNegativeCount(result.ratingsCount);
@@ -307,11 +310,11 @@ function updateRatingCard(card, result, { requestedName = "Professor", lookupPro
     ${matchNote ? `<div class="nyu-rmp-match-note">${escapeHtml(matchNote)}</div>` : ""}
     ${updatedAt ? `<div class="nyu-rmp-updated">${escapeHtml(updatedAt)}</div>` : ""}
     <div class="nyu-rmp-score-row">
-      <span class="nyu-rmp-score">${formatScore(result.rating)}</span>
+      <span class="nyu-rmp-score">${formatScore(rating)}</span>
       <span class="nyu-rmp-verdict">${escapeHtml(ratingVerdict.label)}</span>
       <span>${escapeHtml(formatRatingsCount(ratingsCount))}</span>
-      <span>Difficulty ${formatScore(result.difficulty)}</span>
-      ${result.wouldTakeAgain == null ? "" : `<span>${Math.round(result.wouldTakeAgain)}% take again</span>`}
+      <span>Difficulty ${formatScore(difficulty)}</span>
+      ${wouldTakeAgain == null ? "" : `<span>${Math.round(wouldTakeAgain)}% take again</span>`}
     </div>
     ${tags ? `<div class="nyu-rmp-tags">${tags}</div>` : ""}
     ${comments ? `<ul class="nyu-rmp-comments">${comments}</ul>` : ""}
@@ -498,8 +501,12 @@ function formatRatingsCount(value) {
 }
 
 function nonNegativeCount(value) {
+  return nonNegativeNumberOrNull(value) ?? 0;
+}
+
+function nonNegativeNumberOrNull(value) {
   const number = numberOrNull(value);
-  return number == null || number < 0 ? 0 : number;
+  return number == null || number < 0 ? null : number;
 }
 
 function escapeHtml(value) {
