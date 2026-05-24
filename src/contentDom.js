@@ -109,7 +109,7 @@ export function findInstructorTargets(document = globalThis.document) {
 }
 
 function findInstructorTargetsForElement(element) {
-  const text = element.textContent ?? "";
+  const text = visibleTextSegments(element).join("\n");
   if (/\binstructor(?:\(s\)|s)?\s*:/i.test(text) && text.length < 700) {
     const names = extractInstructorNamesFromText(text);
     return names.length > 0 ? [{ element, names }] : [];
@@ -161,9 +161,40 @@ function findAdjacentInstructorTarget(element) {
   if (!nameElement) {
     return null;
   }
-  const adjacentText = nameElement?.textContent ?? "";
-  const names = splitInstructorList(adjacentText).map(normalizeInstructorName).filter(Boolean);
+  const names = visibleTextSegments(nameElement)
+    .flatMap(splitInstructorList)
+    .map(normalizeInstructorName)
+    .filter(Boolean);
   return names.length > 0 ? { element: nameElement, processedElements: [element, nameElement], names } : null;
+}
+
+function visibleTextSegments(element) {
+  return textForParsing(element)
+    .split(/\n+/)
+    .map((segment) => segment.replace(/\s+/g, " ").trim())
+    .filter(Boolean);
+}
+
+function textForParsing(node) {
+  if (node.nodeType === Node.TEXT_NODE) {
+    return node.textContent ?? "";
+  }
+  if (node.nodeType !== Node.ELEMENT_NODE) {
+    return "";
+  }
+  if (!isElementVisible(node)) {
+    return "";
+  }
+  if (node.tagName === "BR") {
+    return "\n";
+  }
+
+  const text = Array.from(node.childNodes).map(textForParsing).join("");
+  return isLineBreakElement(node) ? `\n${text}\n` : text;
+}
+
+function isLineBreakElement(element) {
+  return ["DIV", "P", "LI", "TR"].includes(element.tagName);
 }
 
 function preferMostSpecificTargets(targets) {
