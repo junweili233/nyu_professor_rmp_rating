@@ -27,7 +27,9 @@ export async function verifyExtensionPackage(distDir = "dist") {
   await assertFileExists(join(distDir, manifest.action?.default_popup ?? ""), "popup html is missing");
 
   for (const script of manifest.content_scripts?.flatMap((contentScript) => contentScript.js ?? []) ?? []) {
-    await assertFileExists(join(distDir, script), `content script is missing: ${script}`);
+    const scriptPath = join(distDir, script);
+    await assertFileExists(scriptPath, `content script is missing: ${script}`);
+    await assertClassicContentScript(scriptPath);
   }
 
   const popupHtml = await readFile(join(distDir, manifest.action.default_popup), "utf8");
@@ -35,6 +37,13 @@ export async function verifyExtensionPackage(distDir = "dist") {
   for (const script of popupScripts) {
     const normalizedScript = script.replace(/^\//, "");
     await assertFileExists(join(distDir, normalizedScript), `popup script is missing: ${normalizedScript}`);
+  }
+}
+
+async function assertClassicContentScript(path) {
+  const source = await readFile(path, "utf8");
+  if (/(^|[;}]\s*)await\s+/.test(source)) {
+    throw new Error("content script must not use top-level await");
   }
 }
 

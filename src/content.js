@@ -1,11 +1,13 @@
 import { removeAlbertRmpEnhancements, startAlbertRmpEnhancer } from "./contentDom.js";
 import { initContentScript } from "./contentController.js";
 
-await initContentScript({
+initContentScript({
   chrome,
   startAlbertRmpEnhancer,
   removeAlbertRmpEnhancements,
   lookupProfessor,
+}).catch((error) => {
+  console.error("NYU RMP extension failed to start", error);
 });
 
 function lookupProfessor(name, { forceRefresh = false } = {}) {

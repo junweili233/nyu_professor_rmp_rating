@@ -30,9 +30,21 @@ describe("extension package verifier", () => {
 
     await rm(dist, { recursive: true, force: true });
   });
+
+  it("fails when a content script contains top-level await", async () => {
+    const dist = await createPackageDist({
+      files: {
+        "content.js": "await boot();",
+      },
+    });
+
+    await expect(verifyExtensionPackage(dist)).rejects.toThrow("content script must not use top-level await");
+
+    await rm(dist, { recursive: true, force: true });
+  });
 });
 
-async function createPackageDist({ manifestOverrides = {} } = {}) {
+async function createPackageDist({ manifestOverrides = {}, files = {} } = {}) {
   const dist = await mkdtemp(join(tmpdir(), "nyu-rmp-dist-"));
   const manifest = {
     manifest_version: 3,
@@ -55,7 +67,7 @@ async function createPackageDist({ manifestOverrides = {} } = {}) {
   await mkdir(dist, { recursive: true });
   await writeFile(join(dist, "manifest.json"), JSON.stringify(manifest), "utf8");
   await writeFile(join(dist, "background.js"), "", "utf8");
-  await writeFile(join(dist, "content.js"), "", "utf8");
+  await writeFile(join(dist, "content.js"), files["content.js"] ?? "", "utf8");
   await writeFile(join(dist, "popup.html"), '<script type="module" src="/popup.js"></script>', "utf8");
   await writeFile(join(dist, "popup.js"), "", "utf8");
   return dist;
