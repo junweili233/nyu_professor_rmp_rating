@@ -34,7 +34,9 @@ export function createProfessorLookupService({
         }
 
         if (cached.status === "legacy") {
-          memoryCache.set(key, createStoredRating(cached.value, currentTime));
+          const migratedEntry = createStoredRating(cached.value, currentTime);
+          await storage.set({ [key]: migratedEntry });
+          memoryCache.set(key, migratedEntry);
           return withCacheMetadata(cached.value, currentTime);
         }
       }

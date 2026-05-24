@@ -29,6 +29,36 @@ describe("background professor lookup service", () => {
     expect(findProfessorRating).not.toHaveBeenCalled();
   });
 
+  it("migrates legacy persisted cache entries to timestamped storage", async () => {
+    const now = new Date("2026-05-24T12:00:00Z").getTime();
+    const cachedRating = {
+      name: "Chee Yap",
+      rating: 2.1,
+      topComments: ["Legacy cache entry."],
+    };
+    const key = professorCacheKey("YAP, CHEE KENG");
+    const storage = createStorageMock({
+      [key]: cachedRating,
+    });
+    const findProfessorRating = vi.fn();
+    const service = createProfessorLookupService({
+      storage,
+      findProfessorRating,
+      now: () => now,
+    });
+
+    await expect(service.lookup("YAP, CHEE KENG")).resolves.toEqual({
+      ...cachedRating,
+      cacheUpdatedAt: now,
+    });
+
+    expect(storage.data[key]).toEqual({
+      cachedAt: now,
+      value: cachedRating,
+    });
+    expect(findProfessorRating).not.toHaveBeenCalled();
+  });
+
   it("normalizes repeated whitespace in professor cache keys", async () => {
     const cachedRating = {
       name: "Ada Lovelace",
