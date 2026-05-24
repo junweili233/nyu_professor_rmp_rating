@@ -177,6 +177,44 @@ describe("Rate My Professors client", () => {
     expect(result.wouldTakeAgain).toBeNull();
   });
 
+  it("ignores null RMP teacher edges in partial GraphQL results", async () => {
+    const fetchImpl = vi.fn(async () => ({
+      ok: true,
+      json: async () => ({
+        data: {
+          newSearch: {
+            teachers: {
+              edges: [
+                null,
+                { node: null },
+                {
+                  node: {
+                    id: "VGVhY2hlci00",
+                    legacyId: 321,
+                    firstName: "Ada",
+                    lastName: "Lovelace",
+                    department: "Computer Science",
+                    avgRating: 4.7,
+                    avgDifficulty: 2.4,
+                    numRatings: 38,
+                    wouldTakeAgainPercent: 92,
+                    teacherRatingTags: [],
+                    ratings: { edges: [] },
+                  },
+                },
+              ],
+            },
+          },
+        },
+      }),
+    }));
+
+    await expect(findProfessorRating("Ada Lovelace", { fetchImpl })).resolves.toMatchObject({
+      name: "Ada Lovelace",
+      rating: 4.7,
+    });
+  });
+
   it("requests enough RMP ratings to choose useful comments from more than the first page edge", async () => {
     const fetchImpl = vi.fn(async () => ({
       ok: true,
