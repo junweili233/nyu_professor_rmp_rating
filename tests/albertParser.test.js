@@ -11,6 +11,7 @@ describe("Albert instructor parsing", () => {
     expect(normalizeInstructorName("GRACE B. HOPPER")).toBe("Grace B. Hopper");
     expect(normalizeInstructorName("PROF. MAEVE O'CONNOR")).toBe("Maeve O'Connor");
     expect(normalizeInstructorName("ROBERT MARTIN III")).toBe("Robert Martin III");
+    expect(normalizeInstructorName("ROBERT MARTIN JR.")).toBe("Robert Martin Jr.");
   });
 
   it("ignores Albert placeholder instructor names", () => {

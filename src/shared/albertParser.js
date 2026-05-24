@@ -5,7 +5,13 @@ const STAFF_TERMS = new Set([
   "department",
   "no instructor assigned",
 ]);
-const NAME_SUFFIXES = new Set(["jr", "jr.", "sr", "sr.", "ii", "iii", "iv", "v"]);
+const ROMAN_NAME_SUFFIXES = new Set(["ii", "iii", "iv", "v"]);
+const TITLE_NAME_SUFFIXES = new Map([
+  ["jr", "Jr"],
+  ["jr.", "Jr."],
+  ["sr", "Sr"],
+  ["sr.", "Sr."],
+]);
 
 export function normalizeInstructorName(value) {
   if (!value || typeof value !== "string") {
@@ -87,8 +93,12 @@ function titleCaseName(value) {
   return value
     .split(" ")
     .map((token) => {
-      if (NAME_SUFFIXES.has(token.toLowerCase())) {
-        return token.replace(/\.$/, "").toUpperCase() + (token.endsWith(".") ? "." : "");
+      const lowerToken = token.toLowerCase();
+      if (ROMAN_NAME_SUFFIXES.has(lowerToken)) {
+        return token.toUpperCase();
+      }
+      if (TITLE_NAME_SUFFIXES.has(lowerToken)) {
+        return TITLE_NAME_SUFFIXES.get(lowerToken);
       }
       if (/^[A-Z]\.$/.test(token)) {
         return token;
