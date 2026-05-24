@@ -12,6 +12,7 @@ export function createProfessorLookupService({
   }
 
   const memoryCache = new Map();
+  const inFlightLookups = new Map();
 
   return {
     async lookup(name) {
@@ -33,11 +34,13 @@ export function createProfessorLookupService({
         return cached.value;
       }
 
-      const result = await findProfessorRating(name);
-      const storedResult = createStoredRating(result, currentTime);
-      memoryCache.set(key, storedResult);
-      await storage.set({ [key]: storedResult });
-      return result;
+      if (!inFlightLookups.has(key)) {
+        inFlightLookups.set(key, fetchAndCacheRating({ key, name, currentTime, findProfessorRating, memoryCache, storage }));
+      }
+
+      return inFlightLookups.get(key).finally(() => {
+        inFlightLookups.delete(key);
+      });
     },
   };
 }
@@ -72,4 +75,12 @@ function isTimestampedCacheEntry(value) {
 
 function isFreshCacheEntry(entry, currentTime) {
   return currentTime - entry.cachedAt <= CACHE_TTL_MS;
+}
+
+async function fetchAndCacheRating({ key, name, currentTime, findProfessorRating, memoryCache, storage }) {
+  const result = await findProfessorRating(name);
+  const storedResult = createStoredRating(result, currentTime);
+  memoryCache.set(key, storedResult);
+  await storage.set({ [key]: storedResult });
+  return result;
 }

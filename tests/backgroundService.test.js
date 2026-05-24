@@ -109,6 +109,38 @@ describe("background professor lookup service", () => {
     });
   });
 
+  it("deduplicates concurrent lookups for the same professor", async () => {
+    const now = new Date("2026-05-24T12:00:00Z").getTime();
+    const rating = {
+      name: "Barbara Liskov",
+      rating: 4.8,
+      topComments: ["Precise and rigorous."],
+    };
+    let resolveLookup;
+    const pendingLookup = new Promise((resolve) => {
+      resolveLookup = resolve;
+    });
+    const storage = createStorageMock();
+    const findProfessorRating = vi.fn(() => pendingLookup);
+    const service = createProfessorLookupService({
+      storage,
+      findProfessorRating,
+      now: () => now,
+    });
+
+    const first = service.lookup("Barbara Liskov");
+    const second = service.lookup("Barbara Liskov");
+    resolveLookup(rating);
+
+    await expect(Promise.all([first, second])).resolves.toEqual([rating, rating]);
+
+    expect(findProfessorRating).toHaveBeenCalledTimes(1);
+    expect(storage.data[professorCacheKey("Barbara Liskov")]).toEqual({
+      cachedAt: now,
+      value: rating,
+    });
+  });
+
   it("persists fresh RMP lookup results for later Albert page scans", async () => {
     const freshRating = {
       name: "Ada Lovelace",
