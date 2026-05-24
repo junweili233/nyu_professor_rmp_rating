@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { findProfessorRating } from "../src/shared/rmpClient.js";
+import { findProfessorRating, pickBestTeacher } from "../src/shared/rmpClient.js";
 
 describe("Rate My Professors client", () => {
   it("returns the best NYU professor match with useful comments", async () => {
@@ -142,5 +142,90 @@ describe("Rate My Professors client", () => {
 
     const requestBody = JSON.parse(fetchImpl.mock.calls[0][1].body);
     expect(requestBody.query).toContain("ratings(first: 8)");
+  });
+
+  it("matches Albert names with middle names to RMP first-last names", () => {
+    const bestMatch = pickBestTeacher("Chee Keng Yap", [
+      {
+        firstName: "Keng",
+        lastName: "Chee",
+        department: "Mathematics",
+        numRatings: 200,
+      },
+      {
+        firstName: "Chee",
+        lastName: "Yap",
+        department: "Computer Science",
+        numRatings: 92,
+      },
+    ]);
+
+    expect(`${bestMatch.firstName} ${bestMatch.lastName}`).toBe("Chee Yap");
+  });
+
+  it("falls back to first-last RMP search when a full Albert middle-name search is weak", async () => {
+    const fetchImpl = vi.fn()
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          data: {
+            newSearch: {
+              teachers: {
+                edges: [
+                  {
+                    node: {
+                      id: "wrong",
+                      legacyId: 1,
+                      firstName: "Keng",
+                      lastName: "Deng",
+                      department: "Mathematics",
+                      avgRating: 3.5,
+                      avgDifficulty: 3.2,
+                      numRatings: 28,
+                      wouldTakeAgainPercent: 60,
+                      teacherRatingTags: [],
+                      ratings: { edges: [] },
+                    },
+                  },
+                ],
+              },
+            },
+          },
+        }),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          data: {
+            newSearch: {
+              teachers: {
+                edges: [
+                  {
+                    node: {
+                      id: "right",
+                      legacyId: 419998,
+                      firstName: "Chee",
+                      lastName: "Yap",
+                      department: "Computer Science",
+                      avgRating: 2.1,
+                      avgDifficulty: 4.5,
+                      numRatings: 92,
+                      wouldTakeAgainPercent: 24.2857,
+                      teacherRatingTags: [],
+                      ratings: { edges: [] },
+                    },
+                  },
+                ],
+              },
+            },
+          },
+        }),
+      });
+
+    const result = await findProfessorRating("Chee Keng Yap", { fetchImpl });
+
+    expect(result.name).toBe("Chee Yap");
+    expect(fetchImpl).toHaveBeenCalledTimes(2);
+    expect(JSON.parse(fetchImpl.mock.calls[1][1].body).variables.query.text).toBe("Chee Yap");
   });
 });

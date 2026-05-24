@@ -1,5 +1,6 @@
 const RMP_GRAPHQL_URL = "https://www.ratemyprofessors.com/graphql";
 const NYU_SCHOOL_ID = "U2Nob29sLTEzODE=";
+const MIN_ACCEPTABLE_TEACHER_SCORE = 25;
 
 const PROFESSOR_SEARCH_QUERY = `
   query NewSearchTeachersQuery($query: TeacherSearchQuery!) {
@@ -38,6 +39,18 @@ const PROFESSOR_SEARCH_QUERY = `
 
 export async function findProfessorRating(name, options = {}) {
   const fetchImpl = options.fetchImpl ?? fetch;
+  for (const queryText of searchNameVariants(name)) {
+    const teachers = await searchTeachers(queryText, fetchImpl);
+    const bestMatch = pickBestTeacher(name, teachers);
+    if (bestMatch && teacherScore(compactName(name), bestMatch) >= MIN_ACCEPTABLE_TEACHER_SCORE) {
+      return toProfessorRating(bestMatch);
+    }
+  }
+
+  return null;
+}
+
+async function searchTeachers(name, fetchImpl) {
   const response = await fetchImpl(RMP_GRAPHQL_URL, {
     method: "POST",
     headers: {
@@ -60,10 +73,7 @@ export async function findProfessorRating(name, options = {}) {
   }
 
   const payload = await response.json();
-  const teachers = payload?.data?.newSearch?.teachers?.edges?.map((edge) => edge.node) ?? [];
-  const bestMatch = pickBestTeacher(name, teachers);
-
-  return bestMatch ? toProfessorRating(bestMatch) : null;
+  return payload?.data?.newSearch?.teachers?.edges?.map((edge) => edge.node) ?? [];
 }
 
 export function pickBestTeacher(name, teachers) {
@@ -104,6 +114,8 @@ function toProfessorRating(teacher) {
 }
 
 function teacherScore(target, teacher) {
+  const firstName = compactName(teacher.firstName ?? "");
+  const lastName = compactName(teacher.lastName ?? "");
   const name = compactName(`${teacher.firstName ?? ""} ${teacher.lastName ?? ""}`);
   let score = 0;
   if (name === target) {
@@ -111,6 +123,9 @@ function teacherScore(target, teacher) {
   }
   if (name.includes(target) || target.includes(name)) {
     score += 25;
+  }
+  if (firstName && lastName && target.startsWith(firstName) && target.endsWith(lastName)) {
+    score += 90;
   }
   if (/computer|cs|courant/i.test(teacher.department ?? "")) {
     score += 10;
@@ -126,4 +141,16 @@ function compactName(value) {
 function numberOrNull(value) {
   const number = Number(value);
   return Number.isFinite(number) ? number : null;
+}
+
+function searchNameVariants(name) {
+  const normalized = String(name).trim().replace(/\s+/g, " ");
+  const parts = normalized.split(" ").filter(Boolean);
+  const variants = [normalized];
+
+  if (parts.length > 2) {
+    variants.push(`${parts[0]} ${parts[parts.length - 1]}`);
+  }
+
+  return Array.from(new Set(variants));
 }
