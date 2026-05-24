@@ -49,8 +49,8 @@ function findInstructorTargetsForElement(element) {
   }
 
   if (isInstructorLabel(text)) {
-    const adjacentName = findAdjacentInstructorName(element);
-    return adjacentName ? [{ element, names: [adjacentName] }] : [];
+    const adjacentNames = findAdjacentInstructorNames(element);
+    return adjacentNames.length > 0 ? [{ element, names: adjacentNames }] : [];
   }
 
   return [];
@@ -64,12 +64,12 @@ function isInstructorLabel(text) {
   return /^instructor(?:\(s\)|s)?$/i.test(text.trim());
 }
 
-function findAdjacentInstructorName(element) {
+function findAdjacentInstructorNames(element) {
   const adjacentText =
     element.nextElementSibling?.textContent ??
     element.parentElement?.querySelector("[data-instructor-name]")?.textContent ??
     "";
-  return splitInstructorList(adjacentText).map(normalizeInstructorName).find(Boolean) ?? "";
+  return splitInstructorList(adjacentText).map(normalizeInstructorName).filter(Boolean);
 }
 
 function preferMostSpecificTargets(targets) {

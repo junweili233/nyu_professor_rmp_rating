@@ -77,6 +77,37 @@ describe("Albert content DOM injection", () => {
     expect(document.body.textContent).toContain("Assignments are demanding.");
   });
 
+  it("injects one rating card for each adjacent-cell co-instructor", async () => {
+    document.body.innerHTML = `
+      <table>
+        <tbody>
+          <tr>
+            <th>Instructor(s)</th>
+            <td>Grace B. Hopper; Alan Turing</td>
+          </tr>
+        </tbody>
+      </table>
+    `;
+    const lookupProfessor = vi.fn(async (name) => ({
+      name,
+      rating: name === "Grace B. Hopper" ? 4.9 : 4.6,
+      difficulty: 3.1,
+      ratingsCount: 27,
+      wouldTakeAgain: 88.4,
+      tags: [],
+      topComments: [`${name} comment`],
+      url: "https://www.ratemyprofessors.com/",
+    }));
+
+    await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
+
+    expect(lookupProfessor).toHaveBeenCalledWith("Grace B. Hopper");
+    expect(lookupProfessor).toHaveBeenCalledWith("Alan Turing");
+    expect(document.querySelectorAll(".nyu-rmp-card")).toHaveLength(2);
+    expect(document.body.textContent).toContain("Grace B. Hopper comment");
+    expect(document.body.textContent).toContain("Alan Turing comment");
+  });
+
   it("prefers the most specific instructor node inside nested Albert containers", async () => {
     document.body.innerHTML = `
       <div class="course-wrapper">
