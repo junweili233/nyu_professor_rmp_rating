@@ -34,24 +34,50 @@ export function scanAlbertPageOnce({ document = globalThis.document, lookupProfe
 }
 
 export function findInstructorTargets(document = globalThis.document) {
-  const blocks = Array.from(document.querySelectorAll("td, th, div, span, li, p"))
-    .filter((element) => {
-      if (element.dataset.nyuRmpProcessed === "true") {
-        return false;
-      }
-      if (element.closest(`.${ROOT_CLASS}`)) {
-        return false;
-      }
-      const text = element.textContent ?? "";
-      return /\binstructor(?:\(s\)|s)?\s*:/i.test(text) && text.length < 700;
-    });
+  const candidates = Array.from(document.querySelectorAll("td, th, div, span, li, p"))
+    .filter(isUnprocessedVisibleCandidate)
+    .flatMap((element) => findInstructorTargetsForElement(element));
 
-  return blocks
-    .map((element) => {
-      const names = extractInstructorNamesFromText(element.textContent ?? "");
-      return { element, names };
-    })
-    .filter((target) => target.names.length > 0);
+  return preferMostSpecificTargets(candidates);
+}
+
+function findInstructorTargetsForElement(element) {
+  const text = element.textContent ?? "";
+  if (/\binstructor(?:\(s\)|s)?\s*:/i.test(text) && text.length < 700) {
+    const names = extractInstructorNamesFromText(text);
+    return names.length > 0 ? [{ element, names }] : [];
+  }
+
+  if (isInstructorLabel(text)) {
+    const adjacentName = findAdjacentInstructorName(element);
+    return adjacentName ? [{ element, names: [adjacentName] }] : [];
+  }
+
+  return [];
+}
+
+function isUnprocessedVisibleCandidate(element) {
+  return element.dataset.nyuRmpProcessed !== "true" && !element.closest(`.${ROOT_CLASS}`);
+}
+
+function isInstructorLabel(text) {
+  return /^instructor(?:\(s\)|s)?$/i.test(text.trim());
+}
+
+function findAdjacentInstructorName(element) {
+  const adjacentText =
+    element.nextElementSibling?.textContent ??
+    element.parentElement?.querySelector("[data-instructor-name]")?.textContent ??
+    "";
+  return splitInstructorList(adjacentText).map(normalizeInstructorName).find(Boolean) ?? "";
+}
+
+function preferMostSpecificTargets(targets) {
+  return targets.filter((target) => {
+    return !targets.some((other) => {
+      return other !== target && target.element.contains(other.element);
+    });
+  });
 }
 
 function mountRatings({ element, names, document, lookupProfessor }) {

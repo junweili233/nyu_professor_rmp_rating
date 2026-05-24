@@ -47,4 +47,49 @@ describe("Albert content DOM injection", () => {
     expect(document.querySelectorAll(".nyu-rmp-card")).toHaveLength(1);
     expect(lookupProfessor).toHaveBeenCalledTimes(1);
   });
+
+  it("injects ratings when Albert splits the instructor label and name into adjacent cells", async () => {
+    document.body.innerHTML = `
+      <table>
+        <tbody>
+          <tr>
+            <th>Instructor</th>
+            <td>YAP, CHEE KENG</td>
+          </tr>
+        </tbody>
+      </table>
+    `;
+    const lookupProfessor = vi.fn(async (name) => ({
+      name,
+      rating: 2.1,
+      difficulty: 4.5,
+      ratingsCount: 92,
+      wouldTakeAgain: 24.2857,
+      tags: [],
+      topComments: ["Assignments are demanding."],
+      url: "https://www.ratemyprofessors.com/professor/419998",
+    }));
+
+    await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
+
+    expect(lookupProfessor).toHaveBeenCalledWith("Chee Keng Yap");
+    expect(document.querySelectorAll(".nyu-rmp-card")).toHaveLength(1);
+    expect(document.body.textContent).toContain("Assignments are demanding.");
+  });
+
+  it("prefers the most specific instructor node inside nested Albert containers", async () => {
+    document.body.innerHTML = `
+      <div class="course-wrapper">
+        <div class="section-row">
+          <span>Instructor: Ada Lovelace</span>
+        </div>
+      </div>
+    `;
+    const lookupProfessor = vi.fn(async () => null);
+
+    await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
+
+    expect(document.querySelectorAll(".nyu-rmp-card")).toHaveLength(1);
+    expect(lookupProfessor).toHaveBeenCalledTimes(1);
+  });
 });
