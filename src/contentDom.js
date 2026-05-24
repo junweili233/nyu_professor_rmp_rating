@@ -282,7 +282,7 @@ function updateRatingCard(card, result, { requestedName = "Professor", lookupPro
   const ratingVerdict = getRatingVerdict(result.rating);
   const ratingClass = ratingVerdict.className;
   const professorName = result.name || requestedName;
-  const ratingsCount = numberOrNull(result.ratingsCount) ?? 0;
+  const ratingsCount = nonNegativeCount(result.ratingsCount);
   const rmpUrl = result.url || "https://www.ratemyprofessors.com/";
   const department = String(result.department ?? "").trim();
   const updatedAt = formatUpdatedAt(result.cacheUpdatedAt);
@@ -495,6 +495,11 @@ function formatScore(value) {
 
 function formatRatingsCount(value) {
   return `${value} ${value === 1 ? "rating" : "ratings"}`;
+}
+
+function nonNegativeCount(value) {
+  const number = numberOrNull(value);
+  return number == null || number < 0 ? 0 : number;
 }
 
 function escapeHtml(value) {
