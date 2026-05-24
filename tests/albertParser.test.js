@@ -11,6 +11,7 @@ describe("Albert instructor parsing", () => {
     expect(normalizeInstructorName("GRACE B. HOPPER")).toBe("Grace B. Hopper");
     expect(normalizeInstructorName("PROF. MAEVE O'CONNOR")).toBe("Maeve O'Connor");
     expect(normalizeInstructorName("ROBERT MARTIN III")).toBe("Robert Martin III");
+    expect(normalizeInstructorName("ROBERT MARTIN III.")).toBe("Robert Martin III");
     expect(normalizeInstructorName("ROBERT MARTIN JR.")).toBe("Robert Martin Jr.");
   });
 
@@ -98,11 +99,13 @@ describe("Albert instructor parsing", () => {
       CSCI-UA 201 Computer Systems Organization
       Instructor: SMITH JR., JOHN
       Instructor(s): LEE III, ROBERT
+      Instructor: MARTIN III., ROBERT
     `;
 
     expect(extractInstructorNamesFromText(text)).toEqual([
       "John Smith Jr.",
       "Robert Lee III",
+      "Robert Martin III",
     ]);
   });
 

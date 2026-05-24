@@ -11,7 +11,7 @@ const STAFF_TERMS = new Set([
   "n/a",
   "none",
 ]);
-const ROMAN_NAME_SUFFIXES = new Set(["ii", "iii", "iv", "v"]);
+const ROMAN_NAME_SUFFIXES = new Set(["ii", "ii.", "iii", "iii.", "iv", "iv.", "v", "v."]);
 const SURNAME_PARTICLES = new Set(["de", "del", "della", "di", "du", "la", "le", "van", "von"]);
 const TITLE_NAME_SUFFIXES = new Map([
   ["jr", "Jr"],
@@ -158,7 +158,7 @@ function titleCaseName(value) {
     .map((token) => {
       const lowerToken = token.toLowerCase();
       if (ROMAN_NAME_SUFFIXES.has(lowerToken)) {
-        return token.toUpperCase();
+        return token.replace(/\.$/, "").toUpperCase();
       }
       if (TITLE_NAME_SUFFIXES.has(lowerToken)) {
         return TITLE_NAME_SUFFIXES.get(lowerToken);

@@ -663,4 +663,24 @@ describe("Rate My Professors client", () => {
     expect(fetchImpl).toHaveBeenCalledTimes(2);
     expect(JSON.parse(fetchImpl.mock.calls[1][1].body).variables.query.text).toBe("Robert Martin");
   });
+
+  it("drops punctuated roman suffixes before building fallback searches", async () => {
+    const fetchImpl = vi.fn(async () => ({
+      ok: true,
+      json: async () => ({
+        data: {
+          newSearch: {
+            teachers: {
+              edges: [],
+            },
+          },
+        },
+      }),
+    }));
+
+    await findProfessorRating("Robert Martin III.", { fetchImpl });
+
+    expect(fetchImpl).toHaveBeenCalledTimes(2);
+    expect(JSON.parse(fetchImpl.mock.calls[1][1].body).variables.query.text).toBe("Robert Martin");
+  });
 });
