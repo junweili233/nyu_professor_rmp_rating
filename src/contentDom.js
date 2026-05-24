@@ -106,12 +106,20 @@ function isElementVisible(element) {
 
 function hasHiddenInlineStyle(element) {
   for (let node = element; node; node = node.parentElement) {
-    const style = node.style;
-    if (style?.display === "none" || style?.visibility === "hidden" || style?.visibility === "collapse") {
+    const inlineStyle = node.style;
+    if (isHiddenStyle(inlineStyle) || isHiddenStyle(computedStyleFor(node))) {
       return true;
     }
   }
   return false;
+}
+
+function computedStyleFor(element) {
+  return element.ownerDocument?.defaultView?.getComputedStyle?.(element) ?? null;
+}
+
+function isHiddenStyle(style) {
+  return style?.display === "none" || style?.visibility === "hidden" || style?.visibility === "collapse";
 }
 
 function isInstructorLabel(text) {

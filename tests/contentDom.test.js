@@ -398,6 +398,21 @@ describe("Albert content DOM injection", () => {
     expect(document.querySelectorAll(".nyu-rmp-card")).toHaveLength(1);
   });
 
+  it("ignores instructor sections hidden by Albert stylesheet classes", async () => {
+    document.head.innerHTML = `<style>.collapsed-albert-section { display: none; }</style>`;
+    document.body.innerHTML = `
+      <div class="collapsed-albert-section">Instructor: Hidden Stylesheet</div>
+      <div>Instructor: Grace Hopper</div>
+    `;
+    const lookupProfessor = vi.fn(async () => null);
+
+    await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
+
+    expect(lookupProfessor).toHaveBeenCalledTimes(1);
+    expect(lookupProfessor).toHaveBeenCalledWith("Grace Hopper");
+    expect(document.querySelectorAll(".nyu-rmp-card")).toHaveLength(1);
+  });
+
   it("removes injected cards and processed markers when the overlay is disabled", async () => {
     document.body.innerHTML = `<div id="instructor">Instructor: Ada Lovelace</div>`;
     const lookupProfessor = vi.fn(async (name) => ({
