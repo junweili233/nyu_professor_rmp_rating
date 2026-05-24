@@ -197,6 +197,20 @@ describe("Rate My Professors client", () => {
     expect(requestBody.query).toContain("ratings(first: 8)");
   });
 
+  it("treats RMP GraphQL errors as lookup failures instead of empty results", async () => {
+    const fetchImpl = vi.fn(async () => ({
+      ok: true,
+      json: async () => ({
+        errors: [{ message: "RMP search is temporarily unavailable" }],
+        data: null,
+      }),
+    }));
+
+    await expect(findProfessorRating("Ada Lovelace", { fetchImpl })).rejects.toThrow(
+      "Rate My Professors request failed: RMP search is temporarily unavailable",
+    );
+  });
+
   it("aborts RMP requests that exceed the lookup timeout", async () => {
     vi.useFakeTimers();
     const fetchImpl = vi.fn((_url, options) => {

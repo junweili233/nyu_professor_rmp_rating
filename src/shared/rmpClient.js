@@ -90,6 +90,10 @@ async function searchTeachers(name, fetchImpl, timeoutMs) {
   }
 
   const payload = await response.json();
+  if (Array.isArray(payload?.errors) && payload.errors.length > 0) {
+    const message = payload.errors.map((error) => error?.message).filter(Boolean).join("; ");
+    throw new Error(`Rate My Professors request failed: ${message || "GraphQL error"}`);
+  }
   return payload?.data?.newSearch?.teachers?.edges?.map((edge) => edge.node) ?? [];
 }
 
