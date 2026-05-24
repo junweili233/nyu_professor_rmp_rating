@@ -326,6 +326,41 @@ describe("Rate My Professors client", () => {
     expect(result.wouldTakeAgain).toBeNull();
   });
 
+  it("treats impossible RMP take-again percentages as missing values", async () => {
+    const fetchImpl = vi.fn(async () => ({
+      ok: true,
+      json: async () => ({
+        data: {
+          newSearch: {
+            teachers: {
+              edges: [
+                {
+                  node: {
+                    id: "VGVhY2hlci0xMQ==",
+                    legacyId: 891,
+                    firstName: "Alan",
+                    lastName: "Turing",
+                    department: "Computer Science",
+                    avgRating: 4.6,
+                    avgDifficulty: 2.7,
+                    numRatings: 20,
+                    wouldTakeAgainPercent: 125,
+                    teacherRatingTags: [],
+                    ratings: { edges: [] },
+                  },
+                },
+              ],
+            },
+          },
+        },
+      }),
+    }));
+
+    const result = await findProfessorRating("Alan Turing", { fetchImpl });
+
+    expect(result.wouldTakeAgain).toBeNull();
+  });
+
   it("keeps invalid RMP rating counts as zero instead of NaN", async () => {
     const fetchImpl = vi.fn(async () => ({
       ok: true,

@@ -298,7 +298,7 @@ function updateRatingCard(card, result, { requestedName = "Professor", lookupPro
 
   const rating = nonNegativeNumberOrNull(result.rating);
   const difficulty = nonNegativeNumberOrNull(result.difficulty);
-  const wouldTakeAgain = nonNegativeNumberOrNull(result.wouldTakeAgain);
+  const wouldTakeAgain = percentNumberOrNull(result.wouldTakeAgain);
   const ratingVerdict = getRatingVerdict(rating);
   const ratingClass = ratingVerdict.className;
   const professorName = result.name || requestedName;
@@ -524,6 +524,11 @@ function nonNegativeCount(value) {
 function nonNegativeNumberOrNull(value) {
   const number = numberOrNull(value);
   return number == null || number < 0 ? null : number;
+}
+
+function percentNumberOrNull(value) {
+  const number = nonNegativeNumberOrNull(value);
+  return number == null || number > 100 ? null : number;
 }
 
 function escapeHtml(value) {

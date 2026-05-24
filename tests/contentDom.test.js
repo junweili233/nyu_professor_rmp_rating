@@ -287,6 +287,25 @@ describe("Albert content DOM injection", () => {
     expect(scoreRowText).not.toContain("-1% take again");
   });
 
+  it("does not render cached RMP take-again percentages above 100", async () => {
+    document.body.innerHTML = `<div>Instructor: Ada Lovelace</div>`;
+    const lookupProfessor = vi.fn(async (name) => ({
+      name,
+      rating: 4.7,
+      difficulty: 2.4,
+      ratingsCount: 12,
+      wouldTakeAgain: 125,
+      tags: [],
+      topComments: [],
+      url: "https://www.ratemyprofessors.com/professor/123",
+    }));
+
+    await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
+
+    const scoreRowText = document.querySelector(".nyu-rmp-score-row").textContent;
+    expect(scoreRowText).not.toContain("125% take again");
+  });
+
   it("keeps long useful comments compact until expanded", async () => {
     document.body.innerHTML = `<div>Instructor: Ada Lovelace</div>`;
     const longComment = [

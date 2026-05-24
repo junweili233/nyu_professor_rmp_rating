@@ -136,7 +136,7 @@ function toProfessorRating(teacher, requestedName) {
     rating: nonNegativeNumberOrNull(teacher.avgRating),
     difficulty: nonNegativeNumberOrNull(teacher.avgDifficulty),
     ratingsCount: nonNegativeCount(teacher.numRatings),
-    wouldTakeAgain: nonNegativeNumberOrNull(teacher.wouldTakeAgainPercent),
+    wouldTakeAgain: percentNumberOrNull(teacher.wouldTakeAgainPercent),
     tags: teacher.teacherRatingTags?.map((tag) => tag?.tagName).filter(Boolean).slice(0, 3) ?? [],
     topComments: comments,
     url: teacher.legacyId
@@ -193,6 +193,11 @@ function numberOrNull(value) {
 function nonNegativeNumberOrNull(value) {
   const number = numberOrNull(value);
   return number == null || number < 0 ? null : number;
+}
+
+function percentNumberOrNull(value) {
+  const number = nonNegativeNumberOrNull(value);
+  return number == null || number > 100 ? null : number;
 }
 
 function nonNegativeCount(value) {
