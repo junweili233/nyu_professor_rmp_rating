@@ -5,6 +5,7 @@ const STAFF_TERMS = new Set([
   "to be announced",
   "to be determined",
   "department",
+  "unassigned",
   "not assigned",
   "no instructor assigned",
   "n/a",
