@@ -2,6 +2,7 @@ const RMP_GRAPHQL_URL = "https://www.ratemyprofessors.com/graphql";
 const NYU_SCHOOL_ID = "U2Nob29sLTEzODE=";
 const MIN_ACCEPTABLE_TEACHER_SCORE = 25;
 const DEFAULT_LOOKUP_TIMEOUT_MS = 8000;
+const TITLE_SUFFIXES = new Set(["jr", "jr.", "sr", "sr."]);
 
 const PROFESSOR_SEARCH_QUERY = `
   query NewSearchTeachersQuery($query: TeacherSearchQuery!) {
@@ -170,8 +171,13 @@ function numberOrNull(value) {
 
 function searchNameVariants(name) {
   const normalized = String(name).trim().replace(/\s+/g, " ");
-  const parts = normalized.split(" ").filter(Boolean);
+  const parts = normalized.split(" ").filter((part) => part && !TITLE_SUFFIXES.has(part.toLowerCase()));
   const variants = [normalized];
+  const withoutTitleSuffix = parts.join(" ");
+
+  if (withoutTitleSuffix && withoutTitleSuffix !== normalized) {
+    variants.push(withoutTitleSuffix);
+  }
 
   if (parts.length > 2) {
     variants.push(`${parts[0]} ${parts[parts.length - 1]}`);
