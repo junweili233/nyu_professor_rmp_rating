@@ -49,8 +49,8 @@ function findInstructorTargetsForElement(element) {
   }
 
   if (isInstructorLabel(text)) {
-    const adjacentNames = findAdjacentInstructorNames(element);
-    return adjacentNames.length > 0 ? [{ element, names: adjacentNames }] : [];
+    const adjacentTarget = findAdjacentInstructorTarget(element);
+    return adjacentTarget ? [adjacentTarget] : [];
   }
 
   return [];
@@ -64,12 +64,14 @@ function isInstructorLabel(text) {
   return /^instructor(?:\(s\)|s)?$/i.test(text.trim());
 }
 
-function findAdjacentInstructorNames(element) {
-  const adjacentText =
-    element.nextElementSibling?.textContent ??
-    element.parentElement?.querySelector("[data-instructor-name]")?.textContent ??
-    "";
-  return splitInstructorList(adjacentText).map(normalizeInstructorName).filter(Boolean);
+function findAdjacentInstructorTarget(element) {
+  const nameElement =
+    element.nextElementSibling ??
+    element.parentElement?.querySelector("[data-instructor-name]") ??
+    null;
+  const adjacentText = nameElement?.textContent ?? "";
+  const names = splitInstructorList(adjacentText).map(normalizeInstructorName).filter(Boolean);
+  return names.length > 0 ? { element: nameElement, processedElements: [element, nameElement], names } : null;
 }
 
 function preferMostSpecificTargets(targets) {
@@ -80,8 +82,10 @@ function preferMostSpecificTargets(targets) {
   });
 }
 
-function mountRatings({ element, names, document, lookupProfessor }) {
-  element.dataset.nyuRmpProcessed = "true";
+function mountRatings({ element, names, processedElements = [], document, lookupProfessor }) {
+  for (const processedElement of new Set([element, ...processedElements])) {
+    processedElement.dataset.nyuRmpProcessed = "true";
+  }
   const container = document.createElement("div");
   container.className = ROOT_CLASS;
 
@@ -98,8 +102,16 @@ function mountRatings({ element, names, document, lookupProfessor }) {
     pendingLookups.push(pendingLookup);
   }
 
-  element.insertAdjacentElement("afterend", container);
+  if (isTableCell(element)) {
+    element.append(container);
+  } else {
+    element.insertAdjacentElement("afterend", container);
+  }
   return pendingLookups;
+}
+
+function isTableCell(element) {
+  return ["TD", "TH"].includes(element.tagName);
 }
 
 function createRatingShell(document, name) {

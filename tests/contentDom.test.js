@@ -77,6 +77,26 @@ describe("Albert content DOM injection", () => {
     expect(document.body.textContent).toContain("Assignments are demanding.");
   });
 
+  it("keeps injected ratings inside table cells instead of adding invalid row children", async () => {
+    document.body.innerHTML = `
+      <table>
+        <tbody>
+          <tr id="section-row">
+            <th>Instructor</th>
+            <td>YAP, CHEE KENG</td>
+          </tr>
+        </tbody>
+      </table>
+    `;
+    const lookupProfessor = vi.fn(async () => null);
+
+    await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
+
+    const row = document.querySelector("#section-row");
+    expect(Array.from(row.children).map((child) => child.tagName)).toEqual(["TH", "TD"]);
+    expect(row.querySelector("td .nyu-rmp-rating-root")).not.toBeNull();
+  });
+
   it("injects one rating card for each adjacent-cell co-instructor", async () => {
     document.body.innerHTML = `
       <table>
