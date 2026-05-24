@@ -1,6 +1,7 @@
 const RMP_GRAPHQL_URL = "https://www.ratemyprofessors.com/graphql";
 const NYU_SCHOOL_ID = "U2Nob29sLTEzODE=";
 const MIN_ACCEPTABLE_TEACHER_SCORE = 25;
+const DEFAULT_LOOKUP_TIMEOUT_MS = 8000;
 
 const PROFESSOR_SEARCH_QUERY = `
   query NewSearchTeachersQuery($query: TeacherSearchQuery!) {
@@ -39,8 +40,9 @@ const PROFESSOR_SEARCH_QUERY = `
 
 export async function findProfessorRating(name, options = {}) {
   const fetchImpl = options.fetchImpl ?? fetch;
+  const timeoutMs = options.timeoutMs ?? DEFAULT_LOOKUP_TIMEOUT_MS;
   for (const queryText of searchNameVariants(name)) {
-    const teachers = await searchTeachers(queryText, fetchImpl);
+    const teachers = await searchTeachers(queryText, fetchImpl, timeoutMs);
     const bestMatch = pickBestTeacher(name, teachers);
     if (bestMatch && teacherScore(compactName(name), bestMatch) >= MIN_ACCEPTABLE_TEACHER_SCORE) {
       return toProfessorRating(bestMatch, name);
@@ -50,23 +52,37 @@ export async function findProfessorRating(name, options = {}) {
   return null;
 }
 
-async function searchTeachers(name, fetchImpl) {
-  const response = await fetchImpl(RMP_GRAPHQL_URL, {
-    method: "POST",
-    headers: {
-      "content-type": "application/json",
-    },
-    body: JSON.stringify({
-      query: PROFESSOR_SEARCH_QUERY,
-      variables: {
-        query: {
-          text: name,
-          schoolID: NYU_SCHOOL_ID,
-          fallback: true,
-        },
+async function searchTeachers(name, fetchImpl, timeoutMs) {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+  let response;
+
+  try {
+    response = await fetchImpl(RMP_GRAPHQL_URL, {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
       },
-    }),
-  });
+      signal: controller.signal,
+      body: JSON.stringify({
+        query: PROFESSOR_SEARCH_QUERY,
+        variables: {
+          query: {
+            text: name,
+            schoolID: NYU_SCHOOL_ID,
+            fallback: true,
+          },
+        },
+      }),
+    });
+  } catch (error) {
+    if (error?.name === "AbortError" || controller.signal.aborted) {
+      throw new Error("Rate My Professors request timed out");
+    }
+    throw error;
+  } finally {
+    clearTimeout(timeoutId);
+  }
 
   if (!response.ok) {
     throw new Error(`Rate My Professors request failed with ${response.status}`);

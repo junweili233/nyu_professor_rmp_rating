@@ -1,7 +1,11 @@
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { findProfessorRating, pickBestTeacher } from "../src/shared/rmpClient.js";
 
 describe("Rate My Professors client", () => {
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
   it("returns the best NYU professor match with useful comments", async () => {
     const fetchImpl = vi.fn(async () => ({
       ok: true,
@@ -154,6 +158,27 @@ describe("Rate My Professors client", () => {
 
     const requestBody = JSON.parse(fetchImpl.mock.calls[0][1].body);
     expect(requestBody.query).toContain("ratings(first: 8)");
+  });
+
+  it("aborts RMP requests that exceed the lookup timeout", async () => {
+    vi.useFakeTimers();
+    const fetchImpl = vi.fn((_url, options) => {
+      if (!options?.signal) {
+        return Promise.reject(new Error("missing abort signal"));
+      }
+      return new Promise((_resolve, reject) => {
+        options.signal.addEventListener("abort", () => {
+          reject(new DOMException("Aborted", "AbortError"));
+        });
+      });
+    });
+
+    const lookup = findProfessorRating("Ada Lovelace", { fetchImpl, timeoutMs: 10 });
+    const assertion = expect(lookup).rejects.toThrow("Rate My Professors request timed out");
+    await vi.advanceTimersByTimeAsync(10);
+
+    await assertion;
+    expect(fetchImpl.mock.calls[0][1].signal.aborted).toBe(true);
   });
 
   it("matches Albert names with middle names to RMP first-last names", () => {
