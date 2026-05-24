@@ -153,25 +153,28 @@ function updateRatingCard(card, result, { requestedName = "Professor", lookupPro
   }
 
   const ratingClass = result.rating >= 4 ? "good" : result.rating >= 3 ? "mixed" : "weak";
-  const comments = result.topComments
+  const professorName = result.name || requestedName;
+  const ratingsCount = numberOrNull(result.ratingsCount) ?? 0;
+  const rmpUrl = result.url || "https://www.ratemyprofessors.com/";
+  const comments = asArray(result.topComments)
     .map((comment) => formatComment(comment))
     .join("");
-  const tags = result.tags
+  const tags = asArray(result.tags)
     .map((tag) => `<span>${escapeHtml(tag)}</span>`)
     .join("");
 
   card.classList.add(`rating-${ratingClass}`);
   card.innerHTML = `
     <div class="nyu-rmp-card-head">
-      <strong>${escapeHtml(result.name)}</strong>
+      <strong>${escapeHtml(professorName)}</strong>
       <div class="nyu-rmp-actions">
         <button class="nyu-rmp-refresh" type="button">Refresh</button>
-        <a href="${result.url}" target="_blank" rel="noreferrer">RMP</a>
+        <a href="${escapeHtml(rmpUrl)}" target="_blank" rel="noreferrer">RMP</a>
       </div>
     </div>
     <div class="nyu-rmp-score-row">
       <span class="nyu-rmp-score">${formatScore(result.rating)}</span>
-      <span>${result.ratingsCount} ratings</span>
+      <span>${ratingsCount} ratings</span>
       <span>Difficulty ${formatScore(result.difficulty)}</span>
       ${result.wouldTakeAgain == null ? "" : `<span>${Math.round(result.wouldTakeAgain)}% take again</span>`}
     </div>
@@ -348,4 +351,8 @@ function normalizeComment(comment) {
 function numberOrNull(value) {
   const number = Number(value);
   return Number.isFinite(number) ? number : null;
+}
+
+function asArray(value) {
+  return Array.isArray(value) ? value : [];
 }

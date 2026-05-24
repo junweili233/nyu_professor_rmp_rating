@@ -101,6 +101,23 @@ describe("Albert content DOM injection", () => {
     expect(document.body.textContent).toContain("Fresh comment.");
   });
 
+  it("renders partial RMP payloads without turning the card into an error", async () => {
+    document.body.innerHTML = `<div>Instructor: Ada Lovelace</div>`;
+    const lookupProfessor = vi.fn(async () => ({
+      name: "Ada Lovelace",
+      rating: null,
+      difficulty: null,
+    }));
+
+    await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
+
+    expect(document.querySelector(".nyu-rmp-card").classList.contains("is-error")).toBe(false);
+    expect(document.querySelector(".nyu-rmp-score").textContent).toBe("N/A");
+    expect(document.body.textContent).toContain("0 ratings");
+    expect(document.body.textContent).toContain("Difficulty N/A");
+    expect(document.querySelector(".nyu-rmp-card a").href).toBe("https://www.ratemyprofessors.com/");
+  });
+
   it("does not duplicate cards when Albert mutates the same processed row", async () => {
     document.body.innerHTML = `<div>Instructor: Ada Lovelace</div>`;
     const lookupProfessor = vi.fn(async () => null);
