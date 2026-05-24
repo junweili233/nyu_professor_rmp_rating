@@ -118,7 +118,7 @@ function toProfessorRating(teacher, requestedName) {
   const comments = teacher?.ratings?.edges
     ?.map((edge) => edge?.node)
     .filter((rating) => rating?.comment?.trim())
-    .sort((left, right) => Number(right.helpfulRating ?? 0) - Number(left.helpfulRating ?? 0))
+    .sort((left, right) => commentHelpfulScore(right) - commentHelpfulScore(left))
     .map((rating) => ({
       text: rating.comment.trim(),
       helpfulRating: nonNegativeNumberOrNull(rating.helpfulRating),
@@ -164,6 +164,10 @@ function teacherScore(target, teacher) {
   }
   score += Math.min(nonNegativeCount(teacher.numRatings), 50) / 10;
   return score;
+}
+
+function commentHelpfulScore(rating) {
+  return nonNegativeNumberOrNull(rating?.helpfulRating) ?? 0;
 }
 
 function compactName(value) {

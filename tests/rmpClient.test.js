@@ -193,6 +193,65 @@ describe("Rate My Professors client", () => {
     ]);
   });
 
+  it("orders useful comments with malformed helpfulness after valid helpful comments", async () => {
+    const fetchImpl = vi.fn(async () => ({
+      ok: true,
+      json: async () => ({
+        data: {
+          newSearch: {
+            teachers: {
+              edges: [
+                {
+                  node: {
+                    id: "VGVhY2hlci0xMA==",
+                    legacyId: 136,
+                    firstName: "Grace",
+                    lastName: "Hopper",
+                    department: "Computer Science",
+                    avgRating: 4.8,
+                    avgDifficulty: 3.1,
+                    numRatings: 44,
+                    wouldTakeAgainPercent: 96,
+                    teacherRatingTags: [],
+                    ratings: {
+                      edges: [
+                        {
+                          node: {
+                            comment: "Malformed helpfulness should not win sorting.",
+                            helpfulRating: "not available",
+                          },
+                        },
+                        {
+                          node: {
+                            comment: "Most useful systems comment.",
+                            helpfulRating: 12,
+                          },
+                        },
+                        {
+                          node: {
+                            comment: "Second most useful systems comment.",
+                            helpfulRating: 8,
+                          },
+                        },
+                      ],
+                    },
+                  },
+                },
+              ],
+            },
+          },
+        },
+      }),
+    }));
+
+    const result = await findProfessorRating("Grace Hopper", { fetchImpl });
+
+    expect(result.topComments.map((comment) => comment.text)).toEqual([
+      "Most useful systems comment.",
+      "Second most useful systems comment.",
+    ]);
+  });
+
   it("keeps missing RMP numeric fields as null instead of fake zeroes", async () => {
     const fetchImpl = vi.fn(async () => ({
       ok: true,
