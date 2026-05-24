@@ -93,6 +93,19 @@ describe("Albert instructor parsing", () => {
     ]);
   });
 
+  it("understands Albert last-name-first names with suffixes on the surname side", () => {
+    const text = `
+      CSCI-UA 201 Computer Systems Organization
+      Instructor: SMITH JR., JOHN
+      Instructor(s): LEE III, ROBERT
+    `;
+
+    expect(extractInstructorNamesFromText(text)).toEqual([
+      "John Smith Jr.",
+      "Robert Lee III",
+    ]);
+  });
+
   it("ignores Albert role annotations when parsing last-name-first names", () => {
     const text = `
       CSCI-UA 201 Computer Systems Organization

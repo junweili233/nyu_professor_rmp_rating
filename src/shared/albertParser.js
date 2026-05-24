@@ -136,11 +136,20 @@ function looksLikeLastName(value) {
   }
 
   const parts = value.split(/\s+/).filter(Boolean);
+  if (parts.length > 1 && isNameSuffix(parts.at(-1)) && parts.slice(0, -1).every(isNameToken)) {
+    return true;
+  }
+
   return parts.length > 1 && SURNAME_PARTICLES.has(parts[0].toLowerCase()) && parts.every(isNameToken);
 }
 
 function isNameToken(value) {
   return /^[A-Za-z][A-Za-z'-]+$/.test(value);
+}
+
+function isNameSuffix(value) {
+  const normalized = value.toLowerCase();
+  return TITLE_NAME_SUFFIXES.has(normalized) || ROMAN_NAME_SUFFIXES.has(normalized);
 }
 
 function titleCaseName(value) {
