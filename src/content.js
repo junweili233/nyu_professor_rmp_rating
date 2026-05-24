@@ -1,6 +1,10 @@
 import { startAlbertRmpEnhancer } from "./contentDom.js";
 
-startAlbertRmpEnhancer({ lookupProfessor });
+const settings = await chrome.storage.local.get("settings:overlayEnabled");
+startAlbertRmpEnhancer({
+  lookupProfessor,
+  enabled: settings["settings:overlayEnabled"] !== false,
+});
 
 function lookupProfessor(name, { forceRefresh = false } = {}) {
   return chrome.runtime.sendMessage({

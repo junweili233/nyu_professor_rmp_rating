@@ -8,8 +8,9 @@ export function startAlbertRmpEnhancer({
   document = globalThis.document,
   window = globalThis.window,
   lookupProfessor,
+  enabled = true,
 } = {}) {
-  if (!isAlbertPage(window?.location)) {
+  if (!enabled || !isAlbertPage(window?.location)) {
     return null;
   }
 

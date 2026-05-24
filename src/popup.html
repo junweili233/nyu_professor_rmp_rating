@@ -69,6 +69,22 @@
         cursor: default;
         opacity: 0.45;
       }
+      .toggle-row {
+        align-items: center;
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 12px;
+      }
+      .toggle-row span {
+        color: #172033;
+        font-size: 13px;
+        font-weight: 700;
+      }
+      input[type="checkbox"] {
+        accent-color: #172033;
+        height: 18px;
+        width: 18px;
+      }
     </style>
   </head>
   <body>
@@ -78,6 +94,10 @@
         <p>Ratings appear next to instructor rows on Albert after the page settles.</p>
       </section>
       <section class="panel">
+        <label class="toggle-row">
+          <span>Show ratings on Albert</span>
+          <input id="enable-overlay" type="checkbox" />
+        </label>
         <div class="status">
           <span class="dot"></span>
           <p id="status">Extension ready</p>

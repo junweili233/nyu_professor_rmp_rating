@@ -5,8 +5,18 @@ export async function initPopup({
 } = {}) {
   const status = document.getElementById("status");
   const clearButton = document.getElementById("clear-cache");
+  const enableOverlay = document.getElementById("enable-overlay");
   if (!status || !storage) {
     return;
+  }
+
+  const settings = await storage.get("settings:overlayEnabled");
+  const overlayEnabled = settings["settings:overlayEnabled"] !== false;
+  if (enableOverlay) {
+    enableOverlay.checked = overlayEnabled;
+    enableOverlay.addEventListener("change", async () => {
+      await storage.set({ "settings:overlayEnabled": enableOverlay.checked });
+    });
   }
 
   async function refreshStatus() {

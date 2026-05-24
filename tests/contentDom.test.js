@@ -24,6 +24,32 @@ describe("Albert content DOM injection", () => {
     expect(document.querySelector(".nyu-rmp-card")).toBeNull();
   });
 
+  it("does not scan Albert pages when the overlay is disabled", () => {
+    document.body.innerHTML = `<div>Instructor: Ada Lovelace</div>`;
+    const lookupProfessor = vi.fn();
+    const observe = vi.fn();
+    const windowMock = {
+      location: new URL("https://albert.nyu.edu/psc/csprod/EMPLOYEE/SA/c/NUI_FRAMEWORK.PT_LANDINGPAGE.GBL"),
+      MutationObserver: class {
+        observe = observe;
+      },
+      clearTimeout: vi.fn(),
+      setTimeout: vi.fn(),
+    };
+
+    const observer = startAlbertRmpEnhancer({
+      document,
+      window: windowMock,
+      lookupProfessor,
+      enabled: false,
+    });
+
+    expect(observer).toBeNull();
+    expect(lookupProfessor).not.toHaveBeenCalled();
+    expect(observe).not.toHaveBeenCalled();
+    expect(document.querySelector(".nyu-rmp-card")).toBeNull();
+  });
+
   it("scans Albert pages at startup", async () => {
     document.body.innerHTML = `<div>Instructor: Ada Lovelace</div>`;
     const lookupProfessor = vi.fn(async () => null);
