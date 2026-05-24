@@ -144,7 +144,7 @@ function updateRatingCard(card, result) {
 
   const ratingClass = result.rating >= 4 ? "good" : result.rating >= 3 ? "mixed" : "weak";
   const comments = result.topComments
-    .map((comment) => `<li>${escapeHtml(comment)}</li>`)
+    .map((comment) => formatComment(comment))
     .join("");
   const tags = result.tags
     .map((tag) => `<span>${escapeHtml(tag)}</span>`)
@@ -240,6 +240,15 @@ export function injectStyles(document = globalThis.document) {
       margin: 8px 0 0;
       padding-left: 16px;
     }
+    .nyu-rmp-comments p {
+      margin: 0;
+    }
+    .nyu-rmp-comment-meta {
+      color: #64748b;
+      display: block;
+      font-size: 11px;
+      margin-top: 2px;
+    }
     .nyu-rmp-skeleton {
       animation: nyu-rmp-shimmer 1.2s infinite linear;
       background: linear-gradient(90deg, #e8edf3, #f7f9fc, #e8edf3);
@@ -269,4 +278,42 @@ function escapeHtml(value) {
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&#039;");
+}
+
+function formatComment(comment) {
+  const normalized = normalizeComment(comment);
+  if (!normalized.text) {
+    return "";
+  }
+
+  const metadata = [
+    normalized.helpfulRating == null ? "" : `${normalized.helpfulRating} useful`,
+    normalized.clarityRating == null ? "" : `Clarity ${formatScore(normalized.clarityRating)}`,
+    normalized.difficultyRating == null ? "" : `Difficulty ${formatScore(normalized.difficultyRating)}`,
+  ].filter(Boolean);
+
+  return `
+    <li>
+      <p>${escapeHtml(normalized.text)}</p>
+      ${metadata.length > 0 ? `<span class="nyu-rmp-comment-meta">${metadata.map(escapeHtml).join(" · ")}</span>` : ""}
+    </li>
+  `;
+}
+
+function normalizeComment(comment) {
+  if (typeof comment === "string") {
+    return { text: comment };
+  }
+
+  return {
+    text: comment?.text ?? "",
+    helpfulRating: numberOrNull(comment?.helpfulRating),
+    clarityRating: numberOrNull(comment?.clarityRating),
+    difficultyRating: numberOrNull(comment?.difficultyRating),
+  };
+}
+
+function numberOrNull(value) {
+  const number = Number(value);
+  return Number.isFinite(number) ? number : null;
 }

@@ -58,8 +58,18 @@ describe("Rate My Professors client", () => {
       ratingsCount: 38,
       wouldTakeAgain: 92,
       topComments: [
-        "Explains low-level systems clearly and gives practical labs.",
-        "Lectures move fast, but office hours are excellent.",
+        {
+          text: "Explains low-level systems clearly and gives practical labs.",
+          helpfulRating: 11,
+          clarityRating: 5,
+          difficultyRating: 2,
+        },
+        {
+          text: "Lectures move fast, but office hours are excellent.",
+          helpfulRating: 7,
+          clarityRating: 4,
+          difficultyRating: 3,
+        },
       ],
       url: "https://www.ratemyprofessors.com/professor/123",
     });
@@ -118,10 +128,11 @@ describe("Rate My Professors client", () => {
 
     const result = await findProfessorRating("Grace Hopper", { fetchImpl });
 
-    expect(result.topComments).toEqual([
+    expect(result.topComments.map((comment) => comment.text)).toEqual([
       "The systems explanations are precise and the labs are fair.",
       "Office hours make the projects much easier to reason about.",
     ]);
+    expect(result.topComments.map((comment) => comment.helpfulRating)).toEqual([19, 7]);
   });
 
   it("requests enough RMP ratings to choose useful comments from more than the first page edge", async () => {

@@ -37,6 +37,35 @@ describe("Albert content DOM injection", () => {
     expect(document.body.textContent).toContain("Avoid if you dislike fast lectures.");
   });
 
+  it("renders useful-comment metadata from RMP ratings", async () => {
+    document.body.innerHTML = `<div>Instructor: Ada Lovelace</div>`;
+    const lookupProfessor = vi.fn(async (name) => ({
+      name,
+      department: "Computer Science",
+      rating: 4.7,
+      difficulty: 2.4,
+      ratingsCount: 38,
+      wouldTakeAgain: 92,
+      tags: [],
+      topComments: [
+        {
+          text: "Explains low-level systems clearly and gives practical labs.",
+          helpfulRating: 11,
+          clarityRating: 5,
+          difficultyRating: 2,
+        },
+      ],
+      url: "https://www.ratemyprofessors.com/professor/123",
+    }));
+
+    await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
+
+    expect(document.body.textContent).toContain("Explains low-level systems clearly and gives practical labs.");
+    expect(document.body.textContent).toContain("11 useful");
+    expect(document.body.textContent).toContain("Clarity 5.0");
+    expect(document.body.textContent).toContain("Difficulty 2.0");
+  });
+
   it("does not duplicate cards when Albert mutates the same processed row", async () => {
     document.body.innerHTML = `<div>Instructor: Ada Lovelace</div>`;
     const lookupProfessor = vi.fn(async () => null);

@@ -93,7 +93,12 @@ function toProfessorRating(teacher) {
     ?.map((edge) => edge?.node)
     .filter((rating) => rating?.comment?.trim())
     .sort((left, right) => Number(right.helpfulRating ?? 0) - Number(left.helpfulRating ?? 0))
-    .map((rating) => rating.comment.trim())
+    .map((rating) => ({
+      text: rating.comment.trim(),
+      helpfulRating: numberOrNull(rating.helpfulRating),
+      clarityRating: numberOrNull(rating.clarityRating),
+      difficultyRating: numberOrNull(rating.difficultyRating),
+    }))
     .filter(Boolean)
     .slice(0, 2) ?? [];
 
