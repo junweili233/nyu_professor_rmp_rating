@@ -15,7 +15,13 @@ export async function initPopup({
   if (enableOverlay) {
     enableOverlay.checked = overlayEnabled;
     enableOverlay.addEventListener("change", async () => {
-      await storage.set({ "settings:overlayEnabled": enableOverlay.checked });
+      const nextValue = enableOverlay.checked;
+      try {
+        await storage.set({ "settings:overlayEnabled": nextValue });
+      } catch (error) {
+        enableOverlay.checked = !nextValue;
+        status.textContent = `Overlay setting failed: ${error.message}`;
+      }
     });
   }
 

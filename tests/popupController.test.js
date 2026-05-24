@@ -43,6 +43,28 @@ describe("extension popup controller", () => {
     expect(storage.set).toHaveBeenCalledWith({ "settings:overlayEnabled": true });
   });
 
+  it("rolls back the overlay toggle when the setting cannot be saved", async () => {
+    document.body.innerHTML = `
+      <p id="status"></p>
+      <input id="enable-overlay" type="checkbox" />
+      <button id="clear-cache"></button>
+    `;
+    const storage = createStorageMock({
+      "settings:overlayEnabled": false,
+    });
+    storage.set.mockRejectedValueOnce(new Error("Storage unavailable"));
+
+    await initPopup({ document, storage });
+    const checkbox = document.getElementById("enable-overlay");
+
+    checkbox.checked = true;
+    checkbox.dispatchEvent(new Event("change"));
+    await flushPromises();
+
+    expect(checkbox.checked).toBe(false);
+    expect(document.getElementById("status").textContent).toBe("Overlay setting failed: Storage unavailable");
+  });
+
   it("clears only cached professor lookups when the popup clear button is clicked", async () => {
     document.body.innerHTML = `
       <p id="status"></p>
