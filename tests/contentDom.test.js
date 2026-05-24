@@ -490,6 +490,30 @@ describe("Albert content DOM injection", () => {
     expect(document.body.textContent).toContain("Assignments are demanding.");
   });
 
+  it("ignores hidden adjacent instructor-name cells", async () => {
+    document.body.innerHTML = `
+      <table>
+        <tbody>
+          <tr>
+            <th>Instructor</th>
+            <td hidden>HIDDEN, TEMPLATE</td>
+          </tr>
+          <tr>
+            <th>Instructor</th>
+            <td>YAP, CHEE KENG</td>
+          </tr>
+        </tbody>
+      </table>
+    `;
+    const lookupProfessor = vi.fn(async () => null);
+
+    await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
+
+    expect(lookupProfessor).toHaveBeenCalledTimes(1);
+    expect(lookupProfessor).toHaveBeenCalledWith("Chee Keng Yap");
+    expect(document.querySelectorAll(".nyu-rmp-card")).toHaveLength(1);
+  });
+
   it("keeps injected ratings inside table cells instead of adding invalid row children", async () => {
     document.body.innerHTML = `
       <table>

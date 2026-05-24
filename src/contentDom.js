@@ -131,6 +131,9 @@ function findAdjacentInstructorTarget(element) {
     element.nextElementSibling ??
     element.parentElement?.querySelector("[data-instructor-name]") ??
     null;
+  if (!nameElement || !isElementVisible(nameElement)) {
+    return null;
+  }
   const adjacentText = nameElement?.textContent ?? "";
   const names = splitInstructorList(adjacentText).map(normalizeInstructorName).filter(Boolean);
   return names.length > 0 ? { element: nameElement, processedElements: [element, nameElement], names } : null;
