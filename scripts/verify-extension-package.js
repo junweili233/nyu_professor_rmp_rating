@@ -10,6 +10,18 @@ export async function verifyExtensionPackage(distDir = "dist") {
   if (manifest.manifest_version !== 3) {
     throw new Error("manifest_version must be 3");
   }
+  if (manifest.background?.type !== "module") {
+    throw new Error("background service worker must be a module");
+  }
+  if (!manifest.host_permissions?.includes("https://www.ratemyprofessors.com/*")) {
+    throw new Error("Rate My Professors host permission is required");
+  }
+  if (!manifest.permissions?.includes("storage")) {
+    throw new Error("storage permission is required");
+  }
+  if (!manifest.content_scripts?.some((contentScript) => contentScript.matches?.includes("https://albert.nyu.edu/*"))) {
+    throw new Error("Albert content script match is required");
+  }
 
   await assertFileExists(join(distDir, manifest.background?.service_worker ?? ""), "background service worker is missing");
   await assertFileExists(join(distDir, manifest.action?.default_popup ?? ""), "popup html is missing");
