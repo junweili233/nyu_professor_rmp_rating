@@ -154,11 +154,11 @@ function isInstructorLabel(text) {
 }
 
 function findAdjacentInstructorTarget(element) {
-  const nameElement =
-    element.nextElementSibling ??
-    element.parentElement?.querySelector("[data-instructor-name]") ??
-    null;
-  if (!nameElement || !isElementVisible(nameElement)) {
+  const nameElement = [
+    element.nextElementSibling,
+    element.parentElement?.querySelector("[data-instructor-name]"),
+  ].find((candidate) => candidate && isElementVisible(candidate));
+  if (!nameElement) {
     return null;
   }
   const adjacentText = nameElement?.textContent ?? "";
