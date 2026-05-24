@@ -18,7 +18,7 @@ describe("content script professor messenger", () => {
       rating: 4.7,
     });
 
-    expect(chrome.runtime.sendMessage).toHaveBeenCalledWith({
+    expect(chrome.runtime.sendMessage.mock.calls[0][0]).toEqual({
       type: "NYU_RMP_FIND_PROFESSOR",
       name: "Ada Lovelace",
       forceRefresh: true,
@@ -36,6 +36,41 @@ describe("content script professor messenger", () => {
 
     await expect(messenger.lookupProfessor("Ada Lovelace")).rejects.toThrow(
       "Could not establish connection. Receiving end does not exist.",
+    );
+  });
+
+  it("supports callback-style Chrome messaging responses", async () => {
+    const chrome = {
+      runtime: {
+        sendMessage: vi.fn((_message, sendResponse) => {
+          sendResponse({
+            ok: true,
+            result: { name: "Grace Hopper", rating: 4.8 },
+          });
+        }),
+      },
+    };
+    const messenger = createProfessorMessenger(chrome);
+
+    await expect(messenger.lookupProfessor("Grace Hopper")).resolves.toEqual({
+      name: "Grace Hopper",
+      rating: 4.8,
+    });
+  });
+
+  it("surfaces callback-style Chrome runtime lastError values", async () => {
+    const chrome = {
+      runtime: {
+        sendMessage: vi.fn((_message, sendResponse) => {
+          chrome.runtime.lastError = { message: "The message port closed before a response was received." };
+          sendResponse(undefined);
+        }),
+      },
+    };
+    const messenger = createProfessorMessenger(chrome);
+
+    await expect(messenger.lookupProfessor("Ada Lovelace")).rejects.toThrow(
+      "The message port closed before a response was received.",
     );
   });
 
