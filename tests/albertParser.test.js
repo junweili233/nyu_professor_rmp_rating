@@ -66,6 +66,20 @@ describe("Albert instructor parsing", () => {
     ]);
   });
 
+  it("understands mixed-case Albert last-name-first instructor formatting", () => {
+    const text = `
+      CSCI-UA 201 Computer Systems Organization
+      Instructor: Yap, Chee Keng
+      Instructor(s): Hopper, Grace B.; Alan Turing
+    `;
+
+    expect(extractInstructorNamesFromText(text)).toEqual([
+      "Chee Keng Yap",
+      "Grace B. Hopper",
+      "Alan Turing",
+    ]);
+  });
+
   it("ignores Albert role annotations when parsing last-name-first names", () => {
     const text = `
       CSCI-UA 201 Computer Systems Organization

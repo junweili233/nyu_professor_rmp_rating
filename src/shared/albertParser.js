@@ -126,7 +126,7 @@ function pairAlbertLastFirstParts(parts) {
 }
 
 function looksLikeAlbertLastFirst(lastName, firstNames) {
-  return /^[A-Z][A-Z'-]+$/.test(lastName) && /^[A-Z][A-Z'. -]+$/.test(firstNames);
+  return /^[A-Za-z][A-Za-z'-]+$/.test(lastName) && /^[A-Za-z][A-Za-z'. -]+$/.test(firstNames);
 }
 
 function titleCaseName(value) {
