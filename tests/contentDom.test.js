@@ -690,6 +690,33 @@ describe("Albert content DOM injection", () => {
     expect(document.body.textContent).toContain("Assignments are demanding.");
   });
 
+  it("injects ratings when adjacent Albert instructor labels include a trailing colon", async () => {
+    document.body.innerHTML = `
+      <table>
+        <tbody>
+          <tr>
+            <th>Instructor(s):</th>
+            <td>YAP, CHEE KENG</td>
+          </tr>
+        </tbody>
+      </table>
+    `;
+    const lookupProfessor = vi.fn(async (name) => ({
+      name,
+      rating: 2.1,
+      difficulty: 4.5,
+      ratingsCount: 92,
+      tags: [],
+      topComments: ["Assignments are demanding."],
+      url: "https://www.ratemyprofessors.com/professor/419998",
+    }));
+
+    await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
+
+    expect(lookupProfessor).toHaveBeenCalledWith("Chee Keng Yap");
+    expect(document.querySelectorAll(".nyu-rmp-card")).toHaveLength(1);
+  });
+
   it("ignores hidden adjacent instructor-name cells", async () => {
     document.body.innerHTML = `
       <table>

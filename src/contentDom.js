@@ -114,7 +114,9 @@ function findInstructorTargetsForElement(element) {
   const text = visibleTextSegments(element).join("\n");
   if (/\binstructor(?:\(s\)|s)?\s*:/i.test(text) && text.length < 700) {
     const names = extractInstructorNamesFromText(text);
-    return names.length > 0 ? [{ element, names }] : [];
+    if (names.length > 0) {
+      return [{ element, names }];
+    }
   }
 
   if (isInstructorLabel(text)) {
@@ -152,7 +154,7 @@ function isHiddenStyle(style) {
 }
 
 function isInstructorLabel(text) {
-  return /^instructor(?:\(s\)|s)?$/i.test(text.trim());
+  return /^instructor(?:\(s\)|s)?:?$/i.test(text.trim());
 }
 
 function findAdjacentInstructorTarget(element) {
