@@ -123,4 +123,24 @@ describe("Rate My Professors client", () => {
       "Office hours make the projects much easier to reason about.",
     ]);
   });
+
+  it("requests enough RMP ratings to choose useful comments from more than the first page edge", async () => {
+    const fetchImpl = vi.fn(async () => ({
+      ok: true,
+      json: async () => ({
+        data: {
+          newSearch: {
+            teachers: {
+              edges: [],
+            },
+          },
+        },
+      }),
+    }));
+
+    await findProfessorRating("Ada Lovelace", { fetchImpl });
+
+    const requestBody = JSON.parse(fetchImpl.mock.calls[0][1].body);
+    expect(requestBody.query).toContain("ratings(first: 8)");
+  });
 });

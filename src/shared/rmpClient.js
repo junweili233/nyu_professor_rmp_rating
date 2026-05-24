@@ -19,7 +19,7 @@ const PROFESSOR_SEARCH_QUERY = `
             teacherRatingTags {
               tagName
             }
-            ratings(first: 3) {
+            ratings(first: 8) {
               edges {
                 node {
                   comment
