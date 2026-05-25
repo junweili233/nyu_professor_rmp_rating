@@ -12,6 +12,7 @@ const ALBERT_OBSERVER_OPTIONS = {
   attributes: true,
   attributeFilter: [
     "aria-colindex",
+    "aria-activedescendant",
     "aria-describedby",
     "aria-hidden",
     "aria-label",
@@ -436,8 +437,21 @@ function ariaValueControlSegments(element) {
   return [
     element.getAttribute("aria-valuetext")?.trim(),
     element.getAttribute("aria-value")?.trim(),
+    activeDescendantText(element),
     ...visibleTextSegments(element),
   ].filter(Boolean);
+}
+
+function activeDescendantText(element) {
+  const activeDescendantId = element.getAttribute("aria-activedescendant")?.trim();
+  if (!activeDescendantId) {
+    return "";
+  }
+
+  const activeDescendant = element.ownerDocument?.getElementById(activeDescendantId);
+  return activeDescendant && isElementVisible(activeDescendant)
+    ? visibleTextSegments(activeDescendant).join(" ")
+    : "";
 }
 
 function instructorNamesFromHeaderedCell(element) {
