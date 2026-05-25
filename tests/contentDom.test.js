@@ -82,7 +82,33 @@ describe("Albert content DOM injection", () => {
 
     expect(observer).not.toBeNull();
     expect(lookupProfessor).toHaveBeenCalledWith("Ada Lovelace");
-    expect(observe).toHaveBeenCalledWith(document.body, { childList: true, subtree: true });
+    expect(observe).toHaveBeenCalledWith(document.body, expect.objectContaining({ childList: true, subtree: true }));
+  });
+
+  it("subscribes to in-place Albert text and metadata updates", async () => {
+    document.body.innerHTML = `<div>Loading class details</div>`;
+    const lookupProfessor = vi.fn(async () => null);
+    const observe = vi.fn();
+    const windowMock = {
+      location: new URL("https://albert.nyu.edu/psc/csprod/EMPLOYEE/SA/c/NUI_FRAMEWORK.PT_LANDINGPAGE.GBL"),
+      MutationObserver: class {
+        observe = observe;
+      },
+      clearTimeout: vi.fn(),
+      setTimeout: vi.fn(),
+    };
+
+    const observer = startAlbertRmpEnhancer({ document, window: windowMock, lookupProfessor });
+    await flushPromises();
+
+    expect(observer).not.toBeNull();
+    expect(observe).toHaveBeenCalledWith(document.body, expect.objectContaining({
+      childList: true,
+      subtree: true,
+      characterData: true,
+      attributes: true,
+      attributeFilter: expect.arrayContaining(["aria-label", "aria-labelledby", "aria-describedby", "class", "data-instructor-name", "data-label", "data-name", "data-tooltip", "hidden", "style", "title"]),
+    }));
   });
 
   it("cancels a pending Albert rescan when the overlay observer disconnects", async () => {
@@ -137,7 +163,7 @@ describe("Albert content DOM injection", () => {
 
     expect(observer).not.toBeNull();
     expect(lookupProfessor).toHaveBeenCalledWith("Ada Lovelace");
-    expect(observe).toHaveBeenCalledWith(document.body, { childList: true, subtree: true });
+    expect(observe).toHaveBeenCalledWith(document.body, expect.objectContaining({ childList: true, subtree: true }));
   });
 
   it("injects one RMP card per Albert instructor and updates it with rating data", async () => {

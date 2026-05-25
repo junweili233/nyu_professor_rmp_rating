@@ -5,6 +5,61 @@ const STYLE_ID = "nyu-rmp-rating-styles";
 const COMMENT_PREVIEW_LENGTH = 150;
 const DEFAULT_RMP_URL = "https://www.ratemyprofessors.com/";
 const PLACEHOLDER_COMMENT_TEXT = new Set(["n/a", "na", "none", "no comment", "no comments", "no comments yet"]);
+const ALBERT_OBSERVER_OPTIONS = {
+  childList: true,
+  subtree: true,
+  characterData: true,
+  attributes: true,
+  attributeFilter: [
+    "aria-describedby",
+    "aria-hidden",
+    "aria-label",
+    "aria-labelledby",
+    "class",
+    "data-automation-id",
+    "data-automationid",
+    "data-caption",
+    "data-column",
+    "data-column-name",
+    "data-column-title",
+    "data-columnname",
+    "data-cy",
+    "data-e2e",
+    "data-field",
+    "data-field-id",
+    "data-field-key",
+    "data-field-name",
+    "data-fieldid",
+    "data-fieldname",
+    "data-header",
+    "data-heading",
+    "data-instructor-name",
+    "data-key",
+    "data-label",
+    "data-name",
+    "data-original-title",
+    "data-pnlfld",
+    "data-pnlfldid",
+    "data-pnlfldname",
+    "data-ps-columnid",
+    "data-ps-columnname",
+    "data-ps-fieldid",
+    "data-ps-fieldname",
+    "data-qa",
+    "data-slot",
+    "data-test-id",
+    "data-testid",
+    "data-title",
+    "data-tooltip",
+    "hidden",
+    "id",
+    "inert",
+    "name",
+    "slot",
+    "style",
+    "title",
+  ],
+};
 let nextCardId = 0;
 
 export function startAlbertRmpEnhancer({
@@ -27,7 +82,7 @@ export function startAlbertRmpEnhancer({
     }, 300);
   });
 
-  observer.observe(document.body, { childList: true, subtree: true });
+  observer.observe(document.body, ALBERT_OBSERVER_OPTIONS);
   const disconnectObserver = observer.disconnect?.bind(observer) ?? (() => {});
   observer.disconnect = () => {
     window.clearTimeout(observer.scanTimer);
