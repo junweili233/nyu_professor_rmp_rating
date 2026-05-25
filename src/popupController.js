@@ -13,7 +13,20 @@ export async function initPopup({
   status.setAttribute("aria-live", "polite");
   status.setAttribute("aria-atomic", "true");
 
-  const settings = await storage.get("settings:overlayEnabled");
+  let settings;
+  try {
+    settings = await storage.get("settings:overlayEnabled");
+  } catch (error) {
+    status.textContent = `Popup unavailable: ${error.message}`;
+    if (enableOverlay) {
+      enableOverlay.disabled = true;
+    }
+    if (clearButton) {
+      clearButton.disabled = true;
+    }
+    return;
+  }
+
   const overlayEnabled = settings["settings:overlayEnabled"] !== false;
   if (enableOverlay) {
     enableOverlay.checked = overlayEnabled;

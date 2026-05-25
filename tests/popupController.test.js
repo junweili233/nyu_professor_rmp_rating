@@ -37,6 +37,24 @@ describe("extension popup controller", () => {
     expect(status.getAttribute("aria-atomic")).toBe("true");
   });
 
+  it("shows an inline error when popup storage cannot be read on startup", async () => {
+    document.body.innerHTML = `
+      <p id="status"></p>
+      <input id="enable-overlay" type="checkbox" />
+      <button id="clear-cache"></button>
+    `;
+    const storage = createStorageMock();
+    storage.get = vi.fn(async () => {
+      throw new Error("Storage unavailable");
+    });
+
+    await expect(initPopup({ document, storage })).resolves.toBeUndefined();
+
+    expect(document.getElementById("status").textContent).toBe("Popup unavailable: Storage unavailable");
+    expect(document.getElementById("enable-overlay").disabled).toBe(true);
+    expect(document.getElementById("clear-cache").disabled).toBe(true);
+  });
+
   it("persists whether the Albert overlay is enabled", async () => {
     document.body.innerHTML = `
       <p id="status"></p>
