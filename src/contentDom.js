@@ -51,6 +51,7 @@ const ALBERT_OBSERVER_OPTIONS = {
     "data-description",
     "data-display",
     "data-display-name",
+    "data-displayname",
     "data-e2e",
     "data-field",
     "data-field-id",
@@ -797,7 +798,7 @@ function associatedLabelText(element) {
 }
 
 function firstNameLikeAttribute(element) {
-  for (const attributeName of ["title", "aria-label", "data-value", "data-label", "data-title", "data-caption", "data-description", "data-text", "data-full-name", "data-fullname", "data-full-text", "data-tooltip", "data-original-title", "data-display", "data-display-name", "data-name"]) {
+  for (const attributeName of ["title", "aria-label", "data-value", "data-label", "data-title", "data-caption", "data-description", "data-text", "data-full-name", "data-fullname", "data-full-text", "data-tooltip", "data-original-title", "data-display", "data-display-name", "data-displayname", "data-name"]) {
     const value = element.getAttribute(attributeName)?.trim();
     if (value && splitInstructorList(value).some(isLikelyInstructorName)) {
       return value;
