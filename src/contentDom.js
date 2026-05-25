@@ -78,6 +78,7 @@ const ALBERT_OBSERVER_OPTIONS = {
     "data-heading",
     "data-highlighted",
     "data-instructor-name",
+    "data-item-label",
     "data-key",
     "data-label",
     "data-name",
@@ -802,7 +803,7 @@ function associatedLabelText(element) {
 }
 
 function firstNameLikeAttribute(element) {
-  for (const attributeName of ["title", "aria-label", "data-value", "data-label", "data-option-label", "data-option-text", "data-title", "data-caption", "data-description", "data-text", "data-search", "data-full-name", "data-fullname", "data-full-text", "data-tooltip", "data-content", "data-original-title", "data-display", "data-display-name", "data-displayname", "data-name"]) {
+  for (const attributeName of ["title", "aria-label", "data-value", "data-label", "data-option-label", "data-option-text", "data-item-label", "data-title", "data-caption", "data-description", "data-text", "data-search", "data-full-name", "data-fullname", "data-full-text", "data-tooltip", "data-content", "data-original-title", "data-display", "data-display-name", "data-displayname", "data-name"]) {
     const value = element.getAttribute(attributeName)?.trim();
     if (value && splitInstructorList(value).some(isLikelyInstructorName)) {
       return value;
