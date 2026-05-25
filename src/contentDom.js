@@ -520,6 +520,7 @@ function hasSelectedOptionClass(element) {
     .some((className) => {
       const normalizedClassName = className.toLowerCase();
       return /^(?:is-|ps-|ui-|nyu-)?(?:selected|active|current)$/.test(normalizedClassName)
+        || /^(?:is|ps|ui|nyu)[-_](?:selected|active|current)[-_]option$/.test(normalizedClassName)
         || /^(?:selected|active|current)[-_]option$/.test(normalizedClassName)
         || /^option[-_](?:selected|active|current)$/.test(normalizedClassName);
     });
