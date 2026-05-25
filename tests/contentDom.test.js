@@ -2844,6 +2844,30 @@ describe("Albert content DOM injection", () => {
     expect(document.body.textContent).toContain("Selected option selected-name metadata should render.");
   });
 
+  it("injects ratings when selected instructor options expose names in data-selected-value", async () => {
+    document.body.innerHTML = `
+      <select aria-label="Instructor">
+        <option value="419998" data-selected-value="YAP, CHEE KENG" selected></option>
+      </select>
+    `;
+    const lookupProfessor = vi.fn(async (name) => ({
+      name,
+      rating: 3.7,
+      difficulty: 2.8,
+      ratingsCount: 47,
+      tags: [],
+      topComments: ["Selected option selected-value metadata should render."],
+      url: "https://www.ratemyprofessors.com/professor/419998",
+    }));
+
+    await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
+
+    expect(lookupProfessor).toHaveBeenCalledTimes(1);
+    expect(lookupProfessor).toHaveBeenCalledWith("Chee Keng Yap");
+    expect(document.querySelectorAll(".nyu-rmp-card")).toHaveLength(1);
+    expect(document.body.textContent).toContain("Selected option selected-value metadata should render.");
+  });
+
   it("injects ratings when selected instructor options expose names in data-title", async () => {
     document.body.innerHTML = `
       <select aria-label="Instructor">
