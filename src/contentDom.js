@@ -4,6 +4,7 @@ const ROOT_CLASS = "nyu-rmp-rating-root";
 const STYLE_ID = "nyu-rmp-rating-styles";
 const COMMENT_PREVIEW_LENGTH = 150;
 const DEFAULT_RMP_URL = "https://www.ratemyprofessors.com/";
+const PLACEHOLDER_COMMENT_TEXT = new Set(["n/a", "na", "none", "no comment", "no comments"]);
 let nextCardId = 0;
 
 export function startAlbertRmpEnhancer({
@@ -741,7 +742,7 @@ function escapeHtml(value) {
 
 function formatComment(comment, textId) {
   const normalized = normalizeComment(comment);
-  if (!normalized.text) {
+  if (!isUsefulCommentText(normalized.text)) {
     return "";
   }
 
@@ -809,6 +810,11 @@ function normalizeComment(comment) {
     clarityRating: rmpScaleNumberOrNull(comment?.clarityRating),
     difficultyRating: rmpScaleNumberOrNull(comment?.difficultyRating),
   };
+}
+
+function isUsefulCommentText(value) {
+  const text = String(value ?? "").trim();
+  return text && !PLACEHOLDER_COMMENT_TEXT.has(text.toLowerCase());
 }
 
 function numberOrNull(value) {
