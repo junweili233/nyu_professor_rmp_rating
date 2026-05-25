@@ -309,6 +309,30 @@ describe("Albert content DOM injection", () => {
     expect(document.body.textContent).not.toContain("&mdash;");
   });
 
+  it("decodes cached ellipsis and mark entities before rendering comments", async () => {
+    document.body.innerHTML = `<div>Instructor: Ada Lovelace</div>`;
+    const lookupProfessor = vi.fn(async (name) => ({
+      name,
+      department: "Computer Science",
+      rating: 4.7,
+      difficulty: 2.4,
+      ratingsCount: 38,
+      tags: [],
+      topComments: [
+        { text: "Labs use Linux&reg;&hellip; read the docs&trade;.", helpfulRating: 12 },
+      ],
+      url: "https://www.ratemyprofessors.com/professor/123",
+    }));
+
+    await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
+
+    expect(document.querySelector(".nyu-rmp-comment-text").textContent).toBe(
+      "Labs use Linux(R)... read the docs(TM).",
+    );
+    expect(document.body.textContent).not.toContain("&hellip;");
+    expect(document.body.textContent).not.toContain("&trade;");
+  });
+
   it("renders only trimmed nonblank cached RMP tags", async () => {
     document.body.innerHTML = `<div>Instructor: Ada Lovelace</div>`;
     const lookupProfessor = vi.fn(async (name) => ({

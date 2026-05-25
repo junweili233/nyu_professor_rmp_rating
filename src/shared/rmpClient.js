@@ -226,6 +226,7 @@ function decodeHtmlEntities(value) {
     apos: "'",
     emdash: "-",
     endash: "-",
+    hellip: "...",
     gt: ">",
     lt: "<",
     mdash: "-",
@@ -233,9 +234,11 @@ function decodeHtmlEntities(value) {
     ndash: "-",
     quot: "\"",
     rdquo: "\"",
+    reg: "(R)",
     rsquo: "'",
     ldquo: "\"",
     lsquo: "'",
+    trade: "(TM)",
   };
 
   return String(value ?? "").replace(/&(#\d+|#x[\da-f]+|[a-z]+);/gi, (entity, token) => {

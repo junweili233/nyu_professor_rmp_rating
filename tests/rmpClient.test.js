@@ -232,6 +232,52 @@ describe("Rate My Professors client", () => {
     expect(result.topComments[0].text).toBe("Don't skip labs - they're exam prep.");
   });
 
+  it("decodes ellipsis and mark entities in useful comments", async () => {
+    const fetchImpl = vi.fn(async () => ({
+      ok: true,
+      json: async () => ({
+        data: {
+          newSearch: {
+            teachers: {
+              edges: [
+                {
+                  node: {
+                    id: "mark-entities",
+                    legacyId: 654,
+                    firstName: "Ada",
+                    lastName: "Lovelace",
+                    department: "Computer Science",
+                    avgRating: 4.7,
+                    avgDifficulty: 2.4,
+                    numRatings: 38,
+                    wouldTakeAgainPercent: 92,
+                    teacherRatingTags: [],
+                    ratings: {
+                      edges: [
+                        {
+                          node: {
+                            comment: "Labs use Linux&reg;&hellip; read the docs&trade;.",
+                            helpfulRating: 11,
+                            clarityRating: 5,
+                            difficultyRating: 2,
+                          },
+                        },
+                      ],
+                    },
+                  },
+                },
+              ],
+            },
+          },
+        },
+      }),
+    }));
+
+    const result = await findProfessorRating("Ada Lovelace", { fetchImpl });
+
+    expect(result.topComments[0].text).toBe("Labs use Linux(R)... read the docs(TM).");
+  });
+
   it("collapses encoded and multiline comment spacing before returning comments to Albert", async () => {
     const fetchImpl = vi.fn(async () => ({
       ok: true,
