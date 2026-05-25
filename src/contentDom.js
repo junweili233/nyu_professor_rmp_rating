@@ -174,7 +174,7 @@ function findAdjacentInstructorTarget(element) {
   ].filter((candidate) => candidate && isElementVisible(candidate));
 
   for (const nameElement of candidateElements) {
-    const names = visibleTextSegments(nameElement)
+    const names = instructorNameSegments(nameElement)
       .flatMap(splitInstructorList)
       .filter(isLikelyInstructorName)
       .map(normalizeInstructorName)
@@ -195,7 +195,7 @@ function findNextVisibleInstructorSibling(element) {
     const segments = visibleTextSegments(sibling);
     if (segments.length > 0
       && !segments.every(isInstructorSeparatorOnlyText)
-      && segments.flatMap(splitInstructorList).some(isLikelyInstructorName)) {
+      && instructorNameSegments(sibling).flatMap(splitInstructorList).some(isLikelyInstructorName)) {
       return sibling;
     }
   }
@@ -211,6 +211,11 @@ function visibleTextSegments(element) {
     .split(/\n+/)
     .map((segment) => segment.replace(/\s+/g, " ").trim())
     .filter(Boolean);
+}
+
+function instructorNameSegments(element) {
+  const markedName = element.getAttribute("data-instructor-name")?.trim();
+  return markedName ? [markedName] : visibleTextSegments(element);
 }
 
 function textForParsing(node) {
