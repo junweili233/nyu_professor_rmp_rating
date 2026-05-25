@@ -540,7 +540,7 @@ function hasSelectedOptionClass(element) {
       const normalizedClassName = className.toLowerCase();
       return /^(?:is-|ps-|ui-|nyu-|oj-)?(?:selected|active|current|checked|on|pressed|highlighted|focused|focus)$/.test(normalizedClassName)
         || /^(?:p|ps|ui|nyu|oj)[-_](?:highlight|highlighted)$/.test(normalizedClassName)
-        || /^(?:is|ps|ui|nyu|oj)[-_]state[-_](?:selected|active|current|checked|on|pressed|highlighted|focused|focus)$/.test(normalizedClassName)
+        || /^(?:is|ps|ui|nyu|oj)[-_]state[-_](?:selected|active|current|checked|on|pressed|highlight|highlighted|focused|focus)$/.test(normalizedClassName)
         || /^(?:is|ps|ui|nyu|oj)[-_](?:selected|active|current|checked|on|pressed|highlighted|focused|focus)[-_]option$/.test(normalizedClassName)
         || /^(?:selected|active|current|checked|on|pressed|highlighted|focused|focus)[-_]option$/.test(normalizedClassName)
         || /^option[-_](?:selected|active|current|checked|on|pressed|highlighted|focused|focus)$/.test(normalizedClassName);
