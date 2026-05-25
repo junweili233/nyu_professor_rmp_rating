@@ -271,6 +271,11 @@ function normalizeNumericString(value) {
   }
 
   const trimmed = value.trim().replace(/\s+ratings?$/i, "");
+  const abbreviatedThousands = trimmed.match(/^(-?\d+(?:\.\d+)?)\s*k$/i);
+  if (abbreviatedThousands) {
+    return String(Number(abbreviatedThousands[1]) * 1000);
+  }
+
   return /^-?\d{1,3}(?:,\d{3})+(?:\.\d+)?$/.test(trimmed) ? trimmed.replace(/,/g, "") : trimmed;
 }
 
