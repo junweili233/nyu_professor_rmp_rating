@@ -186,6 +186,52 @@ describe("Rate My Professors client", () => {
     expect(result.topComments[0].text).toBe("Projects & labs are fair 'if' you start early.");
   });
 
+  it("collapses encoded and multiline comment spacing before returning comments to Albert", async () => {
+    const fetchImpl = vi.fn(async () => ({
+      ok: true,
+      json: async () => ({
+        data: {
+          newSearch: {
+            teachers: {
+              edges: [
+                {
+                  node: {
+                    id: "spaced-comments",
+                    legacyId: 456,
+                    firstName: "Ada",
+                    lastName: "Lovelace",
+                    department: "Computer Science",
+                    avgRating: 4.7,
+                    avgDifficulty: 2.4,
+                    numRatings: 38,
+                    wouldTakeAgainPercent: 92,
+                    teacherRatingTags: [],
+                    ratings: {
+                      edges: [
+                        {
+                          node: {
+                            comment: "Clear&nbsp;systems\n\nlectures\twith   fair labs.",
+                            helpfulRating: 11,
+                            clarityRating: 5,
+                            difficultyRating: 2,
+                          },
+                        },
+                      ],
+                    },
+                  },
+                },
+              ],
+            },
+          },
+        },
+      }),
+    }));
+
+    const result = await findProfessorRating("Ada Lovelace", { fetchImpl });
+
+    expect(result.topComments[0].text).toBe("Clear systems lectures with fair labs.");
+  });
+
   it("normalizes negative useful-comment metadata as missing values", async () => {
     const fetchImpl = vi.fn(async () => ({
       ok: true,

@@ -123,7 +123,7 @@ function toProfessorRating(teacher, requestedName) {
     .sort((left, right) => commentHelpfulScore(right) - commentHelpfulScore(left))
     .filter(uniqueCommentText)
     .map((rating) => ({
-      text: decodeHtmlEntities(rating.comment).trim(),
+      text: normalizeCommentText(rating.comment),
       helpfulRating: nonNegativeNumberOrNull(rating.helpfulRating),
       clarityRating: rmpScaleNumberOrNull(rating.clarityRating),
       difficultyRating: rmpScaleNumberOrNull(rating.difficultyRating),
@@ -213,7 +213,11 @@ function uniqueCommentText(rating, _index, ratings) {
 }
 
 function compactCommentText(value) {
-  return decodeHtmlEntities(value).trim().replace(/\s+/g, " ").toLowerCase();
+  return normalizeCommentText(value).toLowerCase();
+}
+
+function normalizeCommentText(value) {
+  return decodeHtmlEntities(value).trim().replace(/\s+/g, " ");
 }
 
 function decodeHtmlEntities(value) {
