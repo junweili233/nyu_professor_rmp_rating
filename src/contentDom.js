@@ -208,7 +208,7 @@ function parseCssPixelValue(value) {
 
 function isInstructorLabel(text) {
   const normalizedText = normalizeLabelText(text);
-  return /^(?:(?:primary\s+)?instructor(?:\(s\)|s)?(?:\s+name(?:\(s\)|s)?)?|professor|prof\.?|faculty|teacher(?:s)?|taught\s+by)\s*(?::|\.|-|\u2013|\u2014)?$/i.test(normalizedText);
+  return /^(?:(?:primary\s+)?(?:instructor|instr\.?)(?:\(s\)|s)?(?:\s+name(?:\(s\)|s)?)?|professor|prof\.?|faculty|teacher(?:s)?|taught\s+by)\s*(?::|\.|-|\u2013|\u2014)?$/i.test(normalizedText);
 }
 
 function normalizeLabelText(text) {
