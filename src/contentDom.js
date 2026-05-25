@@ -351,6 +351,8 @@ function cellLabelAttributeText(element) {
     "data-fieldname",
     "aria-label",
     "title",
+    "id",
+    "name",
   ]) {
     const value = element.getAttribute(attributeName)?.trim();
     if (value) {
@@ -369,7 +371,7 @@ function normalizeCellLabelAttributeValue(attributeName, value) {
 }
 
 function isFieldNameAttribute(attributeName) {
-  return ["data-field", "data-field-name", "data-fieldname", "data-column", "data-column-name", "data-columnname"].includes(attributeName);
+  return ["data-field", "data-field-name", "data-fieldname", "data-column", "data-column-name", "data-columnname", "id", "name"].includes(attributeName);
 }
 
 function referencedHeaderText(element) {
