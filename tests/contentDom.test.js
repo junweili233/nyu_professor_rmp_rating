@@ -841,6 +841,23 @@ describe("Albert content DOM injection", () => {
     expect(document.querySelectorAll(".nyu-rmp-card")).toHaveLength(1);
   });
 
+  it("ignores comma-separated placeholder instructors without corrupting real names", async () => {
+    document.body.innerHTML = `
+      <div>Instructor(s): TBA, Ada Lovelace</div>
+      <div>Instructor: Grace Hopper, Staff</div>
+    `;
+    const lookupProfessor = vi.fn(async () => null);
+
+    await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
+
+    expect(lookupProfessor).toHaveBeenCalledTimes(2);
+    expect(lookupProfessor).toHaveBeenCalledWith("Ada Lovelace");
+    expect(lookupProfessor).toHaveBeenCalledWith("Grace Hopper");
+    expect(lookupProfessor).not.toHaveBeenCalledWith("Ada Lovelace Tba");
+    expect(lookupProfessor).not.toHaveBeenCalledWith("Staff Grace Hopper");
+    expect(document.querySelectorAll(".nyu-rmp-card")).toHaveLength(2);
+  });
+
   it("ignores instructor sections hidden by Albert stylesheet classes", async () => {
     document.head.innerHTML = `<style>.collapsed-albert-section { display: none; }</style>`;
     document.body.innerHTML = `

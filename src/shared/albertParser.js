@@ -141,7 +141,7 @@ export function extractInstructorNamesFromText(text) {
 
 export function splitInstructorList(value) {
   const cleaned = stripAcademicCredentials(stripInstructorRoleAnnotations(value));
-  if (isPlaceholderInstructor(cleaned)) {
+  if (isPlaceholderInstructor(cleaned) && !hasInstructorListSeparator(cleaned)) {
     return [];
   }
 
@@ -155,6 +155,10 @@ export function splitInstructorList(value) {
   }
 
   const commaParts = cleaned.split(/\s*,\s*/).map((part) => part.trim()).filter(Boolean);
+  if (commaParts.length > 1 && commaParts.some(isPlaceholderInstructor)) {
+    return commaParts.filter((part) => !isPlaceholderInstructor(part));
+  }
+
   if (commaParts.length === 2 && looksLikeAlbertLastFirst(commaParts[0], commaParts[1])) {
     return [formatAlbertLastFirst(commaParts[0], commaParts[1])];
   }
@@ -213,6 +217,10 @@ function stripTrailingInstructorPunctuation(value) {
 function isPlaceholderInstructor(value) {
   const normalized = String(value ?? "").trim().toLowerCase();
   return STAFF_TERMS.has(normalized) || /\bstaff$/.test(normalized) || isPlaceholderWordCombination(normalized);
+}
+
+function hasInstructorListSeparator(value) {
+  return /(?:;|\/|&|\band\b|,)/i.test(String(value ?? ""));
 }
 
 function isPlaceholderWordCombination(value) {

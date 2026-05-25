@@ -101,6 +101,19 @@ describe("Albert instructor parsing", () => {
     ]);
   });
 
+  it("ignores comma-separated placeholder instructors without corrupting real names", () => {
+    const text = `
+      CSCI-UA 201 Computer Systems Organization
+      Instructor(s): TBA, Ada Lovelace
+      Instructor: Grace Hopper, Staff
+    `;
+
+    expect(extractInstructorNamesFromText(text)).toEqual([
+      "Ada Lovelace",
+      "Grace Hopper",
+    ]);
+  });
+
   it("understands ampersand-separated Albert co-instructors", () => {
     const text = `
       CSCI-UA 201 Computer Systems Organization
