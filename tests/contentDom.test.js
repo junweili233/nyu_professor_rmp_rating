@@ -383,6 +383,24 @@ describe("Albert content DOM injection", () => {
     expect(scoreRowText).toContain("1234 ratings");
   });
 
+  it("renders labeled comma-formatted cached rating counts", async () => {
+    document.body.innerHTML = `<div>Instructor: Ada Lovelace</div>`;
+    const lookupProfessor = vi.fn(async (name) => ({
+      name,
+      rating: 4.7,
+      difficulty: 2.4,
+      ratingsCount: "1,234 ratings",
+      tags: [],
+      topComments: [],
+      url: "https://www.ratemyprofessors.com/professor/123",
+    }));
+
+    await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
+
+    const scoreRowText = document.querySelector(".nyu-rmp-score-row").textContent;
+    expect(scoreRowText).toContain("1234 ratings");
+  });
+
   it("renders negative cached RMP metrics as unavailable values", async () => {
     document.body.innerHTML = `<div>Instructor: Ada Lovelace</div>`;
     const lookupProfessor = vi.fn(async (name) => ({

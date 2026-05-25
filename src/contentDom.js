@@ -828,7 +828,7 @@ function normalizeNumericString(value) {
     return value;
   }
 
-  const trimmed = value.trim();
+  const trimmed = value.trim().replace(/\s+ratings?$/i, "");
   return /^-?\d{1,3}(?:,\d{3})+(?:\.\d+)?$/.test(trimmed) ? trimmed.replace(/,/g, "") : trimmed;
 }
 
