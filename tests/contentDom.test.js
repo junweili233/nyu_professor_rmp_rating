@@ -2942,6 +2942,36 @@ describe("Albert content DOM injection", () => {
     expect(document.body.textContent).toContain("Slot metadata should render.");
   });
 
+  it("injects ratings when data-name metadata labels instructor cells", async () => {
+    document.body.innerHTML = `
+      <table>
+        <tbody>
+          <tr>
+            <td data-name="course-title">CSCI-UA 201 Computer Systems Organization</td>
+            <td data-name="instructor-name">YAP, CHEE KENG</td>
+            <td data-name="section-status">Open</td>
+          </tr>
+        </tbody>
+      </table>
+    `;
+    const lookupProfessor = vi.fn(async (name) => ({
+      name,
+      rating: 2.1,
+      difficulty: 4.5,
+      ratingsCount: 92,
+      tags: [],
+      topComments: ["Data-name metadata should render."],
+      url: "https://www.ratemyprofessors.com/professor/419998",
+    }));
+
+    await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
+
+    expect(lookupProfessor).toHaveBeenCalledTimes(1);
+    expect(lookupProfessor).toHaveBeenCalledWith("Chee Keng Yap");
+    expect(document.querySelectorAll(".nyu-rmp-card")).toHaveLength(1);
+    expect(document.body.textContent).toContain("Data-name metadata should render.");
+  });
+
   it("skips adjacent metadata cells before an unmarked instructor name cell", async () => {
     document.body.innerHTML = `
       <table>
