@@ -183,6 +183,7 @@ describe("Albert content DOM injection", () => {
     const mounted = scanAlbertPageOnce({ document, lookupProfessor });
     const card = document.querySelector(".nyu-rmp-card");
 
+    expect(card.getAttribute("role")).toBe("group");
     expect(card.getAttribute("aria-busy")).toBe("true");
     expect(card.getAttribute("aria-label")).toBe("Checking RMP rating for Ada Lovelace");
 

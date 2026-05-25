@@ -331,6 +331,7 @@ function createRatingShell(document, name) {
   const card = document.createElement("article");
   card.className = "nyu-rmp-card is-loading";
   card.dataset.nyuRmpCardId = String(++nextCardId);
+  card.setAttribute("role", "group");
   setCardLoading(card, name, "Checking RMP");
   return card;
 }
