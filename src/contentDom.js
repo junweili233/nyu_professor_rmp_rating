@@ -220,7 +220,8 @@ function visibleTextSegments(element) {
 
 function instructorNameSegments(element) {
   const markedName = element.getAttribute("data-instructor-name")?.trim();
-  return markedName ? [markedName] : visibleTextSegments(element);
+  const attributeName = markedName || firstNameLikeAttribute(element);
+  return attributeName ? [attributeName] : visibleTextSegments(element);
 }
 
 function instructorNamesFromElementMarker(element) {
@@ -234,6 +235,16 @@ function instructorNamesFromElementMarker(element) {
     .filter(isLikelyInstructorName)
     .map(normalizeInstructorName)
     .filter(Boolean);
+}
+
+function firstNameLikeAttribute(element) {
+  for (const attributeName of ["title", "aria-label"]) {
+    const value = element.getAttribute(attributeName)?.trim();
+    if (value && splitInstructorList(value).some(isLikelyInstructorName)) {
+      return value;
+    }
+  }
+  return "";
 }
 
 function textForParsing(node) {

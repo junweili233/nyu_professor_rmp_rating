@@ -1507,6 +1507,35 @@ describe("Albert content DOM injection", () => {
     expect(document.querySelectorAll(".nyu-rmp-card")).toHaveLength(1);
   });
 
+  it("uses adjacent Albert title attributes when visible cell text is helper text", async () => {
+    document.body.innerHTML = `
+      <table>
+        <tbody>
+          <tr>
+            <th>Instructor</th>
+            <td title="YAP, CHEE KENG">View instructor details</td>
+          </tr>
+        </tbody>
+      </table>
+    `;
+    const lookupProfessor = vi.fn(async (name) => ({
+      name,
+      rating: 2.1,
+      difficulty: 4.5,
+      ratingsCount: 92,
+      tags: [],
+      topComments: ["Title-backed instructor names should render."],
+      url: "https://www.ratemyprofessors.com/professor/419998",
+    }));
+
+    await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
+
+    expect(lookupProfessor).toHaveBeenCalledTimes(1);
+    expect(lookupProfessor).toHaveBeenCalledWith("Chee Keng Yap");
+    expect(document.querySelectorAll(".nyu-rmp-card")).toHaveLength(1);
+    expect(document.body.textContent).toContain("Title-backed instructor names should render.");
+  });
+
   it("keeps injected ratings inside table cells instead of adding invalid row children", async () => {
     document.body.innerHTML = `
       <table>
