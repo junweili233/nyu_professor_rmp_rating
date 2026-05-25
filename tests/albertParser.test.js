@@ -43,6 +43,7 @@ describe("Albert instructor parsing", () => {
     expect(extractInstructorNamesFromText("Instructor: None")).toEqual([]);
     expect(extractInstructorNamesFromText("Instructor: Department Staff")).toEqual([]);
     expect(extractInstructorNamesFromText("Instructor: Staff TBA")).toEqual([]);
+    expect(extractInstructorNamesFromText("Instructor(s) TBA")).toEqual([]);
   });
 
   it("extracts unique professor names from an Albert shopping-cart style block", () => {
@@ -99,6 +100,19 @@ describe("Albert instructor parsing", () => {
     expect(extractInstructorNamesFromText(text)).toEqual([
       "Ada Lovelace",
       "Grace B. Hopper",
+    ]);
+  });
+
+  it("extracts instructor names from whitespace-separated Albert labels", () => {
+    const text = `
+      CSCI-UA 201 Computer Systems Organization
+      Instructor(s) Ada Lovelace
+      Primary Instructor YAP, CHEE KENG
+    `;
+
+    expect(extractInstructorNamesFromText(text)).toEqual([
+      "Ada Lovelace",
+      "Chee Keng Yap",
     ]);
   });
 

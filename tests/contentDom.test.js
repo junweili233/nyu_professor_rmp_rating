@@ -1094,6 +1094,25 @@ describe("Albert content DOM injection", () => {
     expect(document.body.textContent).toContain("Hyphen-separated labels should render.");
   });
 
+  it("injects ratings when Albert instructor labels use whitespace instead of punctuation", async () => {
+    document.body.innerHTML = `<div>Instructor(s) YAP, CHEE KENG</div>`;
+    const lookupProfessor = vi.fn(async (name) => ({
+      name,
+      rating: 2.1,
+      difficulty: 4.5,
+      ratingsCount: 92,
+      tags: [],
+      topComments: ["Whitespace-separated labels should render."],
+      url: "https://www.ratemyprofessors.com/professor/419998",
+    }));
+
+    await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
+
+    expect(lookupProfessor).toHaveBeenCalledWith("Chee Keng Yap");
+    expect(document.querySelectorAll(".nyu-rmp-card")).toHaveLength(1);
+    expect(document.body.textContent).toContain("Whitespace-separated labels should render.");
+  });
+
   it("injects ratings when Albert instructor labels use a period separator", async () => {
     document.body.innerHTML = `<div>Instructor. YAP, CHEE KENG</div>`;
     const lookupProfessor = vi.fn(async (name) => ({

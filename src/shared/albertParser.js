@@ -41,8 +41,12 @@ const INSTRUCTOR_ROLE_PATTERN =
   /\((?:primary(?: instructor)?|instructor|lecture|recitation|lab|laboratory|seminar|section)\)/gi;
 const INSTRUCTOR_SEPARATOR_PATTERN = String.raw`(?::|\.|-|\u2013|\u2014)`;
 const INSTRUCTOR_LABEL_PATTERN = String.raw`(?:primary\s+)?instructor(?:\(s\)|s)?`;
-const INSTRUCTOR_LABEL_WITH_NAMES_PATTERN = new RegExp(
+const INSTRUCTOR_LABEL_WITH_SEPARATOR_PATTERN = new RegExp(
   String.raw`\b${INSTRUCTOR_LABEL_PATTERN}\s*${INSTRUCTOR_SEPARATOR_PATTERN}\s*(.*)$`,
+  "i",
+);
+const INSTRUCTOR_LABEL_WITH_WHITESPACE_NAMES_PATTERN = new RegExp(
+  String.raw`\b${INSTRUCTOR_LABEL_PATTERN}\s+(.+)$`,
   "i",
 );
 
@@ -87,11 +91,18 @@ export function extractInstructorNamesFromText(text) {
       continue;
     }
 
-    const match = trimmedLine.match(INSTRUCTOR_LABEL_WITH_NAMES_PATTERN);
-    if (match) {
-      const inlineNames = match[1].trim();
+    const separatorMatch = trimmedLine.match(INSTRUCTOR_LABEL_WITH_SEPARATOR_PATTERN);
+    if (separatorMatch) {
+      const inlineNames = separatorMatch[1].trim();
       readingContinuationNames = !inlineNames;
       addInstructorPieces(inlineNames, { names, seen });
+      continue;
+    }
+
+    const whitespaceMatch = trimmedLine.match(INSTRUCTOR_LABEL_WITH_WHITESPACE_NAMES_PATTERN);
+    if (whitespaceMatch) {
+      readingContinuationNames = false;
+      addInstructorPieces(whitespaceMatch[1].trim(), { names, seen });
       continue;
     }
 
