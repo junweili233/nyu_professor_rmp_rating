@@ -334,7 +334,7 @@ function updateRatingCard(card, result, { requestedName = "Professor", lookupPro
     ${matchNote ? `<div class="nyu-rmp-match-note">${escapeHtml(matchNote)}</div>` : ""}
     ${updatedAt ? `<div class="nyu-rmp-updated">${escapeHtml(updatedAt)}</div>` : ""}
     <div class="nyu-rmp-score-row">
-      <span class="nyu-rmp-score">${formatScore(rating)}</span>
+      <span class="nyu-rmp-score" aria-label="${escapeHtml(formatRatingLabel(rating))}">${formatScore(rating)}</span>
       <span class="nyu-rmp-verdict">${escapeHtml(ratingVerdict.label)}</span>
       <span>${escapeHtml(formatRatingsCount(ratingsCount))}</span>
       <span>Difficulty ${formatScore(difficulty)}</span>
@@ -522,6 +522,10 @@ export function injectStyles(document = globalThis.document) {
 
 function formatScore(value) {
   return value == null ? "N/A" : Number(value).toFixed(1);
+}
+
+function formatRatingLabel(value) {
+  return value == null ? "RMP rating unavailable" : `RMP rating ${formatScore(value)} out of 5`;
 }
 
 function formatRatingsCount(value) {

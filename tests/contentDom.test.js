@@ -125,6 +125,7 @@ describe("Albert content DOM injection", () => {
     expect(lookupProfessor).toHaveBeenCalledWith("Chee Keng Yap");
     expect(document.querySelectorAll(".nyu-rmp-card")).toHaveLength(1);
     expect(document.querySelector(".nyu-rmp-score").textContent).toBe("2.1");
+    expect(document.querySelector(".nyu-rmp-score").getAttribute("aria-label")).toBe("RMP rating 2.1 out of 5");
     expect(document.body.textContent).toContain("Low rating");
     expect(document.body.textContent).toContain("Computer Science");
     expect(document.body.textContent).toContain("Difficulty 4.5");
@@ -474,6 +475,7 @@ describe("Albert content DOM injection", () => {
 
     expect(document.querySelector(".nyu-rmp-card").classList.contains("is-error")).toBe(false);
     expect(document.querySelector(".nyu-rmp-score").textContent).toBe("N/A");
+    expect(document.querySelector(".nyu-rmp-score").getAttribute("aria-label")).toBe("RMP rating unavailable");
     expect(document.body.textContent).toContain("No rating");
     expect(document.body.textContent).toContain("0 ratings");
     expect(document.body.textContent).toContain("Difficulty N/A");
