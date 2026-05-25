@@ -267,8 +267,12 @@ function nonNegativeNumberOrNull(value) {
 }
 
 function percentNumberOrNull(value) {
-  const number = nonNegativeNumberOrNull(value);
+  const number = nonNegativeNumberOrNull(stripPercentSuffix(value));
   return number == null || number > 100 ? null : number;
+}
+
+function stripPercentSuffix(value) {
+  return typeof value === "string" ? value.trim().replace(/%$/, "") : value;
 }
 
 function rmpScaleNumberOrNull(value) {
