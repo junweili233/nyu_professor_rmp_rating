@@ -112,6 +112,7 @@ const ALBERT_OBSERVER_OPTIONS = {
     "data-state",
     "data-test-id",
     "data-testid",
+    "data-teacher-name",
     "data-text",
     "data-title",
     "data-tooltip",
@@ -813,7 +814,7 @@ function associatedLabelText(element) {
 }
 
 function firstNameLikeAttribute(element) {
-  for (const attributeName of ["title", "aria-label", "data-value", "data-label", "data-option-label", "data-option-text", "data-item-label", "data-item-text", "data-person-label", "data-person-name", "data-person-text", "data-faculty-label", "data-faculty-name", "data-faculty-text", "data-professor-label", "data-professor-name", "data-professor-text", "data-title", "data-caption", "data-description", "data-text", "data-search", "data-full-name", "data-fullname", "data-full-text", "data-tooltip", "data-content", "data-original-title", "data-display", "data-display-name", "data-displayname", "data-name"]) {
+  for (const attributeName of ["title", "aria-label", "data-value", "data-label", "data-option-label", "data-option-text", "data-item-label", "data-item-text", "data-person-label", "data-person-name", "data-person-text", "data-faculty-label", "data-faculty-name", "data-faculty-text", "data-professor-label", "data-professor-name", "data-professor-text", "data-teacher-name", "data-title", "data-caption", "data-description", "data-text", "data-search", "data-full-name", "data-fullname", "data-full-text", "data-tooltip", "data-content", "data-original-title", "data-display", "data-display-name", "data-displayname", "data-name"]) {
     const value = element.getAttribute(attributeName)?.trim();
     if (value && splitInstructorList(value).some(isLikelyInstructorName)) {
       return value;
