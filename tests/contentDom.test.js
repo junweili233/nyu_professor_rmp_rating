@@ -2430,6 +2430,38 @@ describe("Albert content DOM injection", () => {
     expect(document.body.textContent).toContain("ARIA-labelled-by instructor cells should render.");
   });
 
+  it("injects ratings when Albert maps ARIA grid instructor cells by aria-colindex", async () => {
+    document.body.innerHTML = `
+      <div role="grid">
+        <div role="row">
+          <div role="columnheader" aria-colindex="1">Course</div>
+          <div role="columnheader" aria-colindex="2">Instructor</div>
+          <div role="columnheader" aria-colindex="3">Status</div>
+        </div>
+        <div role="row">
+          <div role="gridcell" aria-colindex="2">YAP, CHEE KENG</div>
+          <div role="gridcell" aria-colindex="3">Open</div>
+        </div>
+      </div>
+    `;
+    const lookupProfessor = vi.fn(async (name) => ({
+      name,
+      rating: 2.1,
+      difficulty: 4.5,
+      ratingsCount: 92,
+      tags: [],
+      topComments: ["ARIA colindex instructor cells should render."],
+      url: "https://www.ratemyprofessors.com/professor/419998",
+    }));
+
+    await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
+
+    expect(lookupProfessor).toHaveBeenCalledTimes(1);
+    expect(lookupProfessor).toHaveBeenCalledWith("Chee Keng Yap");
+    expect(document.querySelectorAll(".nyu-rmp-card")).toHaveLength(1);
+    expect(document.body.textContent).toContain("ARIA colindex instructor cells should render.");
+  });
+
   it("skips adjacent metadata cells before an unmarked instructor name cell", async () => {
     document.body.innerHTML = `
       <table>

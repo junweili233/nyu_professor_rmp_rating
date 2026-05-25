@@ -361,16 +361,31 @@ function columnHeaderText(element) {
     return "";
   }
 
-  const cellIndex = visibleRowCells(row).indexOf(element);
-  if (cellIndex < 0) {
+  const columnKey = columnKeyForCell(element, visibleRowCells(row));
+  if (!columnKey) {
     return "";
   }
 
   const headerRow = Array.from(rowGroup.querySelectorAll("tr, [role='row']"))
     .filter((candidateRow) => candidateRow !== row && (candidateRow.compareDocumentPosition(row) & Node.DOCUMENT_POSITION_FOLLOWING))
     .find((candidateRow) => visibleRowCells(candidateRow).some(isColumnHeaderCell));
-  const headerCell = headerRow ? visibleRowCells(headerRow)[cellIndex] : null;
+  const headerCell = headerRow ? visibleRowCells(headerRow).find((cell) => columnKeyForCell(cell, visibleRowCells(headerRow)) === columnKey) : null;
   return headerCell && isColumnHeaderCell(headerCell) ? visibleTextSegments(headerCell).join(" ") : "";
+}
+
+function columnKeyForCell(element, rowCells) {
+  const ariaColumnIndex = positiveIntegerAttribute(element, "aria-colindex");
+  if (ariaColumnIndex !== null) {
+    return `aria:${ariaColumnIndex}`;
+  }
+
+  const cellIndex = rowCells.indexOf(element);
+  return cellIndex >= 0 ? `index:${cellIndex}` : "";
+}
+
+function positiveIntegerAttribute(element, attributeName) {
+  const value = Number.parseInt(element.getAttribute(attributeName) ?? "", 10);
+  return Number.isInteger(value) && value > 0 ? value : null;
 }
 
 function rowForCell(element) {
