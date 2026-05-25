@@ -409,6 +409,64 @@ describe("Rate My Professors client", () => {
     ]);
   });
 
+  it("filters placeholder RMP comments before returning useful comments to Albert", async () => {
+    const fetchImpl = vi.fn(async () => ({
+      ok: true,
+      json: async () => ({
+        data: {
+          newSearch: {
+            teachers: {
+              edges: [
+                {
+                  node: {
+                    id: "VGVhY2hlci0xNQ==",
+                    legacyId: 249,
+                    firstName: "Grace",
+                    lastName: "Hopper",
+                    department: "Computer Science",
+                    avgRating: 4.8,
+                    avgDifficulty: 3.1,
+                    numRatings: 44,
+                    wouldTakeAgainPercent: 96,
+                    teacherRatingTags: [],
+                    ratings: {
+                      edges: [
+                        {
+                          node: {
+                            comment: "N/A",
+                            helpfulRating: 40,
+                          },
+                        },
+                        {
+                          node: {
+                            comment: "No comment",
+                            helpfulRating: 32,
+                          },
+                        },
+                        {
+                          node: {
+                            comment: "Lectures are clear and the systems projects are fair.",
+                            helpfulRating: 12,
+                          },
+                        },
+                      ],
+                    },
+                  },
+                },
+              ],
+            },
+          },
+        },
+      }),
+    }));
+
+    const result = await findProfessorRating("Grace Hopper", { fetchImpl });
+
+    expect(result.topComments.map((comment) => comment.text)).toEqual([
+      "Lectures are clear and the systems projects are fair.",
+    ]);
+  });
+
   it("keeps missing RMP numeric fields as null instead of fake zeroes", async () => {
     const fetchImpl = vi.fn(async () => ({
       ok: true,

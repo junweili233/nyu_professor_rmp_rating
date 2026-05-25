@@ -4,6 +4,7 @@ const MIN_ACCEPTABLE_TEACHER_SCORE = 25;
 const MIN_SUBSTRING_NAME_LENGTH = 6;
 const DEFAULT_LOOKUP_TIMEOUT_MS = 8000;
 const NAME_SUFFIXES = new Set(["ii", "ii.", "iii", "iii.", "iv", "iv.", "v", "v.", "jr", "jr.", "sr", "sr."]);
+const PLACEHOLDER_COMMENT_TEXT = new Set(["n/a", "na", "none", "no comment", "no comments"]);
 
 const PROFESSOR_SEARCH_QUERY = `
   query NewSearchTeachersQuery($query: TeacherSearchQuery!) {
@@ -118,7 +119,7 @@ function toProfessorRating(teacher, requestedName) {
   const name = `${teacher.firstName ?? ""} ${teacher.lastName ?? ""}`.trim();
   const comments = asArray(teacher?.ratings?.edges)
     .map((edge) => edge?.node)
-    .filter((rating) => rating?.comment?.trim())
+    .filter((rating) => isUsefulCommentText(rating?.comment))
     .sort((left, right) => commentHelpfulScore(right) - commentHelpfulScore(left))
     .filter(uniqueCommentText)
     .map((rating) => ({
@@ -193,6 +194,11 @@ function asArray(value) {
 
 function commentHelpfulScore(rating) {
   return nonNegativeNumberOrNull(rating?.helpfulRating) ?? 0;
+}
+
+function isUsefulCommentText(value) {
+  const text = String(value ?? "").trim();
+  return text && !PLACEHOLDER_COMMENT_TEXT.has(text.toLowerCase());
 }
 
 function uniqueCommentText(rating, _index, ratings) {
