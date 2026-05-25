@@ -35,8 +35,12 @@ export function createProfessorLookupService({
 
         if (cached.status === "legacy") {
           const migratedEntry = createStoredRating(cached.value, currentTime);
-          await storage.set({ [key]: migratedEntry });
           memoryCache.set(key, migratedEntry);
+          try {
+            await storage.set({ [key]: migratedEntry });
+          } catch {
+            // Old cache data can still render even if Chrome storage refuses the timestamp migration.
+          }
           return withCacheMetadata(cached.value, currentTime);
         }
       }
