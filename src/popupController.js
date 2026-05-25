@@ -49,12 +49,20 @@ export async function initPopup({
   }
 
   async function refreshStatus() {
-    const cached = await getProfessorCacheKeys(storage);
-    status.textContent = cached.length === 1 ? "1 professor cached" : `${cached.length} professors cached`;
-    if (clearButton) {
-      clearButton.disabled = cached.length === 0;
+    try {
+      const cached = await getProfessorCacheKeys(storage);
+      status.textContent = cached.length === 1 ? "1 professor cached" : `${cached.length} professors cached`;
+      if (clearButton) {
+        clearButton.disabled = cached.length === 0;
+      }
+      return cached;
+    } catch (error) {
+      status.textContent = `Cache status unavailable: ${error.message}`;
+      if (clearButton) {
+        clearButton.disabled = true;
+      }
+      return [];
     }
-    return cached;
   }
 
   if (clearButton) {

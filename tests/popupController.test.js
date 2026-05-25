@@ -55,6 +55,29 @@ describe("extension popup controller", () => {
     expect(document.getElementById("clear-cache").disabled).toBe(true);
   });
 
+  it("shows an inline error when cached professor count cannot be read", async () => {
+    document.body.innerHTML = `
+      <p id="status"></p>
+      <input id="enable-overlay" type="checkbox" />
+      <button id="clear-cache"></button>
+    `;
+    const storage = createStorageMock({
+      "settings:overlayEnabled": true,
+    });
+    storage.get = vi.fn(async (key) => {
+      if (key === "settings:overlayEnabled") {
+        return { "settings:overlayEnabled": true };
+      }
+      throw new Error("Cache unavailable");
+    });
+
+    await expect(initPopup({ document, storage })).resolves.toBeUndefined();
+
+    expect(document.getElementById("status").textContent).toBe("Cache status unavailable: Cache unavailable");
+    expect(document.getElementById("enable-overlay").disabled).toBe(false);
+    expect(document.getElementById("clear-cache").disabled).toBe(true);
+  });
+
   it("persists whether the Albert overlay is enabled", async () => {
     document.body.innerHTML = `
       <p id="status"></p>
