@@ -740,7 +740,7 @@ function isColumnHeaderCell(element) {
 function formControlValue(element) {
   if (element.tagName === "SELECT") {
     return Array.from(element.selectedOptions ?? [])
-      .map((option) => option.textContent?.trim())
+      .map((option) => instructorNameSegments(option).join(" "))
       .find(Boolean) ?? element.value?.trim() ?? "";
   }
 
