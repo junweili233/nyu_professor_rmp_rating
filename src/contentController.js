@@ -4,7 +4,7 @@ export async function initContentScript({
   removeAlbertRmpEnhancements,
   lookupProfessor,
 } = {}) {
-  const settings = await chrome.storage.local.get("settings:overlayEnabled");
+  const settings = await readOverlaySettings(chrome);
   let observer = null;
   if (settings["settings:overlayEnabled"] !== false) {
     observer = startOverlay();
@@ -33,5 +33,13 @@ export async function initContentScript({
       lookupProfessor,
       enabled: true,
     });
+  }
+}
+
+async function readOverlaySettings(chrome) {
+  try {
+    return await chrome.storage.local.get("settings:overlayEnabled");
+  } catch {
+    return {};
   }
 }

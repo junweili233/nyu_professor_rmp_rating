@@ -19,6 +19,25 @@ describe("content script controller", () => {
     });
   });
 
+  it("defaults to starting the overlay when the stored setting cannot be read", async () => {
+    const chrome = createChromeMock();
+    chrome.storage.local.get.mockRejectedValueOnce(new Error("Storage unavailable"));
+    const startAlbertRmpEnhancer = vi.fn(() => ({ disconnect: vi.fn() }));
+
+    await expect(initContentScript({
+      chrome,
+      startAlbertRmpEnhancer,
+      removeAlbertRmpEnhancements: vi.fn(),
+      lookupProfessor: vi.fn(),
+    })).resolves.toBeUndefined();
+
+    expect(startAlbertRmpEnhancer).toHaveBeenCalledWith({
+      lookupProfessor: expect.any(Function),
+      enabled: true,
+    });
+    expect(chrome.storage.onChanged.addListener).toHaveBeenCalledTimes(1);
+  });
+
   it("cleans up injected cards when the stored setting is disabled", async () => {
     const chrome = createChromeMock({ "settings:overlayEnabled": true });
     const observer = { disconnect: vi.fn() };
