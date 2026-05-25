@@ -109,7 +109,7 @@ function createScanLookupCache(lookupProfessor) {
 }
 
 export function findInstructorTargets(document = globalThis.document) {
-  const candidates = Array.from(document.querySelectorAll("td, th, dt, dd, div, span, li, p, a, button, [role='button'], label, strong, b, [data-instructor-name]"))
+  const candidates = Array.from(document.querySelectorAll("td, th, dt, dd, div, span, li, p, a, button, [role='button'], label, strong, b, input, textarea, [data-instructor-name]"))
     .filter(isUnprocessedVisibleCandidate)
     .flatMap((element) => findInstructorTargetsForElement(element));
 
@@ -120,6 +120,11 @@ function findInstructorTargetsForElement(element) {
   const markedNames = instructorNamesFromElementMarker(element);
   if (markedNames.length > 0) {
     return [{ element, names: markedNames }];
+  }
+
+  const formControlNames = instructorNamesFromFormControl(element);
+  if (formControlNames.length > 0) {
+    return [{ element, names: formControlNames }];
   }
 
   const text = visibleTextSegments(element).join("\n");
@@ -263,6 +268,36 @@ function instructorNamesFromElementMarker(element) {
     .filter(isLikelyInstructorName)
     .map(normalizeInstructorName)
     .filter(Boolean);
+}
+
+function instructorNamesFromFormControl(element) {
+  if (!isNamedFormControl(element) || !isInstructorLabeledFormControl(element)) {
+    return [];
+  }
+
+  const value = element.value?.trim();
+  if (!value) {
+    return [];
+  }
+
+  return [value]
+    .flatMap(splitInstructorList)
+    .filter(isLikelyInstructorName)
+    .map(normalizeInstructorName)
+    .filter(Boolean);
+}
+
+function isNamedFormControl(element) {
+  return ["INPUT", "TEXTAREA"].includes(element.tagName);
+}
+
+function isInstructorLabeledFormControl(element) {
+  return [
+    element.getAttribute("aria-label"),
+    element.getAttribute("title"),
+    element.getAttribute("name"),
+    element.id,
+  ].some((value) => value && isInstructorLabel(String(value)));
 }
 
 function firstNameLikeAttribute(element) {
