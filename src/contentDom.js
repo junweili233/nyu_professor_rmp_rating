@@ -187,11 +187,16 @@ function findNextVisibleSiblingWithText(element) {
     if (!isElementVisible(sibling)) {
       continue;
     }
-    if (visibleTextSegments(sibling).length > 0) {
+    const segments = visibleTextSegments(sibling);
+    if (segments.length > 0 && !segments.every(isInstructorSeparatorOnlyText)) {
       return sibling;
     }
   }
   return null;
+}
+
+function isInstructorSeparatorOnlyText(value) {
+  return /^(?::|\.|-|\u2013|\u2014)+$/.test(value.trim());
 }
 
 function visibleTextSegments(element) {
