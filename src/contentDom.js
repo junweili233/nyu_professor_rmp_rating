@@ -261,7 +261,7 @@ function textForParsing(node) {
     return "\n";
   }
 
-  const text = Array.from(node.childNodes).map(textForParsing).join("");
+  const text = Array.from(node.childNodes).map(textForParsing).join(" ");
   return isLineBreakElement(node) ? `\n${text}\n` : text;
 }
 
