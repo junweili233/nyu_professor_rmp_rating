@@ -255,6 +255,19 @@ describe("Albert instructor parsing", () => {
     ]);
   });
 
+  it("understands Albert last-name-first names with suffixes on the given-name side", () => {
+    const text = `
+      CSCI-UA 201 Computer Systems Organization
+      Instructor: MARTIN, ROBERT JR.
+      Instructor(s): LEE, ROBERT III
+    `;
+
+    expect(extractInstructorNamesFromText(text)).toEqual([
+      "Robert Martin Jr.",
+      "Robert Lee III",
+    ]);
+  });
+
   it("ignores academic titles and credentials in Albert instructor names", () => {
     const text = `
       CSCI-UA 201 Computer Systems Organization

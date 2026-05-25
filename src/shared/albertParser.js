@@ -154,7 +154,7 @@ export function splitInstructorList(value) {
 
   const commaParts = cleaned.split(/\s*,\s*/).map((part) => part.trim()).filter(Boolean);
   if (commaParts.length === 2 && looksLikeAlbertLastFirst(commaParts[0], commaParts[1])) {
-    return [`${commaParts[1]} ${commaParts[0]}`];
+    return [formatAlbertLastFirst(commaParts[0], commaParts[1])];
   }
   if (commaParts.length > 2) {
     return pairAlbertLastFirstParts(commaParts);
@@ -224,7 +224,7 @@ function pairAlbertLastFirstParts(parts) {
     const current = parts[index];
     const next = parts[index + 1];
     if (next && looksLikeAlbertLastFirst(current, next)) {
-      names.push(`${next} ${current}`);
+      names.push(formatAlbertLastFirst(current, next));
       index += 1;
     } else {
       names.push(current);
@@ -248,6 +248,16 @@ function looksLikeLastName(value) {
   }
 
   return parts.length > 1 && SURNAME_PARTICLES.has(parts[0].toLowerCase()) && parts.every(isNameToken);
+}
+
+function formatAlbertLastFirst(lastName, firstNames) {
+  const firstParts = firstNames.split(/\s+/).filter(Boolean);
+  const suffixParts = [];
+  while (firstParts.length > 1 && isNameSuffix(firstParts.at(-1))) {
+    suffixParts.unshift(firstParts.pop());
+  }
+
+  return [...firstParts, lastName, ...suffixParts].join(" ");
 }
 
 function isNameToken(value) {
