@@ -2430,6 +2430,35 @@ describe("Albert content DOM injection", () => {
     expect(document.body.textContent).toContain("ARIA-labelled-by instructor cells should render.");
   });
 
+  it("injects ratings when Albert describes instructor cells with aria-describedby", async () => {
+    document.body.innerHTML = `
+      <span id="course-cell-description">Course</span>
+      <span id="instructor-cell-description">Instructor</span>
+      <div role="grid">
+        <div role="row">
+          <div role="gridcell" aria-describedby="course-cell-description">CSCI-UA 201 Computer Systems Organization</div>
+          <div role="gridcell" aria-describedby="instructor-cell-description">YAP, CHEE KENG</div>
+        </div>
+      </div>
+    `;
+    const lookupProfessor = vi.fn(async (name) => ({
+      name,
+      rating: 2.1,
+      difficulty: 4.5,
+      ratingsCount: 92,
+      tags: [],
+      topComments: ["ARIA-described-by instructor cells should render."],
+      url: "https://www.ratemyprofessors.com/professor/419998",
+    }));
+
+    await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
+
+    expect(lookupProfessor).toHaveBeenCalledTimes(1);
+    expect(lookupProfessor).toHaveBeenCalledWith("Chee Keng Yap");
+    expect(document.querySelectorAll(".nyu-rmp-card")).toHaveLength(1);
+    expect(document.body.textContent).toContain("ARIA-described-by instructor cells should render.");
+  });
+
   it("injects ratings when Albert maps ARIA grid instructor cells by aria-colindex", async () => {
     document.body.innerHTML = `
       <div role="grid">

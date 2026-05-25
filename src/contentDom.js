@@ -333,6 +333,7 @@ function cellHeaderText(element) {
   return [
     cellLabelAttributeText(element),
     ariaLabelledByText(element),
+    ariaDescribedByText(element),
     referencedHeaderText(element),
     columnHeaderText(element),
   ].filter(Boolean).join("\n");
@@ -492,7 +493,15 @@ function isInstructorLabeledFormControl(element) {
 }
 
 function ariaLabelledByText(element) {
-  const ids = element.getAttribute("aria-labelledby")?.trim().split(/\s+/).filter(Boolean) ?? [];
+  return ariaReferencedText(element, "aria-labelledby");
+}
+
+function ariaDescribedByText(element) {
+  return ariaReferencedText(element, "aria-describedby");
+}
+
+function ariaReferencedText(element, attributeName) {
+  const ids = element.getAttribute(attributeName)?.trim().split(/\s+/).filter(Boolean) ?? [];
   if (ids.length === 0) {
     return "";
   }
