@@ -120,6 +120,7 @@ function toProfessorRating(teacher, requestedName) {
     ?.map((edge) => edge?.node)
     .filter((rating) => rating?.comment?.trim())
     .sort((left, right) => commentHelpfulScore(right) - commentHelpfulScore(left))
+    .filter(uniqueCommentText)
     .map((rating) => ({
       text: rating.comment.trim(),
       helpfulRating: nonNegativeNumberOrNull(rating.helpfulRating),
@@ -176,6 +177,15 @@ function normalizeTagName(value) {
 
 function commentHelpfulScore(rating) {
   return nonNegativeNumberOrNull(rating?.helpfulRating) ?? 0;
+}
+
+function uniqueCommentText(rating, _index, ratings) {
+  const key = compactCommentText(rating?.comment);
+  return key && ratings.findIndex((candidate) => compactCommentText(candidate?.comment) === key) === _index;
+}
+
+function compactCommentText(value) {
+  return String(value ?? "").trim().replace(/\s+/g, " ").toLowerCase();
 }
 
 function compactName(value) {
