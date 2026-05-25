@@ -77,6 +77,7 @@ const ALBERT_OBSERVER_OPTIONS = {
     "data-qa",
     "data-selected",
     "data-slot",
+    "data-state",
     "data-test-id",
     "data-testid",
     "data-title",
@@ -489,7 +490,8 @@ function selectedControlledOption(element) {
   return Array.from(element?.querySelectorAll?.("[role='option']") ?? [])
     .find((option) => option.getAttribute("aria-selected")?.trim().toLowerCase() === "true"
       || option.getAttribute("data-selected")?.trim().toLowerCase() === "true"
-      || option.getAttribute("data-active")?.trim().toLowerCase() === "true");
+      || option.getAttribute("data-active")?.trim().toLowerCase() === "true"
+      || ["checked", "selected", "active"].includes(option.getAttribute("data-state")?.trim().toLowerCase()));
 }
 
 function isInstructorLabeledControlledElement(element, id) {
