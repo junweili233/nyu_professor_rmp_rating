@@ -148,7 +148,16 @@ function isUnprocessedVisibleCandidate(element) {
 }
 
 function isElementVisible(element) {
-  return !element.closest("[hidden], [aria-hidden='true']") && !hasHiddenInlineStyle(element);
+  return !hasHiddenAttribute(element) && !hasHiddenInlineStyle(element);
+}
+
+function hasHiddenAttribute(element) {
+  for (let node = element; node; node = node.parentElement) {
+    if (node.hasAttribute("hidden") || node.getAttribute("aria-hidden")?.toLowerCase() === "true") {
+      return true;
+    }
+  }
+  return false;
 }
 
 function hasHiddenInlineStyle(element) {
