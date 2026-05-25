@@ -5,7 +5,7 @@ const STYLE_ID = "nyu-rmp-rating-styles";
 const COMMENT_PREVIEW_LENGTH = 150;
 const DEFAULT_RMP_URL = "https://www.ratemyprofessors.com/";
 const PLACEHOLDER_COMMENT_TEXT = new Set(["n/a", "na", "none", "no comment", "no comments", "no comments yet"]);
-const CONTROLLED_OPTION_SELECTOR = "[role='option'], [aria-selected], [aria-checked], [aria-current], [data-selected], [data-active], [data-current], [data-highlighted], [data-state], [selected], [class]";
+const CONTROLLED_OPTION_SELECTOR = "[role='option'], [aria-selected], [aria-checked], [aria-current], [data-selected], [data-active], [data-current], [data-focus], [data-highlighted], [data-state], [selected], [class]";
 const ALBERT_OBSERVER_OPTIONS = {
   childList: true,
   subtree: true,
@@ -56,6 +56,7 @@ const ALBERT_OBSERVER_OPTIONS = {
     "data-field-name",
     "data-fieldid",
     "data-fieldname",
+    "data-focus",
     "data-fld",
     "data-fld-id",
     "data-fld-label",
@@ -504,6 +505,7 @@ function selectedControlledOption(element) {
       || option.getAttribute("data-selected")?.trim().toLowerCase() === "true"
       || option.getAttribute("data-active")?.trim().toLowerCase() === "true"
       || option.getAttribute("data-current")?.trim().toLowerCase() === "true"
+      || isEnabledPresenceAttribute(option.getAttribute("data-focus"))
       || isEnabledPresenceAttribute(option.getAttribute("data-highlighted"))
       || ["checked", "selected", "active"].includes(option.getAttribute("data-state")?.trim().toLowerCase())
       || hasSelectedOptionClass(option));
