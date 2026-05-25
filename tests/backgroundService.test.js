@@ -380,6 +380,59 @@ describe("background professor lookup service", () => {
     expect(findProfessorRating).toHaveBeenCalledTimes(2);
   });
 
+  it("does not let an older in-flight lookup overwrite a newer force refresh cache entry", async () => {
+    let currentTime = new Date("2026-05-24T12:00:00Z").getTime();
+    const initialRating = {
+      name: "Ada Lovelace",
+      rating: 3.1,
+      topComments: ["Older lookup result."],
+    };
+    const refreshedRating = {
+      name: "Ada Lovelace",
+      rating: 4.9,
+      topComments: ["Manual refresh result."],
+    };
+    const pendingLookups = [];
+    const storage = createStorageMock();
+    const findProfessorRating = vi.fn(() => new Promise((resolve) => {
+      pendingLookups.push(resolve);
+    }));
+    const service = createProfessorLookupService({
+      storage,
+      findProfessorRating,
+      now: () => currentTime,
+    });
+
+    const normalLookup = service.lookup("Ada Lovelace");
+    await Promise.resolve();
+    await Promise.resolve();
+    currentTime += 1000;
+    const forcedLookup = service.lookup("Ada Lovelace", { forceRefresh: true });
+    await Promise.resolve();
+    await Promise.resolve();
+
+    pendingLookups[1](refreshedRating);
+    await expect(forcedLookup).resolves.toEqual({
+      ...refreshedRating,
+      cacheUpdatedAt: currentTime,
+    });
+
+    pendingLookups[0](initialRating);
+    await expect(normalLookup).resolves.toEqual({
+      ...initialRating,
+      cacheUpdatedAt: currentTime - 1000,
+    });
+
+    expect(storage.data[professorCacheKey("Ada Lovelace")]).toEqual({
+      cachedAt: currentTime,
+      value: refreshedRating,
+    });
+    await expect(service.lookup("Ada Lovelace")).resolves.toEqual({
+      ...refreshedRating,
+      cacheUpdatedAt: currentTime,
+    });
+  });
+
   it("persists fresh RMP lookup results for later Albert page scans", async () => {
     const freshRating = {
       name: "Ada Lovelace",
