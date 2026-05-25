@@ -1092,6 +1092,25 @@ describe("Rate My Professors client", () => {
     expect(bestMatch.department).toBe("Comp Sci");
   });
 
+  it("prefers shortened computer science departments for same-name RMP matches", () => {
+    const bestMatch = pickBestTeacher("Ada Lovelace", [
+      {
+        firstName: "Ada",
+        lastName: "Lovelace",
+        department: "Mathematics",
+        numRatings: 900,
+      },
+      {
+        firstName: "Ada",
+        lastName: "Lovelace",
+        department: "Comp Science",
+        numRatings: 0,
+      },
+    ]);
+
+    expect(bestMatch.department).toBe("Comp Science");
+  });
+
   it("prefers dotted CS departments for same-name RMP matches", () => {
     const bestMatch = pickBestTeacher("Ada Lovelace", [
       {

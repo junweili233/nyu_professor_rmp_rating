@@ -186,7 +186,7 @@ function teacherScore(target, teacher) {
 
 function isComputerScienceDepartment(value) {
   const department = String(value ?? "").toLowerCase();
-  return /computer|courant|\bcs\b|\bc\.?\s*s\.?\b|\bcomp\.?\s+sci\.?\b/.test(department);
+  return /computer|courant|\bcs\b|\bc\.?\s*s\.?\b|\bcomp\.?\s+(?:sci\.?|science)\b/.test(department);
 }
 
 function normalizeTagName(value) {
