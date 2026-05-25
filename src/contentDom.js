@@ -352,10 +352,22 @@ function cellLabelAttributeText(element) {
   ]) {
     const value = element.getAttribute(attributeName)?.trim();
     if (value) {
-      return value;
+      return normalizeCellLabelAttributeValue(attributeName, value);
     }
   }
   return "";
+}
+
+function normalizeCellLabelAttributeValue(attributeName, value) {
+  const normalized = normalizeLabelText(value);
+  if (isFieldNameAttribute(attributeName) && /\b(?:instructor|instr)\b/i.test(normalized)) {
+    return "Instructor";
+  }
+  return value;
+}
+
+function isFieldNameAttribute(attributeName) {
+  return ["data-field", "data-field-name", "data-fieldname"].includes(attributeName);
 }
 
 function referencedHeaderText(element) {
