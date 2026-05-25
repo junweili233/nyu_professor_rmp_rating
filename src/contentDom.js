@@ -511,7 +511,12 @@ function isCurrentOption(value) {
 
 function hasSelectedOptionClass(element) {
   return Array.from(element.classList ?? [])
-    .some((className) => /^(?:is-|ps-|ui-|nyu-)?(?:selected|active|current)$/.test(className.toLowerCase()));
+    .some((className) => {
+      const normalizedClassName = className.toLowerCase();
+      return /^(?:is-|ps-|ui-|nyu-)?(?:selected|active|current)$/.test(normalizedClassName)
+        || /^(?:selected|active|current)[-_]option$/.test(normalizedClassName)
+        || /^option[-_](?:selected|active|current)$/.test(normalizedClassName);
+    });
 }
 
 function isInstructorLabeledControlledElement(element, id) {
