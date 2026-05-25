@@ -13,10 +13,12 @@ const ALBERT_OBSERVER_OPTIONS = {
   attributeFilter: [
     "aria-colindex",
     "aria-activedescendant",
+    "aria-controls",
     "aria-describedby",
     "aria-hidden",
     "aria-label",
     "aria-labelledby",
+    "aria-selected",
     "aria-value",
     "aria-valuetext",
     "class",
@@ -438,6 +440,7 @@ function ariaValueControlSegments(element) {
     element.getAttribute("aria-valuetext")?.trim(),
     element.getAttribute("aria-value")?.trim(),
     activeDescendantText(element),
+    selectedControlledOptionText(element),
     ...visibleTextSegments(element),
   ].filter(Boolean);
 }
@@ -451,6 +454,19 @@ function activeDescendantText(element) {
   const activeDescendant = element.ownerDocument?.getElementById(activeDescendantId);
   return activeDescendant && isElementVisible(activeDescendant)
     ? visibleTextSegments(activeDescendant).join(" ")
+    : "";
+}
+
+function selectedControlledOptionText(element) {
+  const controlledElementId = element.getAttribute("aria-controls")?.trim();
+  if (!controlledElementId) {
+    return "";
+  }
+
+  const controlledElement = element.ownerDocument?.getElementById(controlledElementId);
+  const selectedOption = controlledElement?.querySelector?.("[role='option'][aria-selected='true']");
+  return selectedOption && isElementVisible(selectedOption)
+    ? visibleTextSegments(selectedOption).join(" ")
     : "";
 }
 
