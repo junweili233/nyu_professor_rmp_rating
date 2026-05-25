@@ -153,6 +153,7 @@ function teacherScore(target, teacher) {
   const name = compactName(`${teacher.firstName ?? ""} ${teacher.lastName ?? ""}`);
   const nameWithoutMiddleParts = compactFirstLastWithoutMiddleParts(teacher.firstName, teacher.lastName);
   const nameWithoutSuffix = compactNameWithoutSuffix(teacher.firstName, teacher.lastName);
+  const initialLastName = compactInitialLastName(teacher.firstName, teacher.lastName);
   if (!name) {
     return 0;
   }
@@ -165,6 +166,9 @@ function teacherScore(target, teacher) {
   }
   if (nameWithoutMiddleParts && nameWithoutMiddleParts === target) {
     score += 95;
+  }
+  if (initialLastName && initialLastName === target) {
+    score += 85;
   }
   if (name.length >= MIN_SUBSTRING_NAME_LENGTH && target.includes(name)) {
     score += 25;
@@ -218,6 +222,16 @@ function compactNameWithoutSuffix(firstName, lastName) {
   }
 
   return parts.slice(0, -1).join("");
+}
+
+function compactInitialLastName(firstName, lastName) {
+  const firstParts = nameParts(firstName);
+  const last = compactName(lastName ?? "");
+  if (firstParts.length < 1 || !last) {
+    return "";
+  }
+
+  return `${firstParts[0].charAt(0)}${last}`;
 }
 
 function nameParts(value) {

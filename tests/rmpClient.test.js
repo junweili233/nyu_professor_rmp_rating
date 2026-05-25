@@ -989,6 +989,42 @@ describe("Rate My Professors client", () => {
     expect(result.matchConfidence).toBe("fuzzy");
   });
 
+  it("matches Albert first-initial names to full RMP professor names", async () => {
+    const fetchImpl = vi.fn(async () => ({
+      ok: true,
+      json: async () => ({
+        data: {
+          newSearch: {
+            teachers: {
+              edges: [
+                {
+                  node: {
+                    id: "initial-match",
+                    legacyId: 555,
+                    firstName: "John",
+                    lastName: "Smith",
+                    department: "Computer Science",
+                    avgRating: 4.2,
+                    avgDifficulty: 3.3,
+                    numRatings: 18,
+                    wouldTakeAgainPercent: 82,
+                    teacherRatingTags: [],
+                    ratings: { edges: [] },
+                  },
+                },
+              ],
+            },
+          },
+        },
+      }),
+    }));
+
+    const result = await findProfessorRating("J. Smith", { fetchImpl });
+
+    expect(result.name).toBe("John Smith");
+    expect(result.matchConfidence).toBe("fuzzy");
+  });
+
   it("does not accept an RMP professor whose longer surname only starts with the Albert surname", async () => {
     const fetchImpl = vi.fn(async () => ({
       ok: true,
