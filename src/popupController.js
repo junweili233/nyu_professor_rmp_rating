@@ -39,6 +39,9 @@ export async function initPopup({
 
   if (clearButton) {
     clearButton.addEventListener("click", async () => {
+      clearButton.disabled = true;
+      clearButton.setAttribute("aria-busy", "true");
+      status.textContent = "Clearing cache";
       try {
         if (runtime?.sendMessage) {
           const response = await runtime.sendMessage({ type: "NYU_RMP_CLEAR_CACHE" });
@@ -56,6 +59,8 @@ export async function initPopup({
       } catch (error) {
         status.textContent = `Cache clear failed: ${error.message}`;
         clearButton.disabled = false;
+      } finally {
+        clearButton.setAttribute("aria-busy", "false");
       }
     });
   }

@@ -103,6 +103,38 @@ describe("extension popup controller", () => {
     expect(document.getElementById("status").textContent).toBe("Cache cleared");
   });
 
+  it("disables and marks the clear button busy while cache clearing is in progress", async () => {
+    document.body.innerHTML = `
+      <p id="status"></p>
+      <input id="enable-overlay" type="checkbox" />
+      <button id="clear-cache"></button>
+    `;
+    const storage = createStorageMock({
+      "professor:ada lovelace": { value: { name: "Ada Lovelace" } },
+    });
+    let resolveClear;
+    const runtime = {
+      sendMessage: vi.fn(() => new Promise((resolve) => {
+        resolveClear = resolve;
+      })),
+    };
+
+    await initPopup({ document, storage, runtime });
+    const clearButton = document.getElementById("clear-cache");
+    clearButton.click();
+
+    expect(clearButton.disabled).toBe(true);
+    expect(clearButton.getAttribute("aria-busy")).toBe("true");
+    expect(document.getElementById("status").textContent).toBe("Clearing cache");
+
+    resolveClear({ ok: true, cleared: 1 });
+    await flushPromises();
+
+    expect(clearButton.disabled).toBe(true);
+    expect(clearButton.getAttribute("aria-busy")).toBe("false");
+    expect(document.getElementById("status").textContent).toBe("Cache cleared");
+  });
+
   it("shows an inline error when the background cache clear fails", async () => {
     document.body.innerHTML = `
       <p id="status"></p>
