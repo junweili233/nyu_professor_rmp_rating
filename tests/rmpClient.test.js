@@ -881,6 +881,42 @@ describe("Rate My Professors client", () => {
     expect(JSON.parse(fetchImpl.mock.calls[1][1].body).variables.query.text).toBe("Chee Yap");
   });
 
+  it("matches RMP professor names that include a middle initial when Albert omits it", async () => {
+    const fetchImpl = vi.fn(async () => ({
+      ok: true,
+      json: async () => ({
+        data: {
+          newSearch: {
+            teachers: {
+              edges: [
+                {
+                  node: {
+                    id: "middle-initial",
+                    legacyId: 222,
+                    firstName: "Grace B.",
+                    lastName: "Hopper",
+                    department: "Computer Science",
+                    avgRating: 4.8,
+                    avgDifficulty: 3.1,
+                    numRatings: 44,
+                    wouldTakeAgainPercent: 96,
+                    teacherRatingTags: [],
+                    ratings: { edges: [] },
+                  },
+                },
+              ],
+            },
+          },
+        },
+      }),
+    }));
+
+    const result = await findProfessorRating("Grace Hopper", { fetchImpl });
+
+    expect(result.name).toBe("Grace B. Hopper");
+    expect(result.matchConfidence).toBe("fuzzy");
+  });
+
   it("does not accept an RMP professor whose longer surname only starts with the Albert surname", async () => {
     const fetchImpl = vi.fn(async () => ({
       ok: true,
