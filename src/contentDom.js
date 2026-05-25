@@ -109,7 +109,7 @@ function createScanLookupCache(lookupProfessor) {
 }
 
 export function findInstructorTargets(document = globalThis.document) {
-  const candidates = Array.from(document.querySelectorAll("td, th, dt, dd, div, span, li, p, section, article, h1, h2, h3, h4, h5, h6, a, button, [role='button'], label, strong, b, input, textarea, select, [data-instructor-name]"))
+  const candidates = Array.from(document.querySelectorAll("td, th, dt, dd, div, span, li, p, section, article, h1, h2, h3, h4, h5, h6, a, button, [role='button'], [role='cell'], [role='gridcell'], label, strong, b, input, textarea, select, [data-instructor-name]"))
     .filter(isUnprocessedVisibleCandidate)
     .flatMap((element) => findInstructorTargetsForElement(element));
 
@@ -511,7 +511,11 @@ function loadRatingCard({ card, name, lookupProfessor, forceRefresh = false }) {
 }
 
 function isTableCell(element) {
-  return ["TD", "TH", "DD"].includes(element.tagName);
+  return ["TD", "TH", "DD"].includes(element.tagName) || isAriaDataCell(element);
+}
+
+function isAriaDataCell(element) {
+  return ["cell", "gridcell"].includes(element.getAttribute("role")?.trim().toLowerCase());
 }
 
 function createRatingShell(document, name) {
