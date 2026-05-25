@@ -18,6 +18,11 @@ export function createProfessorMessenger(chrome, { timeoutMs = DEFAULT_MESSAGE_T
 
 function sendRuntimeMessage(chrome, message, { timeoutMs }) {
   return new Promise((resolve, reject) => {
+    if (!chrome?.runtime?.sendMessage) {
+      reject(new Error("extension runtime is unavailable"));
+      return;
+    }
+
     let settled = false;
     const timeoutId = setTimeout(() => {
       if (settled) {

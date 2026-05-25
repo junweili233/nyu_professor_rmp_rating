@@ -89,6 +89,12 @@ describe("content script professor messenger", () => {
     await expect(messenger.lookupProfessor("Ada Lovelace")).rejects.toThrow("RMP lookup failed");
   });
 
+  it("rejects unavailable extension runtime with a clear retryable error", async () => {
+    const messenger = createProfessorMessenger({});
+
+    await expect(messenger.lookupProfessor("Ada Lovelace")).rejects.toThrow("extension runtime is unavailable");
+  });
+
   it("times out runtime messages that never receive a background response", async () => {
     vi.useFakeTimers();
     const chrome = {
