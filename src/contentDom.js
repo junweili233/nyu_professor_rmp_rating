@@ -307,7 +307,22 @@ function isInstructorLabeledFormControl(element) {
     element.getAttribute("title"),
     element.getAttribute("name"),
     element.id,
+    ariaLabelledByText(element),
   ].some((value) => value && isInstructorLabel(String(value)));
+}
+
+function ariaLabelledByText(element) {
+  const ids = element.getAttribute("aria-labelledby")?.trim().split(/\s+/).filter(Boolean) ?? [];
+  if (ids.length === 0) {
+    return "";
+  }
+
+  return ids
+    .map((id) => element.ownerDocument?.getElementById(id))
+    .filter((labelElement) => labelElement && isElementVisible(labelElement))
+    .map((labelElement) => visibleTextSegments(labelElement).join(" "))
+    .filter(Boolean)
+    .join(" ");
 }
 
 function firstNameLikeAttribute(element) {
