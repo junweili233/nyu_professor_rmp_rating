@@ -122,6 +122,19 @@ describe("Albert instructor parsing", () => {
     ]);
   });
 
+  it("extracts names from instructor-name Albert labels", () => {
+    const text = `
+      CSCI-UA 201 Computer Systems Organization
+      Instructor Name: Ada Lovelace
+      Instructor Name YAP, CHEE KENG
+    `;
+
+    expect(extractInstructorNamesFromText(text)).toEqual([
+      "Ada Lovelace",
+      "Chee Keng Yap",
+    ]);
+  });
+
   it("extracts names from professor-labeled Albert rows", () => {
     const text = `
       CSCI-UA 201 Computer Systems Organization

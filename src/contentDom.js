@@ -138,8 +138,8 @@ function findInstructorTargetsForElement(element) {
 }
 
 function hasInstructorText(text) {
-  return /\b(?:(?:primary\s+)?instructor(?:\(s\)|s)?|professor|prof\.?|faculty|teacher(?:s)?|taught\s+by)(?:\s*(?::|\.|-|\u2013|\u2014)|\s+\S)/i.test(text)
-    || /(?:^|\n)\s*(?:(?:primary\s+)?instructor(?:\(s\)|s)?|professor|prof\.?|faculty|teacher(?:s)?|taught\s+by)\s*(?:\n|$)/i.test(text);
+  return /\b(?:(?:primary\s+)?instructor(?:\s+name|\(s\)|s)?|professor|prof\.?|faculty|teacher(?:s)?|taught\s+by)(?:\s*(?::|\.|-|\u2013|\u2014)|\s+\S)/i.test(text)
+    || /(?:^|\n)\s*(?:(?:primary\s+)?instructor(?:\s+name|\(s\)|s)?|professor|prof\.?|faculty|teacher(?:s)?|taught\s+by)\s*(?:\n|$)/i.test(text);
 }
 
 function isUnprocessedVisibleCandidate(element) {
@@ -184,7 +184,7 @@ function parseCssPixelValue(value) {
 }
 
 function isInstructorLabel(text) {
-  return /^(?:(?:primary\s+)?instructor(?:\(s\)|s)?|professor|prof\.?|faculty|teacher(?:s)?|taught\s+by)\s*(?::|\.|-|\u2013|\u2014)?$/i.test(text.trim());
+  return /^(?:(?:primary\s+)?instructor(?:\s+name|\(s\)|s)?|professor|prof\.?|faculty|teacher(?:s)?|taught\s+by)\s*(?::|\.|-|\u2013|\u2014)?$/i.test(text.trim());
 }
 
 function findAdjacentInstructorTarget(element) {

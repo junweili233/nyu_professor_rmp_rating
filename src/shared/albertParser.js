@@ -46,7 +46,7 @@ const ACADEMIC_CREDENTIAL_PATTERN =
 const INSTRUCTOR_ROLE_PATTERN =
   /\((?:primary(?: instructor)?|instructor|lecture|recitation|lab|laboratory|seminar|section)\)/gi;
 const INSTRUCTOR_SEPARATOR_PATTERN = String.raw`(?::|\.|-|\u2013|\u2014)`;
-const INSTRUCTOR_LABEL_PATTERN = String.raw`(?:(?:primary\s+)?instructor(?:\(s\)|s)?|professor|prof\.?|faculty|teacher(?:s)?|taught\s+by)`;
+const INSTRUCTOR_LABEL_PATTERN = String.raw`(?:(?:primary\s+)?instructor(?:\s+name|\(s\)|s)?|professor|prof\.?|faculty|teacher(?:s)?|taught\s+by)`;
 const INSTRUCTOR_LABEL_WITH_SEPARATOR_PATTERN = new RegExp(
   String.raw`\b${INSTRUCTOR_LABEL_PATTERN}\s*${INSTRUCTOR_SEPARATOR_PATTERN}\s*(.*)$`,
   "i",
