@@ -2637,6 +2637,36 @@ describe("Albert content DOM injection", () => {
     expect(document.body.textContent).toContain("Embedded field labels should render.");
   });
 
+  it("injects ratings when explicit field-label metadata labels instructor cells", async () => {
+    document.body.innerHTML = `
+      <table>
+        <tbody>
+          <tr>
+            <td data-field-label="Course">CSCI-UA 201 Computer Systems Organization</td>
+            <td data-field-label="Instructor">YAP, CHEE KENG</td>
+            <td data-field-label="Status">Open</td>
+          </tr>
+        </tbody>
+      </table>
+    `;
+    const lookupProfessor = vi.fn(async (name) => ({
+      name,
+      rating: 2.1,
+      difficulty: 4.5,
+      ratingsCount: 92,
+      tags: [],
+      topComments: ["Field-label metadata should render."],
+      url: "https://www.ratemyprofessors.com/professor/419998",
+    }));
+
+    await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
+
+    expect(lookupProfessor).toHaveBeenCalledTimes(1);
+    expect(lookupProfessor).toHaveBeenCalledWith("Chee Keng Yap");
+    expect(document.querySelectorAll(".nyu-rmp-card")).toHaveLength(1);
+    expect(document.body.textContent).toContain("Field-label metadata should render.");
+  });
+
   it("injects ratings when generated column-name attributes embed instructor tokens", async () => {
     document.body.innerHTML = `
       <table>
