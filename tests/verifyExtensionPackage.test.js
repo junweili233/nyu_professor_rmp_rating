@@ -87,6 +87,18 @@ describe("extension package verifier", () => {
     await rm(dist, { recursive: true, force: true });
   });
 
+  it("fails when the popup html has no script entry", async () => {
+    const dist = await createPackageDist({
+      files: {
+        "popup.html": "<main>NYU RMP</main>",
+      },
+    });
+
+    await expect(verifyExtensionPackage(dist)).rejects.toThrow("popup script entry is required");
+
+    await rm(dist, { recursive: true, force: true });
+  });
+
   it("fails when a content script contains top-level await", async () => {
     const dist = await createPackageDist({
       files: {
@@ -126,7 +138,7 @@ async function createPackageDist({ manifestOverrides = {}, files = {} } = {}) {
   await writeFile(join(dist, "manifest.json"), JSON.stringify(manifest), "utf8");
   await writeFile(join(dist, "background.js"), "", "utf8");
   await writeFile(join(dist, "content.js"), files["content.js"] ?? "", "utf8");
-  await writeFile(join(dist, "popup.html"), '<script type="module" src="/popup.js"></script>', "utf8");
+  await writeFile(join(dist, "popup.html"), files["popup.html"] ?? '<script type="module" src="/popup.js"></script>', "utf8");
   await writeFile(join(dist, "popup.js"), "", "utf8");
   return dist;
 }

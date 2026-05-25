@@ -46,6 +46,9 @@ export async function verifyExtensionPackage(distDir = "dist") {
 
   const popupHtml = await readFile(join(distDir, manifest.action.default_popup), "utf8");
   const popupScripts = Array.from(popupHtml.matchAll(/<script[^>]+src="([^"]+)"/g)).map((match) => match[1]);
+  if (popupScripts.length === 0) {
+    throw new Error("popup script entry is required");
+  }
   for (const script of popupScripts) {
     const normalizedScript = script.replace(/^\//, "");
     await assertFileExists(join(distDir, normalizedScript), `popup script is missing: ${normalizedScript}`);
