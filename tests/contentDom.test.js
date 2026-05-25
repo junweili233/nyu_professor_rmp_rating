@@ -3539,6 +3539,31 @@ describe("Albert content DOM injection", () => {
     expect(document.body.textContent).toContain("Data-active options should render.");
   });
 
+  it("injects ratings when active custom options expose names in data-active-label", async () => {
+    document.body.innerHTML = `
+      <div role="combobox" aria-label="Instructor" aria-controls="instructor-options"></div>
+      <div id="instructor-options" role="listbox">
+        <div role="option" data-active="true" data-active-label="YAP, CHEE KENG"></div>
+      </div>
+    `;
+    const lookupProfessor = vi.fn(async (name) => ({
+      name,
+      rating: 3.6,
+      difficulty: 3.1,
+      ratingsCount: 66,
+      tags: [],
+      topComments: ["Active option label metadata should render."],
+      url: "https://www.ratemyprofessors.com/professor/419998",
+    }));
+
+    await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
+
+    expect(lookupProfessor).toHaveBeenCalledTimes(1);
+    expect(lookupProfessor).toHaveBeenCalledWith("Chee Keng Yap");
+    expect(document.querySelectorAll(".nyu-rmp-card")).toHaveLength(1);
+    expect(document.body.textContent).toContain("Active option label metadata should render.");
+  });
+
   it("injects ratings when custom listbox options use data-highlighted state", async () => {
     document.body.innerHTML = `
       <div role="combobox" aria-label="Instructor" aria-controls="instructor-options"></div>
