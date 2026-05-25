@@ -475,7 +475,7 @@ function selectedControlledOptionText(element) {
     const controlledElement = element.ownerDocument?.getElementById(controlledElementId);
     const selectedOption = selectedControlledOption(controlledElement);
     const selectedText = selectedOption && isElementVisible(selectedOption)
-      ? visibleTextSegments(selectedOption).join(" ")
+      ? instructorNameSegments(selectedOption).join(" ")
       : "";
     if (!selectedText || !splitInstructorList(selectedText).some(isLikelyInstructorName)) {
       continue;
