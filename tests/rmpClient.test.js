@@ -242,6 +242,55 @@ describe("Rate My Professors client", () => {
     expect(result.topComments[0].difficultyRating).toBeNull();
   });
 
+  it("normalizes formatted RMP scale metrics", async () => {
+    const fetchImpl = vi.fn(async () => ({
+      ok: true,
+      json: async () => ({
+        data: {
+          newSearch: {
+            teachers: {
+              edges: [
+                {
+                  node: {
+                    id: "VGVhY2hlci0xMw==",
+                    legacyId: 138,
+                    firstName: "Grace",
+                    lastName: "Hopper",
+                    department: "Computer Science",
+                    avgRating: "4.8 / 5",
+                    avgDifficulty: "2.3 / 5",
+                    numRatings: 44,
+                    wouldTakeAgainPercent: 96,
+                    teacherRatingTags: [],
+                    ratings: {
+                      edges: [
+                        {
+                          node: {
+                            comment: "Formatted metrics should remain useful.",
+                            helpfulRating: 4,
+                            clarityRating: "5 / 5",
+                            difficultyRating: "2 / 5",
+                          },
+                        },
+                      ],
+                    },
+                  },
+                },
+              ],
+            },
+          },
+        },
+      }),
+    }));
+
+    const result = await findProfessorRating("Grace Hopper", { fetchImpl });
+
+    expect(result.rating).toBe(4.8);
+    expect(result.difficulty).toBe(2.3);
+    expect(result.topComments[0].clarityRating).toBe(5);
+    expect(result.topComments[0].difficultyRating).toBe(2);
+  });
+
   it("orders useful comments with malformed helpfulness after valid helpful comments", async () => {
     const fetchImpl = vi.fn(async () => ({
       ok: true,

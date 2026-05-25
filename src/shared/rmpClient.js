@@ -257,8 +257,12 @@ function numberOrNull(value) {
   if (value == null || value === "") {
     return null;
   }
-  const number = Number(value);
+  const number = Number(stripScaleSuffix(value));
   return Number.isFinite(number) ? number : null;
+}
+
+function stripScaleSuffix(value) {
+  return typeof value === "string" ? value.trim().replace(/\s*\/\s*5\s*$/i, "") : value;
 }
 
 function nonNegativeNumberOrNull(value) {
