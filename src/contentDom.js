@@ -109,7 +109,7 @@ function createScanLookupCache(lookupProfessor) {
 }
 
 export function findInstructorTargets(document = globalThis.document) {
-  const candidates = Array.from(document.querySelectorAll("td, th, dt, dd, div, span, li, p, a, label, [data-instructor-name]"))
+  const candidates = Array.from(document.querySelectorAll("td, th, dt, dd, div, span, li, p, a, label, strong, b, [data-instructor-name]"))
     .filter(isUnprocessedVisibleCandidate)
     .flatMap((element) => findInstructorTargetsForElement(element));
 
