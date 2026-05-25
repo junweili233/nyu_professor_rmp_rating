@@ -207,7 +207,15 @@ function parseCssPixelValue(value) {
 }
 
 function isInstructorLabel(text) {
-  return /^(?:(?:primary\s+)?instructor(?:\(s\)|s)?(?:\s+name(?:\(s\)|s)?)?|professor|prof\.?|faculty|teacher(?:s)?|taught\s+by)\s*(?::|\.|-|\u2013|\u2014)?$/i.test(text.trim());
+  const normalizedText = normalizeLabelText(text);
+  return /^(?:(?:primary\s+)?instructor(?:\(s\)|s)?(?:\s+name(?:\(s\)|s)?)?|professor|prof\.?|faculty|teacher(?:s)?|taught\s+by)\s*(?::|\.|-|\u2013|\u2014)?$/i.test(normalizedText);
+}
+
+function normalizeLabelText(text) {
+  return String(text ?? "")
+    .replace(/[_-]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
 }
 
 function findAdjacentInstructorTarget(element) {
