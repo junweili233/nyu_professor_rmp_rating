@@ -1870,6 +1870,29 @@ describe("Albert content DOM injection", () => {
     expect(document.body.textContent).toContain("Linked instructor attributes should render.");
   });
 
+  it("injects ratings when Albert uses label elements for instructor fields", async () => {
+    document.body.innerHTML = `
+      <label>Instructor</label>
+      <span>YAP, CHEE KENG</span>
+    `;
+    const lookupProfessor = vi.fn(async (name) => ({
+      name,
+      rating: 2.1,
+      difficulty: 4.5,
+      ratingsCount: 92,
+      tags: [],
+      topComments: ["Label element instructor fields should render."],
+      url: "https://www.ratemyprofessors.com/professor/419998",
+    }));
+
+    await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
+
+    expect(lookupProfessor).toHaveBeenCalledTimes(1);
+    expect(lookupProfessor).toHaveBeenCalledWith("Chee Keng Yap");
+    expect(document.querySelectorAll(".nyu-rmp-card")).toHaveLength(1);
+    expect(document.body.textContent).toContain("Label element instructor fields should render.");
+  });
+
   it("skips adjacent metadata cells before an unmarked instructor name cell", async () => {
     document.body.innerHTML = `
       <table>
