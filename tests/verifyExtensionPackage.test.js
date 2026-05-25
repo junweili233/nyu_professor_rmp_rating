@@ -49,6 +49,25 @@ describe("extension package verifier", () => {
     await rm(dist, { recursive: true, force: true });
   });
 
+  it("fails when the Albert content script has no JavaScript entry", async () => {
+    const dist = await createPackageDist({
+      manifestOverrides: {
+        content_scripts: [
+          {
+            matches: ["https://albert.nyu.edu/*"],
+            run_at: "document_idle",
+            all_frames: true,
+            match_about_blank: true,
+          },
+        ],
+      },
+    });
+
+    await expect(verifyExtensionPackage(dist)).rejects.toThrow("Albert content script JavaScript entry is required");
+
+    await rm(dist, { recursive: true, force: true });
+  });
+
   it("fails when the Albert content script does not match blank child frames", async () => {
     const dist = await createPackageDist({
       manifestOverrides: {

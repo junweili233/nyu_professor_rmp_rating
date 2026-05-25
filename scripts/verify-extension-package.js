@@ -19,17 +19,19 @@ export async function verifyExtensionPackage(distDir = "dist") {
   if (!manifest.permissions?.includes("storage")) {
     throw new Error("storage permission is required");
   }
-  if (!manifest.content_scripts?.some((contentScript) => contentScript.matches?.includes("https://albert.nyu.edu/*"))) {
+  const albertContentScript = manifest.content_scripts?.find((contentScript) =>
+    contentScript.matches?.includes("https://albert.nyu.edu/*")
+  );
+  if (!albertContentScript) {
     throw new Error("Albert content script match is required");
   }
-  if (!manifest.content_scripts?.some((contentScript) =>
-    contentScript.matches?.includes("https://albert.nyu.edu/*") && contentScript.all_frames === true
-  )) {
+  if (!Array.isArray(albertContentScript.js) || albertContentScript.js.length === 0) {
+    throw new Error("Albert content script JavaScript entry is required");
+  }
+  if (albertContentScript.all_frames !== true) {
     throw new Error("Albert content script must run in all frames");
   }
-  if (!manifest.content_scripts?.some((contentScript) =>
-    contentScript.matches?.includes("https://albert.nyu.edu/*") && contentScript.match_about_blank === true
-  )) {
+  if (albertContentScript.match_about_blank !== true) {
     throw new Error("Albert content script must match blank child frames");
   }
 
