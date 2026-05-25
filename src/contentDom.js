@@ -5,7 +5,7 @@ const STYLE_ID = "nyu-rmp-rating-styles";
 const COMMENT_PREVIEW_LENGTH = 150;
 const DEFAULT_RMP_URL = "https://www.ratemyprofessors.com/";
 const PLACEHOLDER_COMMENT_TEXT = new Set(["n/a", "na", "none", "no comment", "no comments", "no comments yet"]);
-const CONTROLLED_OPTION_SELECTOR = "[role='option'], [aria-selected], [aria-checked], [aria-current], [data-selected], [data-active], [data-current], [data-focus], [data-focused], [data-highlighted], [data-state], [selected], [class]";
+const CONTROLLED_OPTION_SELECTOR = "[role='option'], [aria-selected], [aria-checked], [aria-current], [aria-pressed], [data-selected], [data-active], [data-current], [data-focus], [data-focused], [data-highlighted], [data-state], [selected], [class]";
 const ALBERT_OBSERVER_OPTIONS = {
   childList: true,
   subtree: true,
@@ -22,6 +22,7 @@ const ALBERT_OBSERVER_OPTIONS = {
     "aria-label",
     "aria-labelledby",
     "aria-owns",
+    "aria-pressed",
     "aria-selected",
     "aria-value",
     "aria-valuetext",
@@ -501,6 +502,7 @@ function selectedControlledOption(element) {
   return Array.from(element?.querySelectorAll?.(CONTROLLED_OPTION_SELECTOR) ?? [])
     .find((option) => option.getAttribute("aria-selected")?.trim().toLowerCase() === "true"
       || option.getAttribute("aria-checked")?.trim().toLowerCase() === "true"
+      || option.getAttribute("aria-pressed")?.trim().toLowerCase() === "true"
       || isCurrentOption(option.getAttribute("aria-current"))
       || option.hasAttribute("selected")
       || option.getAttribute("data-selected")?.trim().toLowerCase() === "true"
