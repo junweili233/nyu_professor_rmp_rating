@@ -228,6 +228,19 @@ describe("Albert instructor parsing", () => {
     ]);
   });
 
+  it("extracts instructor names that continue after standalone primary instructor labels", () => {
+    const text = `
+      CSCI-UA 201 Computer Systems Organization
+      Primary Instructor
+      YAP, CHEE KENG
+      Section Status Open
+    `;
+
+    expect(extractInstructorNamesFromText(text)).toEqual([
+      "Chee Keng Yap",
+    ]);
+  });
+
   it("extracts instructor names that continue after standalone labels with dash separators", () => {
     const text = [
       "CSCI-UA 201 Computer Systems Organization",

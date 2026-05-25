@@ -40,8 +40,9 @@ const ACADEMIC_CREDENTIAL_PATTERN =
 const INSTRUCTOR_ROLE_PATTERN =
   /\((?:primary(?: instructor)?|instructor|lecture|recitation|lab|laboratory|seminar|section)\)/gi;
 const INSTRUCTOR_SEPARATOR_PATTERN = String.raw`(?::|\.|-|\u2013|\u2014)`;
+const INSTRUCTOR_LABEL_PATTERN = String.raw`(?:primary\s+)?instructor(?:\(s\)|s)?`;
 const INSTRUCTOR_LABEL_WITH_NAMES_PATTERN = new RegExp(
-  String.raw`\binstructor(?:\(s\)|s)?\s*${INSTRUCTOR_SEPARATOR_PATTERN}\s*(.*)$`,
+  String.raw`\b${INSTRUCTOR_LABEL_PATTERN}\s*${INSTRUCTOR_SEPARATOR_PATTERN}\s*(.*)$`,
   "i",
 );
 
@@ -52,7 +53,7 @@ export function normalizeInstructorName(value) {
 
   const withoutLabel = value
     .replace(INSTRUCTOR_ROLE_PATTERN, "")
-    .replace(new RegExp(String.raw`^(?:instructor\(s\)|instructors?|professor|prof)\s*(?:${INSTRUCTOR_SEPARATOR_PATTERN}|[.:])?\s*`, "i"), "")
+    .replace(new RegExp(String.raw`^(?:${INSTRUCTOR_LABEL_PATTERN}|professor|prof)\s*(?:${INSTRUCTOR_SEPARATOR_PATTERN}|[.:])?\s*`, "i"), "")
     .replace(/^(?:dr|doctor)\.?\s+/i, "")
     .replace(/\s+/g, " ")
     .trim();
@@ -94,7 +95,7 @@ export function extractInstructorNamesFromText(text) {
       continue;
     }
 
-    if (/^instructor(?:\(s\)|s)?$/i.test(trimmedLine)) {
+    if (new RegExp(String.raw`^${INSTRUCTOR_LABEL_PATTERN}$`, "i").test(trimmedLine)) {
       readingContinuationNames = true;
       continue;
     }
