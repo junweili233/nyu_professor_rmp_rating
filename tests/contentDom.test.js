@@ -839,6 +839,7 @@ describe("Albert content DOM injection", () => {
       <div aria-hidden="TRUE">Instructor: Hidden Aria Uppercase</div>
       <div aria-hidden=" true ">Instructor: Hidden Aria Spaced</div>
       <div inert>Instructor: Hidden Inert</div>
+      <div style="content-visibility: hidden;">Instructor: Hidden Content Visibility</div>
       <div style="display: none;">Instructor: Hidden Display</div>
       <div style="opacity: 0;">Instructor: Hidden Transparent</div>
       <div style="opacity: 0.0;">Instructor: Hidden Transparent Variant</div>
@@ -854,6 +855,7 @@ describe("Albert content DOM injection", () => {
     expect(lookupProfessor).not.toHaveBeenCalledWith("Hidden Aria Uppercase");
     expect(lookupProfessor).not.toHaveBeenCalledWith("Hidden Aria Spaced");
     expect(lookupProfessor).not.toHaveBeenCalledWith("Hidden Inert");
+    expect(lookupProfessor).not.toHaveBeenCalledWith("Hidden Content Visibility");
     expect(document.querySelectorAll(".nyu-rmp-card")).toHaveLength(1);
   });
 

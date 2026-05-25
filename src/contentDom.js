@@ -180,6 +180,7 @@ function isHiddenStyle(style) {
   return style?.display === "none"
     || style?.visibility === "hidden"
     || style?.visibility === "collapse"
+    || style?.contentVisibility === "hidden"
     || style?.opacity === "0"
     || isZeroSizeOverflowHidden(style);
 }
