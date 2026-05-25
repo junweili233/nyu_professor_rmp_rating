@@ -97,7 +97,10 @@ export function extractInstructorNamesFromText(text) {
     if (separatorMatch) {
       const inlineNames = separatorMatch[1].trim();
       readingContinuationNames = !inlineNames;
-      addInstructorPieces(inlineNames, { names, seen });
+      if (inlineNames) {
+        const filteredInlineNames = splitInstructorList(inlineNames).filter(isLikelyInstructorContinuation);
+        addInstructorPieces(filteredInlineNames, { names, seen });
+      }
       continue;
     }
 

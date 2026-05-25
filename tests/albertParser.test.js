@@ -48,6 +48,8 @@ describe("Albert instructor parsing", () => {
     expect(extractInstructorNamesFromText("Professor Consent Required")).toEqual([]);
     expect(extractInstructorNamesFromText("Faculty Consent Required")).toEqual([]);
     expect(extractInstructorNamesFromText("Faculty Permission Required")).toEqual([]);
+    expect(extractInstructorNamesFromText("Instructor: Permission Required")).toEqual([]);
+    expect(extractInstructorNamesFromText("Teacher: Permission Required")).toEqual([]);
   });
 
   it("extracts unique professor names from an Albert shopping-cart style block", () => {

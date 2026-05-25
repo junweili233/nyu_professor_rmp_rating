@@ -1231,6 +1231,19 @@ describe("Albert content DOM injection", () => {
     expect(document.querySelector(".nyu-rmp-card")).toBeNull();
   });
 
+  it("does not treat punctuation instructor metadata as a professor name", async () => {
+    document.body.innerHTML = `
+      <div>Instructor: Permission Required</div>
+      <div>Teacher: Permission Required</div>
+    `;
+    const lookupProfessor = vi.fn(async () => null);
+
+    await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
+
+    expect(lookupProfessor).not.toHaveBeenCalled();
+    expect(document.querySelector(".nyu-rmp-card")).toBeNull();
+  });
+
   it("injects ratings when Albert instructor labels use a period separator", async () => {
     document.body.innerHTML = `<div>Instructor. YAP, CHEE KENG</div>`;
     const lookupProfessor = vi.fn(async (name) => ({
