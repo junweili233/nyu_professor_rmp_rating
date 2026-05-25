@@ -2667,6 +2667,36 @@ describe("Albert content DOM injection", () => {
     expect(document.body.textContent).toContain("Field-label metadata should render.");
   });
 
+  it("injects ratings when abbreviated field metadata embeds instructor tokens", async () => {
+    document.body.innerHTML = `
+      <table>
+        <tbody>
+          <tr>
+            <td data-fldname="SSR_CRSE_TITLE_LONG">CSCI-UA 201 Computer Systems Organization</td>
+            <td data-fldname="SSR_INSTR_LONG">YAP, CHEE KENG</td>
+            <td data-fldname="SSR_ENRL_STAT">Open</td>
+          </tr>
+        </tbody>
+      </table>
+    `;
+    const lookupProfessor = vi.fn(async (name) => ({
+      name,
+      rating: 2.1,
+      difficulty: 4.5,
+      ratingsCount: 92,
+      tags: [],
+      topComments: ["Abbreviated field metadata should render."],
+      url: "https://www.ratemyprofessors.com/professor/419998",
+    }));
+
+    await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
+
+    expect(lookupProfessor).toHaveBeenCalledTimes(1);
+    expect(lookupProfessor).toHaveBeenCalledWith("Chee Keng Yap");
+    expect(document.querySelectorAll(".nyu-rmp-card")).toHaveLength(1);
+    expect(document.body.textContent).toContain("Abbreviated field metadata should render.");
+  });
+
   it("injects ratings when abbreviated column metadata labels instructor cells", async () => {
     document.body.innerHTML = `
       <table>
