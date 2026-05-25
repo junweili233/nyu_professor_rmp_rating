@@ -13,6 +13,7 @@ const ALBERT_OBSERVER_OPTIONS = {
   attributeFilter: [
     "aria-colindex",
     "aria-activedescendant",
+    "aria-checked",
     "aria-controls",
     "aria-describedby",
     "aria-hidden",
@@ -490,6 +491,7 @@ function selectedControlledOptionText(element) {
 function selectedControlledOption(element) {
   return Array.from(element?.querySelectorAll?.("[role='option']") ?? [])
     .find((option) => option.getAttribute("aria-selected")?.trim().toLowerCase() === "true"
+      || option.getAttribute("aria-checked")?.trim().toLowerCase() === "true"
       || option.getAttribute("data-selected")?.trim().toLowerCase() === "true"
       || option.getAttribute("data-active")?.trim().toLowerCase() === "true"
       || option.getAttribute("data-current")?.trim().toLowerCase() === "true"
