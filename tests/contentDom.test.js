@@ -142,6 +142,35 @@ describe("Albert content DOM injection", () => {
     expect(document.querySelector(".nyu-rmp-card")).toBeNull();
   });
 
+  it("rescans when Albert updates an existing instructor form control", async () => {
+    vi.useFakeTimers();
+    document.body.innerHTML = `
+      <label for="instructor-field">Instructor</label>
+      <input id="instructor-field" readonly value="" />
+    `;
+    const lookupProfessor = vi.fn(async () => null);
+    const windowMock = {
+      location: new URL("https://albert.nyu.edu/psc/csprod/EMPLOYEE/SA/c/NUI_FRAMEWORK.PT_LANDINGPAGE.GBL"),
+      MutationObserver: class {
+        observe = vi.fn();
+        disconnect = vi.fn();
+      },
+      clearTimeout,
+      setTimeout,
+    };
+
+    const observer = startAlbertRmpEnhancer({ document, window: windowMock, lookupProfessor });
+    await flushPromises();
+
+    document.getElementById("instructor-field").value = "YAP, CHEE KENG";
+    document.getElementById("instructor-field").dispatchEvent(new Event("input", { bubbles: true }));
+    await vi.advanceTimersByTimeAsync(300);
+
+    expect(observer).not.toBeNull();
+    expect(lookupProfessor).toHaveBeenCalledTimes(1);
+    expect(lookupProfessor).toHaveBeenCalledWith("Chee Keng Yap");
+  });
+
   it("scans blank child frames owned by an Albert parent page", async () => {
     document.body.innerHTML = `<div>Instructor: Ada Lovelace</div>`;
     const lookupProfessor = vi.fn(async () => null);

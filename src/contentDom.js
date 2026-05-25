@@ -101,17 +101,24 @@ export function startAlbertRmpEnhancer({
   injectStyles(document);
   scanAlbertPageOnce({ document, lookupProfessor });
 
-  const observer = new window.MutationObserver(() => {
+  let observer;
+  const scheduleScan = () => {
     window.clearTimeout(observer.scanTimer);
     observer.scanTimer = window.setTimeout(() => {
       scanAlbertPageOnce({ document, lookupProfessor });
     }, 300);
-  });
+  };
+
+  observer = new window.MutationObserver(scheduleScan);
 
   observer.observe(document.body, ALBERT_OBSERVER_OPTIONS);
+  document.addEventListener("input", scheduleScan, true);
+  document.addEventListener("change", scheduleScan, true);
   const disconnectObserver = observer.disconnect?.bind(observer) ?? (() => {});
   observer.disconnect = () => {
     window.clearTimeout(observer.scanTimer);
+    document.removeEventListener("input", scheduleScan, true);
+    document.removeEventListener("change", scheduleScan, true);
     disconnectObserver();
   };
   return observer;
