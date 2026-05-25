@@ -41,6 +41,7 @@ const ALBERT_OBSERVER_OPTIONS = {
     "data-column-title",
     "data-columnname",
     "data-columnid",
+    "data-current",
     "data-cy",
     "data-e2e",
     "data-field",
@@ -491,6 +492,7 @@ function selectedControlledOption(element) {
     .find((option) => option.getAttribute("aria-selected")?.trim().toLowerCase() === "true"
       || option.getAttribute("data-selected")?.trim().toLowerCase() === "true"
       || option.getAttribute("data-active")?.trim().toLowerCase() === "true"
+      || option.getAttribute("data-current")?.trim().toLowerCase() === "true"
       || ["checked", "selected", "active"].includes(option.getAttribute("data-state")?.trim().toLowerCase())
       || hasSelectedOptionClass(option));
 }
