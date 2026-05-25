@@ -84,6 +84,11 @@ export function extractInstructorNamesFromText(text) {
       continue;
     }
 
+    if (/^instructor(?:\(s\)|s)?$/i.test(trimmedLine)) {
+      readingContinuationNames = true;
+      continue;
+    }
+
     if (!readingContinuationNames) {
       continue;
     }

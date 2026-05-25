@@ -149,6 +149,21 @@ describe("Albert instructor parsing", () => {
     ]);
   });
 
+  it("extracts instructor names that continue after a standalone label without a colon", () => {
+    const text = `
+      CSCI-UA 201 Computer Systems Organization
+      Instructor(s)
+      YAP, CHEE KENG
+      Alan Turing
+      Section Status Open
+    `;
+
+    expect(extractInstructorNamesFromText(text)).toEqual([
+      "Chee Keng Yap",
+      "Alan Turing",
+    ]);
+  });
+
   it("ignores Albert role annotations when parsing last-name-first names", () => {
     const text = `
       CSCI-UA 201 Computer Systems Organization

@@ -970,6 +970,36 @@ describe("Albert content DOM injection", () => {
     expect(document.querySelectorAll(".nyu-rmp-card")).toHaveLength(2);
   });
 
+  it("injects ratings when multiline Albert instructor labels omit the colon", async () => {
+    document.body.innerHTML = `
+      <div>
+        <span>Instructor(s)</span>
+        <br>
+        <span>YAP, CHEE KENG</span>
+        <br>
+        <span>Alan Turing</span>
+        <br>
+        <span>Section Status Open</span>
+      </div>
+    `;
+    const lookupProfessor = vi.fn(async (name) => ({
+      name,
+      rating: 4.1,
+      difficulty: 3.4,
+      ratingsCount: 17,
+      tags: [],
+      topComments: [`${name} comment`],
+      url: "https://www.ratemyprofessors.com/",
+    }));
+
+    await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
+
+    expect(lookupProfessor).toHaveBeenCalledWith("Chee Keng Yap");
+    expect(lookupProfessor).toHaveBeenCalledWith("Alan Turing");
+    expect(lookupProfessor).not.toHaveBeenCalledWith("Section Status Open");
+    expect(document.querySelectorAll(".nyu-rmp-card")).toHaveLength(2);
+  });
+
   it("prefers the most specific instructor node inside nested Albert containers", async () => {
     document.body.innerHTML = `
       <div class="course-wrapper">

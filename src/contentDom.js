@@ -112,7 +112,7 @@ export function findInstructorTargets(document = globalThis.document) {
 
 function findInstructorTargetsForElement(element) {
   const text = visibleTextSegments(element).join("\n");
-  if (/\binstructor(?:\(s\)|s)?\s*:/i.test(text) && text.length < 700) {
+  if (hasInstructorText(text) && text.length < 700) {
     const names = extractInstructorNamesFromText(text);
     if (names.length > 0) {
       return [{ element, names }];
@@ -125,6 +125,11 @@ function findInstructorTargetsForElement(element) {
   }
 
   return [];
+}
+
+function hasInstructorText(text) {
+  return /\binstructor(?:\(s\)|s)?\s*:/i.test(text)
+    || /(?:^|\n)\s*instructor(?:\(s\)|s)?\s*(?:\n|$)/i.test(text);
 }
 
 function isUnprocessedVisibleCandidate(element) {
