@@ -2817,6 +2817,36 @@ describe("Albert content DOM injection", () => {
     expect(document.body.textContent).toContain("Prefixed PeopleSoft field ids should render.");
   });
 
+  it("injects ratings when hyphenated PeopleSoft field-id metadata embeds instructor tokens", async () => {
+    document.body.innerHTML = `
+      <table>
+        <tbody>
+          <tr>
+            <td data-ps-field-id="SSR_CRSE_TITLE_LONG$0">CSCI-UA 201 Computer Systems Organization</td>
+            <td data-ps-field-id="SSR_INSTR_LONG$0">YAP, CHEE KENG</td>
+            <td data-ps-field-id="SSR_ENRL_STAT$0">Open</td>
+          </tr>
+        </tbody>
+      </table>
+    `;
+    const lookupProfessor = vi.fn(async (name) => ({
+      name,
+      rating: 2.1,
+      difficulty: 4.5,
+      ratingsCount: 92,
+      tags: [],
+      topComments: ["Hyphenated PeopleSoft field ids should render."],
+      url: "https://www.ratemyprofessors.com/professor/419998",
+    }));
+
+    await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
+
+    expect(lookupProfessor).toHaveBeenCalledTimes(1);
+    expect(lookupProfessor).toHaveBeenCalledWith("Chee Keng Yap");
+    expect(document.querySelectorAll(".nyu-rmp-card")).toHaveLength(1);
+    expect(document.body.textContent).toContain("Hyphenated PeopleSoft field ids should render.");
+  });
+
   it("injects ratings when prefixed PeopleSoft column metadata embeds instructor tokens", async () => {
     document.body.innerHTML = `
       <table>
