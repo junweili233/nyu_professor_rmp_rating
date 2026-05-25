@@ -15,6 +15,7 @@ const ALBERT_OBSERVER_OPTIONS = {
     "aria-activedescendant",
     "aria-checked",
     "aria-controls",
+    "aria-current",
     "aria-describedby",
     "aria-hidden",
     "aria-label",
@@ -492,11 +493,20 @@ function selectedControlledOption(element) {
   return Array.from(element?.querySelectorAll?.("[role='option']") ?? [])
     .find((option) => option.getAttribute("aria-selected")?.trim().toLowerCase() === "true"
       || option.getAttribute("aria-checked")?.trim().toLowerCase() === "true"
+      || isCurrentOption(option.getAttribute("aria-current"))
       || option.getAttribute("data-selected")?.trim().toLowerCase() === "true"
       || option.getAttribute("data-active")?.trim().toLowerCase() === "true"
       || option.getAttribute("data-current")?.trim().toLowerCase() === "true"
       || ["checked", "selected", "active"].includes(option.getAttribute("data-state")?.trim().toLowerCase())
       || hasSelectedOptionClass(option));
+}
+
+function isCurrentOption(value) {
+  const normalizedValue = value?.trim().toLowerCase();
+  return normalizedValue === "true"
+    || normalizedValue === "page"
+    || normalizedValue === "step"
+    || normalizedValue === "location";
 }
 
 function hasSelectedOptionClass(element) {
