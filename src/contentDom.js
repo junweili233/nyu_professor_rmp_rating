@@ -538,10 +538,10 @@ function hasSelectedOptionClass(element) {
   return Array.from(element.classList ?? [])
     .some((className) => {
       const normalizedClassName = className.toLowerCase();
-      return /^(?:is-|ps-|ui-|nyu-)?(?:selected|active|current)$/.test(normalizedClassName)
-        || /^(?:is|ps|ui|nyu)[-_](?:selected|active|current)[-_]option$/.test(normalizedClassName)
-        || /^(?:selected|active|current)[-_]option$/.test(normalizedClassName)
-        || /^option[-_](?:selected|active|current)$/.test(normalizedClassName);
+      return /^(?:is-|ps-|ui-|nyu-)?(?:selected|active|current|checked)$/.test(normalizedClassName)
+        || /^(?:is|ps|ui|nyu)[-_](?:selected|active|current|checked)[-_]option$/.test(normalizedClassName)
+        || /^(?:selected|active|current|checked)[-_]option$/.test(normalizedClassName)
+        || /^option[-_](?:selected|active|current|checked)$/.test(normalizedClassName);
     });
 }
 
