@@ -151,7 +151,7 @@ function teacherScore(target, teacher) {
   const firstName = compactName(teacher.firstName ?? "");
   const lastName = compactName(teacher.lastName ?? "");
   const name = compactName(`${teacher.firstName ?? ""} ${teacher.lastName ?? ""}`);
-  const nameWithoutMiddleInitials = compactFirstLastWithoutMiddleInitials(teacher.firstName, teacher.lastName);
+  const nameWithoutMiddleParts = compactFirstLastWithoutMiddleParts(teacher.firstName, teacher.lastName);
   if (!name) {
     return 0;
   }
@@ -159,7 +159,7 @@ function teacherScore(target, teacher) {
   if (name === target) {
     score += 100;
   }
-  if (nameWithoutMiddleInitials && nameWithoutMiddleInitials === target) {
+  if (nameWithoutMiddleParts && nameWithoutMiddleParts === target) {
     score += 95;
   }
   if (name.length >= MIN_SUBSTRING_NAME_LENGTH && target.includes(name)) {
@@ -196,15 +196,15 @@ function compactCommentText(value) {
   return String(value ?? "").trim().replace(/\s+/g, " ").toLowerCase();
 }
 
-function compactFirstLastWithoutMiddleInitials(firstName, lastName) {
+function compactFirstLastWithoutMiddleParts(firstName, lastName) {
   const firstParts = nameParts(firstName);
   const last = compactName(lastName ?? "");
   if (firstParts.length < 2 || !last) {
     return "";
   }
 
-  const withoutInitials = firstParts.filter((part) => part.length > 1).join("");
-  return withoutInitials ? `${withoutInitials}${last}` : "";
+  const first = firstParts[0];
+  return first ? `${first}${last}` : "";
 }
 
 function nameParts(value) {

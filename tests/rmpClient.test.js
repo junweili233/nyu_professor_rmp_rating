@@ -917,6 +917,42 @@ describe("Rate My Professors client", () => {
     expect(result.matchConfidence).toBe("fuzzy");
   });
 
+  it("matches RMP professor names that include a full middle name when Albert omits it", async () => {
+    const fetchImpl = vi.fn(async () => ({
+      ok: true,
+      json: async () => ({
+        data: {
+          newSearch: {
+            teachers: {
+              edges: [
+                {
+                  node: {
+                    id: "middle-name",
+                    legacyId: 333,
+                    firstName: "Chee Keng",
+                    lastName: "Yap",
+                    department: "Computer Science",
+                    avgRating: 2.1,
+                    avgDifficulty: 4.5,
+                    numRatings: 92,
+                    wouldTakeAgainPercent: 24.2857,
+                    teacherRatingTags: [],
+                    ratings: { edges: [] },
+                  },
+                },
+              ],
+            },
+          },
+        },
+      }),
+    }));
+
+    const result = await findProfessorRating("Chee Yap", { fetchImpl });
+
+    expect(result.name).toBe("Chee Keng Yap");
+    expect(result.matchConfidence).toBe("fuzzy");
+  });
+
   it("does not accept an RMP professor whose longer surname only starts with the Albert surname", async () => {
     const fetchImpl = vi.fn(async () => ({
       ok: true,
