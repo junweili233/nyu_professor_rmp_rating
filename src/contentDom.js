@@ -342,6 +342,11 @@ function cellLabelAttributeText(element) {
   for (const attributeName of [
     "data-label",
     "data-title",
+    "data-tooltip",
+    "data-original-title",
+    "data-caption",
+    "data-header",
+    "data-heading",
     "data-column",
     "data-column-title",
     "data-column-name",

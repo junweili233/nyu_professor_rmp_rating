@@ -3002,6 +3002,36 @@ describe("Albert content DOM injection", () => {
     expect(document.body.textContent).toContain("Panel-field metadata should render.");
   });
 
+  it("injects ratings when tooltip-style metadata labels instructor cells", async () => {
+    document.body.innerHTML = `
+      <table>
+        <tbody>
+          <tr>
+            <td data-tooltip="Course">CSCI-UA 201 Computer Systems Organization</td>
+            <td data-tooltip="Instructor">YAP, CHEE KENG</td>
+            <td data-tooltip="Status">Open</td>
+          </tr>
+        </tbody>
+      </table>
+    `;
+    const lookupProfessor = vi.fn(async (name) => ({
+      name,
+      rating: 2.1,
+      difficulty: 4.5,
+      ratingsCount: 92,
+      tags: [],
+      topComments: ["Tooltip metadata should render."],
+      url: "https://www.ratemyprofessors.com/professor/419998",
+    }));
+
+    await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
+
+    expect(lookupProfessor).toHaveBeenCalledTimes(1);
+    expect(lookupProfessor).toHaveBeenCalledWith("Chee Keng Yap");
+    expect(document.querySelectorAll(".nyu-rmp-card")).toHaveLength(1);
+    expect(document.body.textContent).toContain("Tooltip metadata should render.");
+  });
+
   it("skips adjacent metadata cells before an unmarked instructor name cell", async () => {
     document.body.innerHTML = `
       <table>
