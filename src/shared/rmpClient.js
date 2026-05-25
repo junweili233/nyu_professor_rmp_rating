@@ -100,7 +100,7 @@ async function searchTeachers(name, fetchImpl, timeoutMs) {
     const message = payload.errors.map((error) => error?.message).filter(Boolean).join("; ");
     throw new Error(`Rate My Professors request failed: ${message || "GraphQL error"}`);
   }
-  return payload?.data?.newSearch?.teachers?.edges?.map((edge) => edge?.node).filter(Boolean) ?? [];
+  return asArray(payload?.data?.newSearch?.teachers?.edges).map((edge) => edge?.node).filter(Boolean);
 }
 
 export function pickBestTeacher(name, teachers) {

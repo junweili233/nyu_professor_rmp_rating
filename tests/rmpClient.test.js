@@ -612,6 +612,23 @@ describe("Rate My Professors client", () => {
     });
   });
 
+  it("treats non-array RMP teacher search edges as no matches", async () => {
+    const fetchImpl = vi.fn(async () => ({
+      ok: true,
+      json: async () => ({
+        data: {
+          newSearch: {
+            teachers: {
+              edges: { node: { firstName: "Ada", lastName: "Lovelace" } },
+            },
+          },
+        },
+      }),
+    }));
+
+    await expect(findProfessorRating("Ada Lovelace", { fetchImpl })).resolves.toBeNull();
+  });
+
   it("ignores null RMP teacher rating tags in partial GraphQL results", async () => {
     const fetchImpl = vi.fn(async () => ({
       ok: true,
