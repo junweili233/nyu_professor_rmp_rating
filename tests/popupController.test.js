@@ -21,6 +21,28 @@ describe("extension popup controller", () => {
     expect(document.getElementById("enable-overlay").checked).toBe(true);
   });
 
+  it("treats an empty popup storage result as no cached professors", async () => {
+    document.body.innerHTML = `
+      <p id="status"></p>
+      <input id="enable-overlay" type="checkbox" />
+      <button id="clear-cache"></button>
+    `;
+    const storage = createStorageMock({
+      "settings:overlayEnabled": true,
+    });
+    storage.get = vi.fn(async (key) => {
+      if (key === "settings:overlayEnabled") {
+        return { "settings:overlayEnabled": true };
+      }
+      return null;
+    });
+
+    await initPopup({ document, storage });
+
+    expect(document.getElementById("status").textContent).toBe("0 professors cached");
+    expect(document.getElementById("clear-cache").disabled).toBe(true);
+  });
+
   it("marks popup status text as a polite live region", async () => {
     document.body.innerHTML = `
       <p id="status"></p>

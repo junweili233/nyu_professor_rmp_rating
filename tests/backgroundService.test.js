@@ -478,6 +478,18 @@ describe("background professor lookup service", () => {
     expect(findProfessorRating).toHaveBeenCalledTimes(2);
   });
 
+  it("treats an empty persisted cache read as nothing to clear", async () => {
+    const storage = createStorageMock();
+    storage.get = vi.fn(async (key) => (key === null ? null : {}));
+    storage.remove = vi.fn(storage.remove);
+    const findProfessorRating = vi.fn();
+    const service = createProfessorLookupService({ storage, findProfessorRating });
+
+    await expect(service.clearCache()).resolves.toEqual(0);
+
+    expect(storage.remove).not.toHaveBeenCalled();
+  });
+
   it("bypasses fresh cache entries when a force refresh is requested", async () => {
     const now = new Date("2026-05-24T12:00:00Z").getTime();
     const cachedRating = {

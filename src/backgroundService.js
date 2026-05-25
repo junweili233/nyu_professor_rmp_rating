@@ -57,7 +57,7 @@ export function createProfessorLookupService({
     async clearCache() {
       memoryCache.clear();
       const items = await storage.get(null);
-      const keys = Object.keys(items).filter((key) => key.startsWith("professor:"));
+      const keys = Object.keys(items ?? {}).filter((key) => key.startsWith("professor:"));
       if (keys.length > 0) {
         await storage.remove(keys);
       }

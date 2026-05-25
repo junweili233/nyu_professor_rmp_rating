@@ -98,5 +98,5 @@ export async function initPopup({
 
 async function getProfessorCacheKeys(storage) {
   const items = await storage.get(null);
-  return Object.keys(items).filter((key) => key.startsWith("professor:"));
+  return Object.keys(items ?? {}).filter((key) => key.startsWith("professor:"));
 }
