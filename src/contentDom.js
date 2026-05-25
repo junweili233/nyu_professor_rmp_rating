@@ -509,7 +509,7 @@ function selectedControlledOption(element) {
       || isEnabledPresenceAttribute(option.getAttribute("data-focus"))
       || isEnabledPresenceAttribute(option.getAttribute("data-focused"))
       || isEnabledPresenceAttribute(option.getAttribute("data-highlighted"))
-      || ["checked", "selected", "active", "highlighted", "focused"].includes(option.getAttribute("data-state")?.trim().toLowerCase())
+      || ["checked", "selected", "active", "current", "highlighted", "focused"].includes(option.getAttribute("data-state")?.trim().toLowerCase())
       || hasSelectedOptionClass(option));
 }
 
