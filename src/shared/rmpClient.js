@@ -153,7 +153,7 @@ function teacherScore(target, teacher) {
   if (name === target) {
     score += 100;
   }
-  if (name.includes(target) || target.includes(name)) {
+  if (target.includes(name)) {
     score += 25;
   }
   if (firstName && lastName && target.startsWith(firstName) && target.endsWith(lastName)) {

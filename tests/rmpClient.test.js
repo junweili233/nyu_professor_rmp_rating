@@ -732,6 +732,39 @@ describe("Rate My Professors client", () => {
     expect(JSON.parse(fetchImpl.mock.calls[1][1].body).variables.query.text).toBe("Chee Yap");
   });
 
+  it("does not accept an RMP professor whose longer surname only starts with the Albert surname", async () => {
+    const fetchImpl = vi.fn(async () => ({
+      ok: true,
+      json: async () => ({
+        data: {
+          newSearch: {
+            teachers: {
+              edges: [
+                {
+                  node: {
+                    id: "wrong",
+                    legacyId: 123,
+                    firstName: "Ada",
+                    lastName: "Lovelace-Smith",
+                    department: "Computer Science",
+                    avgRating: 4.9,
+                    avgDifficulty: 2.1,
+                    numRatings: 80,
+                    wouldTakeAgainPercent: 98,
+                    teacherRatingTags: [],
+                    ratings: { edges: [] },
+                  },
+                },
+              ],
+            },
+          },
+        },
+      }),
+    }));
+
+    await expect(findProfessorRating("Ada Lovelace", { fetchImpl })).resolves.toBeNull();
+  });
+
   it("drops title suffixes before building first-last fallback searches", async () => {
     const fetchImpl = vi.fn(async () => ({
       ok: true,
