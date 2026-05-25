@@ -2920,6 +2920,31 @@ describe("Albert content DOM injection", () => {
     expect(document.body.textContent).toContain("Aria-current options should render.");
   });
 
+  it("injects ratings when custom listbox options use date aria-current state", async () => {
+    document.body.innerHTML = `
+      <div role="combobox" aria-label="Instructor" aria-controls="instructor-options"></div>
+      <div id="instructor-options" role="listbox">
+        <div role="option" aria-current="date">YAP, CHEE KENG</div>
+      </div>
+    `;
+    const lookupProfessor = vi.fn(async (name) => ({
+      name,
+      rating: 2.1,
+      difficulty: 4.5,
+      ratingsCount: 92,
+      tags: [],
+      topComments: ["Date aria-current options should render."],
+      url: "https://www.ratemyprofessors.com/professor/419998",
+    }));
+
+    await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
+
+    expect(lookupProfessor).toHaveBeenCalledTimes(1);
+    expect(lookupProfessor).toHaveBeenCalledWith("Chee Keng Yap");
+    expect(document.querySelectorAll(".nyu-rmp-card")).toHaveLength(1);
+    expect(document.body.textContent).toContain("Date aria-current options should render.");
+  });
+
   it("injects ratings when Albert renders instructor text directly in a heading", async () => {
     document.body.innerHTML = `<h3>Instructor: YAP, CHEE KENG</h3>`;
     const lookupProfessor = vi.fn(async (name) => ({

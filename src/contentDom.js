@@ -523,7 +523,9 @@ function isCurrentOption(value) {
   return normalizedValue === "true"
     || normalizedValue === "page"
     || normalizedValue === "step"
-    || normalizedValue === "location";
+    || normalizedValue === "location"
+    || normalizedValue === "date"
+    || normalizedValue === "time";
 }
 
 function hasSelectedOptionClass(element) {
