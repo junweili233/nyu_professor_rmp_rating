@@ -316,9 +316,20 @@ function isInstructorHeaderedCell(element) {
 
 function cellHeaderText(element) {
   return [
+    cellLabelAttributeText(element),
     referencedHeaderText(element),
     columnHeaderText(element),
   ].filter(Boolean).join("\n");
+}
+
+function cellLabelAttributeText(element) {
+  for (const attributeName of ["data-label", "data-title", "data-column", "data-column-title"]) {
+    const value = element.getAttribute(attributeName)?.trim();
+    if (value) {
+      return value;
+    }
+  }
+  return "";
 }
 
 function referencedHeaderText(element) {
