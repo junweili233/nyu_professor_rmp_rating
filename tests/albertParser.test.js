@@ -128,12 +128,16 @@ describe("Albert instructor parsing", () => {
       Instructor Name: Ada Lovelace
       Instructor Name YAP, CHEE KENG
       Instructor(s) Name: Grace B. Hopper
+      Instructor Names: Alan Turing
+      Instructor Name(s): Barbara Liskov
     `;
 
     expect(extractInstructorNamesFromText(text)).toEqual([
       "Ada Lovelace",
       "Chee Keng Yap",
       "Grace B. Hopper",
+      "Alan Turing",
+      "Barbara Liskov",
     ]);
   });
 

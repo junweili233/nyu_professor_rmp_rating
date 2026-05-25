@@ -1174,6 +1174,25 @@ describe("Albert content DOM injection", () => {
     expect(document.body.textContent).toContain("Plural instructor-name labels should render.");
   });
 
+  it("injects ratings when Albert rows use instructor-names labels", async () => {
+    document.body.innerHTML = `<div>Instructor Names: YAP, CHEE KENG</div>`;
+    const lookupProfessor = vi.fn(async (name) => ({
+      name,
+      rating: 2.1,
+      difficulty: 4.5,
+      ratingsCount: 92,
+      tags: [],
+      topComments: ["Instructor-names labels should render."],
+      url: "https://www.ratemyprofessors.com/professor/419998",
+    }));
+
+    await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
+
+    expect(lookupProfessor).toHaveBeenCalledWith("Chee Keng Yap");
+    expect(document.querySelectorAll(".nyu-rmp-card")).toHaveLength(1);
+    expect(document.body.textContent).toContain("Instructor-names labels should render.");
+  });
+
   it("injects ratings when Albert rows use professor labels", async () => {
     document.body.innerHTML = `<div>Professor: YAP, CHEE KENG</div>`;
     const lookupProfessor = vi.fn(async (name) => ({
