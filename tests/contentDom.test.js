@@ -2285,6 +2285,36 @@ describe("Albert content DOM injection", () => {
     expect(document.body.textContent).toContain("Responsive cell labels should render.");
   });
 
+  it("injects ratings when Albert labels compact table cells with aria-label", async () => {
+    document.body.innerHTML = `
+      <table>
+        <tbody>
+          <tr>
+            <td aria-label="Course">CSCI-UA 201 Computer Systems Organization</td>
+            <td aria-label="Instructor">YAP, CHEE KENG</td>
+            <td aria-label="Status">Open</td>
+          </tr>
+        </tbody>
+      </table>
+    `;
+    const lookupProfessor = vi.fn(async (name) => ({
+      name,
+      rating: 2.1,
+      difficulty: 4.5,
+      ratingsCount: 92,
+      tags: [],
+      topComments: ["ARIA-labeled table cells should render."],
+      url: "https://www.ratemyprofessors.com/professor/419998",
+    }));
+
+    await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
+
+    expect(lookupProfessor).toHaveBeenCalledTimes(1);
+    expect(lookupProfessor).toHaveBeenCalledWith("Chee Keng Yap");
+    expect(document.querySelectorAll(".nyu-rmp-card")).toHaveLength(1);
+    expect(document.body.textContent).toContain("ARIA-labeled table cells should render.");
+  });
+
   it("skips adjacent metadata cells before an unmarked instructor name cell", async () => {
     document.body.innerHTML = `
       <table>

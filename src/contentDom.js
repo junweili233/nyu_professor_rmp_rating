@@ -323,7 +323,7 @@ function cellHeaderText(element) {
 }
 
 function cellLabelAttributeText(element) {
-  for (const attributeName of ["data-label", "data-title", "data-column", "data-column-title"]) {
+  for (const attributeName of ["data-label", "data-title", "data-column", "data-column-title", "aria-label", "title"]) {
     const value = element.getAttribute(attributeName)?.trim();
     if (value) {
       return value;
