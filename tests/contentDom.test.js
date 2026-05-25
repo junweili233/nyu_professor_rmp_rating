@@ -2462,6 +2462,36 @@ describe("Albert content DOM injection", () => {
     expect(document.body.textContent).toContain("ARIA colindex instructor cells should render.");
   });
 
+  it("injects ratings when Albert labels instructor cells with PeopleSoft field-name attributes", async () => {
+    document.body.innerHTML = `
+      <table>
+        <tbody>
+          <tr>
+            <td data-fieldname="COURSE_TITLE">CSCI-UA 201 Computer Systems Organization</td>
+            <td data-fieldname="INSTRUCTOR">YAP, CHEE KENG</td>
+            <td data-fieldname="ENROLL_STATUS">Open</td>
+          </tr>
+        </tbody>
+      </table>
+    `;
+    const lookupProfessor = vi.fn(async (name) => ({
+      name,
+      rating: 2.1,
+      difficulty: 4.5,
+      ratingsCount: 92,
+      tags: [],
+      topComments: ["Field-name instructor cells should render."],
+      url: "https://www.ratemyprofessors.com/professor/419998",
+    }));
+
+    await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
+
+    expect(lookupProfessor).toHaveBeenCalledTimes(1);
+    expect(lookupProfessor).toHaveBeenCalledWith("Chee Keng Yap");
+    expect(document.querySelectorAll(".nyu-rmp-card")).toHaveLength(1);
+    expect(document.body.textContent).toContain("Field-name instructor cells should render.");
+  });
+
   it("skips adjacent metadata cells before an unmarked instructor name cell", async () => {
     document.body.innerHTML = `
       <table>
