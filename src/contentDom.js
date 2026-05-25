@@ -829,11 +829,11 @@ function truncateComment(text) {
 
 function normalizeComment(comment) {
   if (typeof comment === "string") {
-    return { text: comment };
+    return { text: normalizeCommentText(comment) };
   }
 
   return {
-    text: comment?.text ?? "",
+    text: normalizeCommentText(comment?.text),
     helpfulRating: nonNegativeNumberOrNull(comment?.helpfulRating),
     clarityRating: rmpScaleNumberOrNull(comment?.clarityRating),
     difficultyRating: rmpScaleNumberOrNull(comment?.difficultyRating),
@@ -841,9 +841,49 @@ function normalizeComment(comment) {
 }
 
 function isUsefulCommentText(value) {
-  const text = String(value ?? "").trim();
+  const text = normalizeCommentText(value);
   const normalized = text.toLowerCase().replace(/[.!?]+$/g, "").trim();
   return /\p{L}|\p{N}/u.test(text) && !PLACEHOLDER_COMMENT_TEXT.has(normalized);
+}
+
+function normalizeCommentText(value) {
+  return decodeHtmlEntities(value).trim().replace(/\s+/g, " ");
+}
+
+function decodeHtmlEntities(value) {
+  const namedEntities = {
+    amp: "&",
+    apos: "'",
+    gt: ">",
+    lt: "<",
+    nbsp: " ",
+    quot: "\"",
+  };
+
+  return String(value ?? "").replace(/&(#\d+|#x[\da-f]+|[a-z]+);/gi, (entity, token) => {
+    const normalized = token.toLowerCase();
+    if (normalized.startsWith("#x")) {
+      return codePointEntity(normalized.slice(2), 16) ?? entity;
+    }
+    if (normalized.startsWith("#")) {
+      return codePointEntity(normalized.slice(1), 10) ?? entity;
+    }
+    return Object.prototype.hasOwnProperty.call(namedEntities, normalized)
+      ? namedEntities[normalized]
+      : entity;
+  });
+}
+
+function codePointEntity(value, radix) {
+  const codePoint = Number.parseInt(value, radix);
+  if (!Number.isFinite(codePoint)) {
+    return null;
+  }
+  try {
+    return String.fromCodePoint(codePoint);
+  } catch {
+    return null;
+  }
 }
 
 function numberOrNull(value) {
