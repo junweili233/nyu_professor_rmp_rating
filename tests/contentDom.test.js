@@ -2970,6 +2970,31 @@ describe("Albert content DOM injection", () => {
     expect(document.body.textContent).toContain("Aria-pressed options should render.");
   });
 
+  it("injects ratings when custom listbox option buttons use data-pressed state", async () => {
+    document.body.innerHTML = `
+      <div role="combobox" aria-label="Instructor" aria-controls="instructor-options"></div>
+      <div id="instructor-options" role="listbox">
+        <button type="button" data-pressed="true">YAP, CHEE KENG</button>
+      </div>
+    `;
+    const lookupProfessor = vi.fn(async (name) => ({
+      name,
+      rating: 2.1,
+      difficulty: 4.5,
+      ratingsCount: 92,
+      tags: [],
+      topComments: ["Data-pressed options should render."],
+      url: "https://www.ratemyprofessors.com/professor/419998",
+    }));
+
+    await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
+
+    expect(lookupProfessor).toHaveBeenCalledTimes(1);
+    expect(lookupProfessor).toHaveBeenCalledWith("Chee Keng Yap");
+    expect(document.querySelectorAll(".nyu-rmp-card")).toHaveLength(1);
+    expect(document.body.textContent).toContain("Data-pressed options should render.");
+  });
+
   it("injects ratings when custom listbox options use aria-current state", async () => {
     document.body.innerHTML = `
       <div role="combobox" aria-label="Instructor" aria-controls="instructor-options"></div>
