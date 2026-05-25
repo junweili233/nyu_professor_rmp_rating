@@ -153,7 +153,9 @@ function isElementVisible(element) {
 
 function hasHiddenAttribute(element) {
   for (let node = element; node; node = node.parentElement) {
-    if (node.hasAttribute("hidden") || node.getAttribute("aria-hidden")?.trim().toLowerCase() === "true") {
+    if (node.hasAttribute("hidden")
+      || node.hasAttribute("inert")
+      || node.getAttribute("aria-hidden")?.trim().toLowerCase() === "true") {
       return true;
     }
   }
