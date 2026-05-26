@@ -21,6 +21,7 @@ describe("extension popup markup", () => {
 
     expect(popup).toContain('<ul class="feature-list" aria-label="Albert rating overlay features">');
     expect(popup).toContain("Rating, difficulty, and take-again metrics");
+    expect(popup).toContain("Radar fit score and pick recommendation");
     expect(popup).toContain("Most useful RMP comments from a 20-rating sample");
     expect(popup).toContain("CS201 course-match counts across hidden comments");
   });
