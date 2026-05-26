@@ -1224,7 +1224,7 @@ function renderRadarChart({ chartId, professorName = "Professor", rating, diffic
           <li>Rating ${formatScore(rating)}/5</li>
           <li>Ease ${formatScore(ease)}/5</li>
           <li>Volume ${ratingsVolumeLabel}</li>
-          <li>Again ${wouldTakeAgain == null ? "N/A" : `${Math.round(wouldTakeAgain)}%`}</li>
+          <li>Take again ${wouldTakeAgain == null ? "N/A" : `${Math.round(wouldTakeAgain)}%`}</li>
         </ul>
       </div>
     </div>
@@ -1249,7 +1249,7 @@ function radarMetricLabel(label, { rating, ease, normalizedRatingsCount, wouldTa
     return `Volume: ${normalizedRatingsCount == null ? "N/A ratings" : formatRatingsCount(normalizedRatingsCount)}`;
   }
   if (label === "Again") {
-    return `Again: ${wouldTakeAgain == null ? "N/A" : `${Math.round(wouldTakeAgain)}%`}`;
+    return `Take again: ${wouldTakeAgain == null ? "N/A" : `${Math.round(wouldTakeAgain)}%`}`;
   }
   return `${label}: N/A`;
 }

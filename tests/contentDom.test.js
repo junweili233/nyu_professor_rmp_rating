@@ -682,7 +682,7 @@ describe("Albert content DOM injection", () => {
     expect(metrics.querySelectorAll(".nyu-rmp-metric")).toHaveLength(3);
     expect(metrics.textContent).toContain("Take again");
     expect(metrics.textContent).toContain("Take again N/A");
-    expect(Array.from(document.querySelectorAll(".nyu-rmp-radar-legend li")).map((node) => node.textContent)).toContain("Again N/A");
+    expect(Array.from(document.querySelectorAll(".nyu-rmp-radar-legend li")).map((node) => node.textContent)).toContain("Take again N/A");
   });
 
   it("shows the professor ease value beside difficulty in the visible metrics", async () => {
@@ -856,7 +856,7 @@ describe("Albert content DOM injection", () => {
     expect(fit.textContent).toContain("Fit 66");
     expect(fit.textContent).toContain("4/4 metrics");
     expect(radar.getAttribute("aria-label")).toContain("professor fit 66 out of 100");
-    expect(Array.from(document.querySelectorAll(".nyu-rmp-radar-legend li")).map((node) => node.textContent)).toContain("Again 0%");
+    expect(Array.from(document.querySelectorAll(".nyu-rmp-radar-legend li")).map((node) => node.textContent)).toContain("Take again 0%");
   });
 
   it("describes radar charts with native SVG title and description", async () => {
@@ -928,7 +928,7 @@ describe("Albert content DOM injection", () => {
       "Rating 4.5/5",
       "Ease 3.0/5",
       "Volume 64",
-      "Again 80%",
+      "Take again 80%",
     ]);
   });
 
@@ -954,13 +954,13 @@ describe("Albert content DOM injection", () => {
       "Radar metric Rating: 4.5 out of 5",
       "Radar metric Ease: 3.0 out of 5",
       "Radar metric Volume: 64 ratings",
-      "Radar metric Again: 80%",
+      "Radar metric Take again: 80%",
     ]);
     expect(nodes.map((node) => node.querySelector("title")?.textContent)).toEqual([
       "Rating: 4.5 out of 5",
       "Ease: 3.0 out of 5",
       "Volume: 64 ratings",
-      "Again: 80%",
+      "Take again: 80%",
     ]);
   });
 
@@ -994,7 +994,7 @@ describe("Albert content DOM injection", () => {
       "Rating 4.5/5",
       "Ease 3.0/5",
       "Volume N/A",
-      "Again N/A",
+      "Take again N/A",
     ]);
   });
 
