@@ -258,6 +258,31 @@ describe("Albert content DOM injection", () => {
     expect(card.getAttribute("aria-label")).toBe("RMP rating for Ada Lovelace: 4.7 out of 5, 38 ratings");
   });
 
+  it("renders rating cards with a dedicated metrics grid and comment panel", async () => {
+    document.body.innerHTML = `<div>Instructor: Ada Lovelace</div>`;
+    const lookupProfessor = vi.fn(async (name) => ({
+      name,
+      department: "Computer Science",
+      rating: 4.7,
+      difficulty: 2.4,
+      ratingsCount: 38,
+      wouldTakeAgain: 92,
+      tags: ["Helpful"],
+      topComments: ["Explains low-level systems clearly."],
+      url: "https://www.ratemyprofessors.com/professor/123",
+    }));
+
+    await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
+
+    const metrics = document.querySelector(".nyu-rmp-metrics");
+    expect(metrics).not.toBeNull();
+    expect(metrics.querySelectorAll(".nyu-rmp-metric")).toHaveLength(3);
+    expect(metrics.textContent).toContain("Rating");
+    expect(metrics.textContent).toContain("Difficulty");
+    expect(metrics.textContent).toContain("Take again");
+    expect(document.querySelector(".nyu-rmp-comments-panel")).not.toBeNull();
+  });
+
   it("renders useful-comment metadata from RMP ratings", async () => {
     document.body.innerHTML = `<div>Instructor: Ada Lovelace</div>`;
     const lookupProfessor = vi.fn(async (name) => ({
@@ -3687,6 +3712,31 @@ describe("Albert content DOM injection", () => {
     expect(lookupProfessor).toHaveBeenCalledWith("Chee Keng Yap");
     expect(document.querySelectorAll(".nyu-rmp-card")).toHaveLength(1);
     expect(document.body.textContent).toContain("Highlighted option label metadata should render.");
+  });
+
+  it("injects ratings when highlighted custom options expose names in data-highlighted-name", async () => {
+    document.body.innerHTML = `
+      <div role="combobox" aria-label="Instructor" aria-controls="instructor-options"></div>
+      <div id="instructor-options" role="listbox">
+        <div role="option" data-highlighted data-highlighted-name="YAP, CHEE KENG"></div>
+      </div>
+    `;
+    const lookupProfessor = vi.fn(async (name) => ({
+      name,
+      rating: 4.0,
+      difficulty: 2.7,
+      ratingsCount: 88,
+      tags: [],
+      topComments: ["Highlighted option name metadata should render."],
+      url: "https://www.ratemyprofessors.com/professor/419998",
+    }));
+
+    await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
+
+    expect(lookupProfessor).toHaveBeenCalledTimes(1);
+    expect(lookupProfessor).toHaveBeenCalledWith("Chee Keng Yap");
+    expect(document.querySelectorAll(".nyu-rmp-card")).toHaveLength(1);
+    expect(document.body.textContent).toContain("Highlighted option name metadata should render.");
   });
 
   it("injects ratings when custom listbox options use data-focus state", async () => {

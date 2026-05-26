@@ -85,6 +85,7 @@ const ALBERT_OBSERVER_OPTIONS = {
     "data-heading",
     "data-highlighted",
     "data-highlighted-label",
+    "data-highlighted-name",
     "data-instructor-label",
     "data-instructor-name",
     "data-instructor-text",
@@ -846,7 +847,7 @@ function associatedLabelText(element) {
 }
 
 function firstNameLikeAttribute(element) {
-  for (const attributeName of ["title", "aria-label", "data-value", "data-label", "data-active-label", "data-active-name", "data-active-text", "data-active-value", "data-highlighted-label", "data-instructor-label", "data-instructor-text", "data-option-label", "data-option-text", "data-selected-label", "data-selected-name", "data-selected-text", "data-selected-value", "data-item-label", "data-item-text", "data-person-label", "data-person-name", "data-person-text", "data-faculty-label", "data-faculty-name", "data-faculty-text", "data-professor-label", "data-professor-name", "data-professor-text", "data-teacher-label", "data-teacher-name", "data-teacher-text", "data-title", "data-caption", "data-description", "data-text", "data-search", "data-full-name", "data-fullname", "data-full-text", "data-tooltip", "data-content", "data-original-title", "data-display", "data-display-name", "data-displayname", "data-name"]) {
+  for (const attributeName of ["title", "aria-label", "data-value", "data-label", "data-active-label", "data-active-name", "data-active-text", "data-active-value", "data-highlighted-label", "data-highlighted-name", "data-instructor-label", "data-instructor-text", "data-option-label", "data-option-text", "data-selected-label", "data-selected-name", "data-selected-text", "data-selected-value", "data-item-label", "data-item-text", "data-person-label", "data-person-name", "data-person-text", "data-faculty-label", "data-faculty-name", "data-faculty-text", "data-professor-label", "data-professor-name", "data-professor-text", "data-teacher-label", "data-teacher-name", "data-teacher-text", "data-title", "data-caption", "data-description", "data-text", "data-search", "data-full-name", "data-fullname", "data-full-text", "data-tooltip", "data-content", "data-original-title", "data-display", "data-display-name", "data-displayname", "data-name"]) {
     const value = element.getAttribute(attributeName)?.trim();
     if (value && splitInstructorList(value).some(isLikelyInstructorName)) {
       return value;
@@ -1029,15 +1030,26 @@ function updateRatingCard(card, result, { requestedName = "Professor", lookupPro
     ${department ? `<div class="nyu-rmp-department">${escapeHtml(department)}</div>` : ""}
     ${matchNote ? `<div class="nyu-rmp-match-note">${escapeHtml(matchNote)}</div>` : ""}
     ${updatedAt ? `<div class="nyu-rmp-updated">${escapeHtml(updatedAt)}</div>` : ""}
-    <div class="nyu-rmp-score-row">
-      <span class="nyu-rmp-score" aria-label="${escapeHtml(formatRatingLabel(rating))}">${formatScore(rating)}</span>
-      <span class="nyu-rmp-verdict">${escapeHtml(ratingVerdict.label)}</span>
-      <span>${escapeHtml(formatRatingsCount(ratingsCount))}</span>
-      <span>Difficulty ${formatScore(difficulty)}</span>
-      ${wouldTakeAgain == null ? "" : `<span>${Math.round(wouldTakeAgain)}% take again</span>`}
+    <div class="nyu-rmp-score-row nyu-rmp-metrics">
+      <div class="nyu-rmp-metric nyu-rmp-rating-metric">
+        <span class="nyu-rmp-metric-label">Rating</span>
+        <span class="nyu-rmp-score" aria-label="${escapeHtml(formatRatingLabel(rating))}">${formatScore(rating)}</span>
+        <span class="nyu-rmp-verdict">${escapeHtml(ratingVerdict.label)}</span>
+        <span class="nyu-rmp-rating-count">${escapeHtml(formatRatingsCount(ratingsCount))}</span>
+      </div>
+      <div class="nyu-rmp-metric">
+        <span class="nyu-rmp-metric-label">Difficulty</span>
+        <span class="nyu-rmp-metric-value">Difficulty ${formatScore(difficulty)}</span>
+      </div>
+      ${wouldTakeAgain == null ? "" : `
+        <div class="nyu-rmp-metric">
+          <span class="nyu-rmp-metric-label">Take again</span>
+          <span class="nyu-rmp-metric-value">${Math.round(wouldTakeAgain)}% take again</span>
+        </div>
+      `}
     </div>
     ${tags ? `<div class="nyu-rmp-tags">${tags}</div>` : ""}
-    ${comments ? `<ul class="nyu-rmp-comments">${comments}</ul>` : ""}
+    ${comments ? `<div class="nyu-rmp-comments-panel"><ul class="nyu-rmp-comments">${comments}</ul></div>` : ""}
   `;
   wireRefreshAction(card, requestedName, lookupProfessor);
   wireCommentToggleActions(card);
@@ -1094,14 +1106,14 @@ export function injectStyles(document = globalThis.document) {
 	      margin: 2px 0 4px;
 	    }
 	    .nyu-rmp-card {
-	      border: 1px solid #e4dff0;
-	      border-left: 3.5px solid #6b7280;
-	      border-radius: 9px;
-	      background: #fefdfe;
-	      color: #1f1a2e;
-	      padding: 11px 13px;
-	      box-shadow: 0 1px 3px rgba(26,5,48,0.04), 0 6px 18px rgba(26,5,48,0.06);
-	      transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease;
+	      border: 1px solid #d9dee8;
+	      border-left: 4px solid #667085;
+	      border-radius: 8px;
+	      background: #ffffff;
+	      color: #182033;
+	      padding: 12px 13px;
+	      box-shadow: 0 1px 2px rgba(16,24,40,0.06), 0 8px 20px rgba(16,24,40,0.07);
+	      transition: transform 160ms ease, box-shadow 160ms ease, border-color 160ms ease;
 	    }
 	    td .nyu-rmp-card,
 	    th .nyu-rmp-card,
@@ -1113,12 +1125,11 @@ export function injectStyles(document = globalThis.document) {
 	      border-radius: 7px;
 	    }
 	    .nyu-rmp-card:hover {
-	      border-color: #d0c8de;
-	      box-shadow: 0 2px 4px rgba(26,5,48,0.05), 0 10px 28px rgba(26,5,48,0.09);
+	      border-color: #b9c2d0;
+	      box-shadow: 0 2px 4px rgba(16,24,40,0.08), 0 10px 26px rgba(16,24,40,0.1);
 	      transform: translateY(-1px);
 	    }
 	    .nyu-rmp-card-head,
-	    .nyu-rmp-score-row,
 	    .nyu-rmp-tags {
 	      align-items: center;
 	      display: flex;
@@ -1132,34 +1143,34 @@ export function injectStyles(document = globalThis.document) {
 	    .nyu-rmp-card strong {
 	      font-size: 12.5px;
 	      font-weight: 700;
-	      letter-spacing: -0.1px;
+	      letter-spacing: 0;
 	      line-height: 1.3;
 	    }
 	    .nyu-rmp-department {
-	      color: #8474a0;
+	      color: #5f6b7a;
 	      font-size: 10.5px;
 	      font-weight: 500;
-	      letter-spacing: 0.15px;
+	      letter-spacing: 0;
 	      margin: -2px 0 5px;
 	      text-transform: uppercase;
 	    }
 	    .nyu-rmp-match-note {
-	      color: #8474a0;
+	      color: #64748b;
 	      font-size: 10.5px;
 	      margin: -1px 0 5px;
 	    }
 	    .nyu-rmp-updated {
-	      color: #a094b8;
+	      color: #7a8699;
 	      font-size: 10px;
 	      margin: -3px 0 6px;
 	    }
 	    .nyu-rmp-card a,
 	    .nyu-rmp-refresh,
 	    .nyu-rmp-status {
-	      color: #5e4d7a;
+	      color: #344054;
 	      font-size: 10.5px;
 	      font-weight: 600;
-	      letter-spacing: 0.3px;
+	      letter-spacing: 0;
 	      text-transform: uppercase;
 	    }
 	    .nyu-rmp-card a:hover {
@@ -1194,7 +1205,7 @@ export function injectStyles(document = globalThis.document) {
 	    .nyu-rmp-score {
 	      font-size: 22px;
 	      font-weight: 800;
-	      letter-spacing: -0.3px;
+	      letter-spacing: 0;
 	      line-height: 1;
 	    }
 	    .rating-good .nyu-rmp-score { color: #1a7a4c; }
@@ -1203,19 +1214,60 @@ export function injectStyles(document = globalThis.document) {
 	    .is-error .nyu-rmp-score,
 	    .is-loading .nyu-rmp-score,
 	    .is-empty .nyu-rmp-score { color: #1f1a2e; }
-	    .nyu-rmp-score-row span:not(.nyu-rmp-score),
+	    .nyu-rmp-score-row,
 	    .nyu-rmp-comments {
-	      color: #544a66;
+	      color: #344054;
 	      font-size: 11.5px;
 	    }
+	    .nyu-rmp-metrics {
+	      display: grid;
+	      gap: 6px;
+	      grid-template-columns: minmax(92px, 1.25fr) repeat(2, minmax(72px, 1fr));
+	      margin: 8px 0 7px;
+	    }
+	    .nyu-rmp-metric {
+	      align-content: start;
+	      background: #f8fafc;
+	      border: 1px solid #e3e8ef;
+	      border-radius: 7px;
+	      display: grid;
+	      gap: 3px;
+	      min-width: 0;
+	      padding: 7px 8px;
+	    }
+	    .nyu-rmp-rating-metric {
+	      grid-template-columns: auto 1fr;
+	    }
+	    .nyu-rmp-rating-metric .nyu-rmp-metric-label,
+	    .nyu-rmp-rating-metric .nyu-rmp-rating-count {
+	      grid-column: 1 / -1;
+	    }
+	    .nyu-rmp-metric-label {
+	      color: #667085;
+	      font-size: 9.5px;
+	      font-weight: 700;
+	      letter-spacing: 0;
+	      line-height: 1.1;
+	      text-transform: uppercase;
+	    }
+	    .nyu-rmp-metric-value,
+	    .nyu-rmp-rating-count {
+	      color: #253044;
+	      font-size: 11px;
+	      font-weight: 650;
+	      line-height: 1.25;
+	    }
 	    .nyu-rmp-score-row .nyu-rmp-verdict {
-	      border: 1px solid #d8cee8;
+	      align-self: center;
+	      border: 1px solid #d0d5dd;
 	      border-radius: 999px;
-	      color: #4a3d60;
+	      color: #344054;
 	      font-size: 10.5px;
 	      font-weight: 600;
-	      padding: 2px 8px;
-	      letter-spacing: 0.1px;
+	      justify-self: start;
+	      letter-spacing: 0;
+	      line-height: 1.15;
+	      padding: 2px 7px;
 	    }
 	    .rating-good .nyu-rmp-verdict {
 	      background: #edf7f1;
@@ -1237,17 +1289,23 @@ export function injectStyles(document = globalThis.document) {
 	      gap: 5px;
 	    }
 	    .nyu-rmp-tags span {
-	      background: #f4f1f9;
-	      border: 1px solid #e4def0;
+	      background: #f6f8fb;
+	      border: 1px solid #e1e7ef;
 	      border-radius: 999px;
-	      color: #4a3d60;
+	      color: #344054;
 	      font-size: 10px;
 	      font-weight: 500;
 	      padding: 2px 8px;
 	    }
+	    .nyu-rmp-comments-panel {
+	      background: #fbfcfe;
+	      border-left: 2px solid #c7d7ef;
+	      margin-top: 8px;
+	      padding: 7px 0 2px 9px;
+	    }
 	    .nyu-rmp-comments {
-	      margin: 8px 0 0;
-	      padding-left: 14px;
+	      margin: 0;
+	      padding-left: 13px;
 	    }
 	    .nyu-rmp-comments li {
 	      margin-bottom: 6px;
@@ -1264,7 +1322,7 @@ export function injectStyles(document = globalThis.document) {
 	      font-family: inherit;
 	      font-size: 10.5px;
 	      font-weight: 600;
-	      letter-spacing: 0.2px;
+	      letter-spacing: 0;
 	      margin-top: 2px;
 	      padding: 0;
 	      text-transform: uppercase;
@@ -1276,7 +1334,7 @@ export function injectStyles(document = globalThis.document) {
 	      transform: translateY(1px);
 	    }
 	    .nyu-rmp-comment-meta {
-	      color: #a094b8;
+	      color: #7a8699;
 	      display: block;
 	      font-size: 10px;
 	      margin-top: 2px;
