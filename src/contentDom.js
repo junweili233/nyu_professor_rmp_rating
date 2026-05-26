@@ -6,7 +6,7 @@ const COMMENT_PREVIEW_LENGTH = 150;
 const MAX_RENDERED_COMMENTS = 3;
 const DEFAULT_RMP_URL = "https://www.ratemyprofessors.com/";
 const PLACEHOLDER_COMMENT_TEXT = new Set(["n/a", "na", "none", "no comment", "no comments", "no comments yet"]);
-const COURSE_CODE_PATTERN = /\b([A-Z]{2,5}-[A-Z]{2}[-\s]*\d{3,4})\b/i;
+const COURSE_CODE_PATTERN = /\b([A-Z]{2,5}-[A-Z]{2}[.\-\s]*\d{3,4})\b/i;
 const SPACED_COURSE_CODE_PATTERN = /\b([A-Z]{2,5}\s+[A-Z]{2}\s*0?\d{3,4})\b/i;
 const COMPACT_COURSE_CODE_PATTERN = /\b([A-Z]{2,5}[A-Z]{2}0?\d{3,4})\b/i;
 const CS_SHORTHAND_COURSE_CODE_PATTERN = /\b(CS[-\s]*0?\d{3,4})\b/i;
@@ -949,7 +949,7 @@ function normalizeCourseCode(value) {
     .replace(/\bCS[-\s]*0*(\d{1,4})\b/, (_match, courseNumber) => `CSCI-UA ${Number(courseNumber)}`)
     .replace(/\b([A-Z]{2,5})\s+([A-Z]{2})\s*0*(\d{1,4})\b/, (_match, subject, school, courseNumber) => `${subject}-${school} ${Number(courseNumber)}`)
     .replace(/\b([A-Z]{2,5})([A-Z]{2})0*(\d{1,4})\b/, (_match, subject, school, courseNumber) => `${subject}-${school} ${Number(courseNumber)}`)
-    .replace(/\b([A-Z]{2,5}-[A-Z]{2})[-\s]*0*(\d{1,4})\b/, (_match, prefix, courseNumber) => `${prefix} ${Number(courseNumber)}`);
+    .replace(/\b([A-Z]{2,5}-[A-Z]{2})[.\-\s]*0*(\d{1,4})\b/, (_match, prefix, courseNumber) => `${prefix} ${Number(courseNumber)}`);
 }
 
 function uniqueNames(names) {

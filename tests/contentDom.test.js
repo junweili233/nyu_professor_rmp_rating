@@ -931,6 +931,51 @@ describe("Albert content DOM injection", () => {
     );
   });
 
+  it("matches useful comments when Albert uses dotted CS201 catalog notation", async () => {
+    document.body.innerHTML = `
+      <table>
+        <thead>
+          <tr>
+            <th>Course</th>
+            <th>Instructor</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>CSCI-UA.0201 Computer Systems Organization</td>
+            <td>YAP, CHEE KENG</td>
+          </tr>
+        </tbody>
+      </table>
+    `;
+    const lookupProfessor = vi.fn(async (name) => ({
+      name,
+      department: "Computer Science",
+      rating: 2.1,
+      difficulty: 4.5,
+      ratingsCount: 92,
+      tags: [],
+      topComments: [
+        {
+          text: "Dotted Albert catalog notation should still match CS201.",
+          course: "CSCI-UA 201",
+          helpfulRating: 8,
+        },
+      ],
+      url: "https://www.ratemyprofessors.com/professor/419998",
+    }));
+
+    await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
+
+    const metadata = document.querySelector(".nyu-rmp-comment-meta");
+    expect(metadata.textContent).toContain("Course CSCI-UA 201 (Albert match)");
+    expect(document.querySelector(".nyu-rmp-course-context").textContent.replace(/\s+/g, " ").trim()).toBe("Albert CSCI-UA 201");
+    expect(document.querySelector(".nyu-rmp-comments-course-match").textContent).toBe("1 CSCI-UA 201 match");
+    expect(document.querySelector(".nyu-rmp-card").getAttribute("aria-label")).toContain(
+      "1 useful comment shown, 1 matches Albert course CSCI-UA 201",
+    );
+  });
+
   it("matches useful comments when RMP omits punctuation in CS201 course metadata", async () => {
     document.body.innerHTML = `
       <table>
