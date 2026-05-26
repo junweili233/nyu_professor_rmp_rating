@@ -71,6 +71,16 @@ describe("Albert content DOM injection", () => {
     expect(styles).toContain("color: #a82020");
   });
 
+  it("styles course-matched comment rows by signal state", () => {
+    injectStyles(document);
+
+    const styles = document.getElementById("nyu-rmp-rating-styles").textContent;
+    expect(styles).toContain(".nyu-rmp-comment.is-course-match.is-strong");
+    expect(styles).toContain(".nyu-rmp-comment.is-course-match.is-mixed");
+    expect(styles).toContain(".nyu-rmp-comment.is-course-match.is-weak");
+    expect(styles).toContain("border-left-color: #b42318");
+  });
+
   it("does not scan Albert pages when the overlay is disabled", () => {
     document.body.innerHTML = `<div>Instructor: Ada Lovelace</div>`;
     const lookupProfessor = vi.fn();
@@ -1284,7 +1294,7 @@ describe("Albert content DOM injection", () => {
       tags: [],
       topComments: [
         {
-          text: "Useful context for the systems organization section.",
+          text: "CS201 projects are hard, confusing, overwhelming, avoid if behind.",
           course: "CSCI-UA 201",
           helpfulRating: 14,
           clarityRating: 2,
@@ -1301,6 +1311,8 @@ describe("Albert content DOM injection", () => {
     expect(metadata.textContent).toContain("Course CSCI-UA 201 (Albert match)");
     expect(metadata.classList.contains("is-course-match")).toBe(true);
     expect(comment.classList.contains("is-course-match")).toBe(true);
+    expect(comment.classList.contains("is-weak")).toBe(true);
+    expect(comment.getAttribute("aria-label")).toBe("Risk signal: useful comment matches Albert course CSCI-UA 201");
   });
 
   it("labels when useful RMP comments do not match the nearby Albert course", async () => {

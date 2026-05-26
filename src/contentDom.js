@@ -2319,6 +2319,22 @@ export function injectStyles(document = globalThis.document) {
 	      margin-left: -8px;
 	      padding: 5px 7px 5px 8px;
 	    }
+	    .nyu-rmp-comment.is-course-match.is-strong {
+	      background: #f3fbf6;
+	      border-left-color: #4f9b6e;
+	    }
+	    .nyu-rmp-comment.is-course-match.is-mixed {
+	      background: #fff8ed;
+	      border-left-color: #b7791f;
+	    }
+	    .nyu-rmp-comment.is-course-match.is-weak {
+	      background: #fff5f5;
+	      border-left-color: #b42318;
+	    }
+	    .nyu-rmp-comment.is-course-match.is-limited {
+	      background: #f6f4f8;
+	      border-left-color: #7a6a90;
+	    }
 	    .nyu-rmp-comments p {
 	      margin: 0;
 	      line-height: 1.45;
@@ -2593,6 +2609,10 @@ function formatComment(comment, textId, albertCourseCode = "", { hidden = false 
   const preview = truncateComment(normalized.text);
   const isTruncated = preview !== normalized.text;
   const isCourseMatch = commentMatchesCourse(normalized, albertCourseCode);
+  const signalState = isCourseMatch ? commentSignalEvidenceState(commentFitSignal([normalized], [], albertCourseCode)) : "";
+  const signalLabel = isCourseMatch
+    ? ` aria-label="${escapeHtml(evidenceChipStatePrefix(signalState))}: useful comment matches Albert course ${escapeHtml(normalizeCourseCode(albertCourseCode) || albertCourseCode)}"`
+    : "";
   const metadata = [
     normalized.course ? `Course ${normalized.course}${isCourseMatch ? " (Albert match)" : ""}` : "",
     !normalized.course && isCourseMatch ? "Albert course match" : "",
@@ -2602,7 +2622,7 @@ function formatComment(comment, textId, albertCourseCode = "", { hidden = false 
   ].filter(Boolean);
 
   return `
-    <li class="nyu-rmp-comment${isCourseMatch ? " is-course-match" : ""}${hidden ? " is-hidden" : ""}"${hidden ? " hidden" : ""}>
+    <li class="nyu-rmp-comment${isCourseMatch ? ` is-course-match is-${escapeHtml(signalState)}` : ""}${hidden ? " is-hidden" : ""}"${hidden ? " hidden" : ""}${signalLabel}>
       <p class="nyu-rmp-comment-text" id="${escapeHtml(textId)}">${escapeHtml(preview)}</p>
       ${isTruncated ? `
         <button
