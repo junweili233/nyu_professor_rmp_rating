@@ -273,7 +273,7 @@ describe("Albert content DOM injection", () => {
     await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
 
     const card = document.querySelector(".nyu-rmp-card");
-    expect(card.getAttribute("aria-label")).toBe("RMP rating for Ada Lovelace: 4.7 out of 5, department Computer Science, Strong rating, recommendation Pick with confidence, professor fit 82 out of 100 based on 2 of 4 radar metrics, limited data, N/A ratings, difficulty 2.4 out of 5, ease 2.6 out of 5, take again N/A, 0 useful comments shown");
+    expect(card.getAttribute("aria-label")).toBe("RMP rating for Ada Lovelace: 4.7 out of 5, department Computer Science, Strong rating, recommendation Limited RMP data, professor fit 82 out of 100 based on 2 of 4 radar metrics, limited data, N/A ratings, difficulty 2.4 out of 5, ease 2.6 out of 5, take again N/A, 0 useful comments shown");
     expect(document.querySelector(".nyu-rmp-rating-count").textContent).toBe("N/A ratings");
     expect(document.querySelector(".nyu-rmp-radar").getAttribute("aria-label")).toContain("N/A ratings");
     expect(document.body.textContent).not.toContain("0 ratings");
@@ -358,6 +358,26 @@ describe("Albert content DOM injection", () => {
     expect(recommendation.getAttribute("aria-label")).toBe("RMP pick recommendation: Pick with confidence");
     expect(recommendation.textContent.replace(/\s+/g, " ").trim()).toBe("Pick with confidence Strong fit from RMP signals");
     expect(document.querySelector(".nyu-rmp-card").getAttribute("aria-label")).toContain("recommendation Pick with confidence");
+  });
+
+  it("warns when a high professor fit score is based on sparse RMP data", async () => {
+    document.body.innerHTML = `<div>Instructor: Ada Lovelace</div>`;
+    const lookupProfessor = vi.fn(async (name) => ({
+      name,
+      department: "Computer Science",
+      rating: 4.7,
+      difficulty: 2.4,
+      tags: [],
+      topComments: [],
+      url: "https://www.ratemyprofessors.com/professor/123",
+    }));
+
+    await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
+
+    const recommendation = document.querySelector(".nyu-rmp-recommendation");
+    expect(recommendation.getAttribute("aria-label")).toBe("RMP pick recommendation: Limited RMP data");
+    expect(recommendation.textContent.replace(/\s+/g, " ").trim()).toBe("Limited RMP data Check RMP before picking");
+    expect(document.querySelector(".nyu-rmp-card").getAttribute("aria-label")).toContain("recommendation Limited RMP data");
   });
 
   it("renders rating cards with a dedicated metrics grid and comment panel", async () => {

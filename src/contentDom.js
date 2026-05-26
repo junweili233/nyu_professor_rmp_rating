@@ -1203,11 +1203,11 @@ function radarFitScore(axes) {
 }
 
 function getPickRecommendation(radarFit) {
-  if (!radarFit || radarFit.availableMetricCount < 2) {
+  if (!radarFit || radarFit.availableMetricCount <= 2) {
     return {
       className: "limited",
       label: "Limited RMP data",
-      detail: "Check the source before picking",
+      detail: "Check RMP before picking",
     };
   }
   if (radarFit.score >= 80) {
