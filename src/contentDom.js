@@ -1115,8 +1115,16 @@ function loadRatingCard({ card, name, lookupProfessor, forceRefresh = false, cou
   };
   const lookupArgs = Object.keys(lookupOptions).length > 0 ? [name, lookupOptions] : [name];
   return lookupProfessor(...lookupArgs)
-    .then((result) => updateRatingCard(card, result, { requestedName: name, lookupProfessor, courseCode }))
+    .then((result) => {
+      if (!card.isConnected) {
+        return;
+      }
+      updateRatingCard(card, result, { requestedName: name, lookupProfessor, courseCode });
+    })
     .catch((error) => {
+      if (!card.isConnected) {
+        return;
+      }
       updateErrorCard(card, { requestedName: name, lookupProfessor, message: error.message, courseCode });
     });
 }

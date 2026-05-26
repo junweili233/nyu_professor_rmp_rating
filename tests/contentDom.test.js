@@ -9521,6 +9521,61 @@ describe("Albert content DOM injection", () => {
     expect(lookupProfessor).toHaveBeenCalledWith("Grace Hopper");
   });
 
+  it("ignores pending stale lookup updates after Albert replaces a processed gridcell instructor", async () => {
+    document.body.innerHTML = `
+      <div role="row">
+        <div role="gridcell" id="grid-instructor" aria-label="Instructor">Ada Lovelace</div>
+      </div>
+    `;
+    let resolveAda;
+    let resolveGrace;
+    const lookupProfessor = vi.fn((name) => new Promise((resolve) => {
+      if (name === "Ada Lovelace") {
+        resolveAda = resolve;
+      } else if (name === "Grace Hopper") {
+        resolveGrace = resolve;
+      }
+    }));
+
+    const firstScan = scanAlbertPageOnce({ document, lookupProfessor });
+    const staleCard = document.querySelector("#grid-instructor .nyu-rmp-card");
+    document.querySelector("#grid-instructor .nyu-rmp-albert-original").textContent = "Grace Hopper";
+    const secondScan = scanAlbertPageOnce({ document, lookupProfessor });
+
+    expect(staleCard.isConnected).toBe(false);
+    resolveAda({
+      name: "Ada Lovelace",
+      department: "Ada-only stale department",
+      rating: 4.9,
+      difficulty: 1.1,
+      wouldTakeAgain: 99,
+      ratingsCount: 42,
+      url: "https://www.ratemyprofessors.com/professor/1",
+      tags: [],
+      topComments: ["Ada-only resolved comment."],
+    });
+    resolveGrace({
+      name: "Grace Hopper",
+      department: "Grace-only current department",
+      rating: 4.7,
+      difficulty: 1.4,
+      wouldTakeAgain: 96,
+      ratingsCount: 58,
+      url: "https://www.ratemyprofessors.com/professor/2",
+      tags: [],
+      topComments: ["Grace-only resolved comment."],
+    });
+    await Promise.allSettled([...firstScan.pendingLookups, ...secondScan.pendingLookups]);
+
+    const cards = Array.from(document.querySelectorAll("#grid-instructor .nyu-rmp-card"));
+    expect(cards).toHaveLength(1);
+    expect(cards[0].dataset.nyuRmpRequestedName).toBe("Grace Hopper");
+    expect(cards[0].textContent).toContain("Grace-only current department");
+    expect(cards[0].textContent).not.toContain("Ada-only stale department");
+    expect(staleCard.textContent).not.toContain("Ada-only stale department");
+    expect(lookupProfessor).toHaveBeenCalledTimes(2);
+  });
+
   it("syncs processed-cell cards when Albert replaces one instructor and adds another", async () => {
     document.body.innerHTML = `
       <div role="row">
