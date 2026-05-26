@@ -9709,6 +9709,82 @@ describe("Albert content DOM injection", () => {
     expect(lookupProfessor).toHaveBeenCalledWith("Ada Lovelace");
   });
 
+  it("replaces stale processed Albert rating roots with the score-first quick view", async () => {
+    document.body.innerHTML = `
+      <div role="row">
+        <div role="gridcell" id="grid-instructor" data-nyu-rmp-processed="true">
+          <div class="nyu-rmp-albert-original" data-nyu-rmp-original="true">Ada Lovelace</div>
+          <div class="nyu-rmp-rating-root is-cell-mounted" data-nyu-rmp-version="0.1.2">
+            <article class="nyu-rmp-card rating-good" data-nyu-rmp-requested-name="Ada Lovelace" data-nyu-rmp-version="0.1.2">
+              <div class="nyu-rmp-card-head"><strong>Ada Lovelace</strong></div>
+              <div class="nyu-rmp-department">Computer Science</div>
+              <dl class="nyu-rmp-score-row nyu-rmp-metrics"></dl>
+              <div class="nyu-rmp-radar-wrap"></div>
+              <div class="nyu-rmp-comments-panel">Old comment text</div>
+            </article>
+          </div>
+        </div>
+      </div>
+    `;
+    const lookupProfessor = vi.fn(async (name) => ({
+      name,
+      department: "Computer Science",
+      rating: 4.7,
+      difficulty: 2.4,
+      ratingsCount: 38,
+      wouldTakeAgain: 92,
+      tags: ["Helpful"],
+      topComments: ["Explains low-level systems clearly."],
+      url: "https://www.ratemyprofessors.com/professor/123",
+    }));
+
+    await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
+
+    const ratingRoot = document.querySelector("#grid-instructor > .nyu-rmp-rating-root");
+    const card = ratingRoot.querySelector(".nyu-rmp-card");
+    const quickGrid = card.querySelector(":scope > .nyu-rmp-quick-grid");
+    expect(ratingRoot.dataset.nyuRmpVersion).toBe("0.1.2");
+    expect(ratingRoot.querySelectorAll(".nyu-rmp-card")).toHaveLength(1);
+    expect(quickGrid).not.toBeNull();
+    expect(quickGrid.textContent.replace(/\s+/g, " ").trim()).toBe("RMP 4.7 Strong rating 38 ratings Recent comments Radar map");
+    expect(card.querySelector(":scope > .nyu-rmp-card-head")).toBeNull();
+    expect(card.querySelector(":scope > .nyu-rmp-department")).toBeNull();
+    expect(card.querySelector(".nyu-rmp-score-row").closest(".nyu-rmp-radar-panel").hidden).toBe(true);
+    expect(card.querySelector(".nyu-rmp-comments-panel").hidden).toBe(true);
+    expect(lookupProfessor).toHaveBeenCalledTimes(1);
+    expect(lookupProfessor).toHaveBeenCalledWith("Ada Lovelace");
+  });
+
+  it("uses stale rating card names to refresh processed Albert roots without original wrappers", async () => {
+    document.body.innerHTML = `
+      <div role="row">
+        <div role="gridcell" id="grid-instructor" data-nyu-rmp-processed="true">
+          <div class="nyu-rmp-rating-root is-cell-mounted">
+            <article class="nyu-rmp-card rating-good" data-nyu-rmp-requested-name="Grace Hopper">
+              <div class="nyu-rmp-card-head"><strong>Grace Hopper</strong></div>
+            </article>
+          </div>
+        </div>
+      </div>
+    `;
+    const lookupProfessor = vi.fn(async (name) => ({
+      name,
+      rating: 4.2,
+      difficulty: 2.8,
+      ratingsCount: 17,
+      wouldTakeAgain: 82,
+    }));
+
+    await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
+
+    const card = document.querySelector("#grid-instructor .nyu-rmp-card");
+    expect(document.querySelectorAll("#grid-instructor .nyu-rmp-card")).toHaveLength(1);
+    expect(card.dataset.nyuRmpRequestedName).toBe("Grace Hopper");
+    expect(card.querySelector(":scope > .nyu-rmp-quick-grid")).not.toBeNull();
+    expect(lookupProfessor).toHaveBeenCalledTimes(1);
+    expect(lookupProfessor).toHaveBeenCalledWith("Grace Hopper");
+  });
+
   it("repairs processed Albert layout safeguards on demand", () => {
     document.body.innerHTML = `
       <div role="gridcell" id="grid-instructor" data-nyu-rmp-processed="true">

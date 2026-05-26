@@ -1002,6 +1002,8 @@ function mountRatings({ element, names, processedElements = [], document, lookup
   if (!existingContainer) {
     container.className = isCellMount ? `${ROOT_CLASS} is-cell-mounted` : ROOT_CLASS;
     container.dataset.nyuRmpVersion = EXTENSION_VERSION;
+  } else {
+    resetStaleRatingRoot(existingContainer);
   }
   if (isCellMount) {
     applyCellMountedChildLayoutSafeguards(container);
@@ -1046,12 +1048,19 @@ function findUpdatedProcessedInstructorTargets(document = globalThis.document) {
       const container = element.querySelector(`:scope > .${ROOT_CLASS}.is-cell-mounted`);
       const originalContent = element.querySelector(`:scope > .${ORIGINAL_CONTENT_CLASS}`);
       if (!container || !originalContent) {
+        if (container && isStaleRatingRoot(container)) {
+          const staleNames = mountedProfessorNames(container);
+          return staleNames.length > 0 ? [{ element, names: staleNames }] : [];
+        }
         return [];
       }
 
       const currentNames = namesFromOriginalAlbertContent(originalContent);
       const currentNameKeys = new Set(currentNames.map(compactName).filter(Boolean));
       pruneStaleMountedProfessorCards(container, currentNameKeys);
+      if (isStaleRatingRoot(container)) {
+        return currentNames.length > 0 ? [{ element, names: currentNames }] : [];
+      }
       const names = currentNames
         .filter((name) => !mountedProfessorNameKeys(container).has(compactName(name)));
       return names.length > 0 ? [{ element, names }] : [];
@@ -1067,9 +1076,13 @@ function namesFromOriginalAlbertContent(element) {
 }
 
 function mountedProfessorNameKeys(container) {
-  return new Set(Array.from(container.querySelectorAll(".nyu-rmp-card"))
-    .map((card) => compactName(card.dataset.nyuRmpRequestedName))
-    .filter(Boolean));
+  return new Set(mountedProfessorNames(container).map(compactName).filter(Boolean));
+}
+
+function mountedProfessorNames(container) {
+  return Array.from(container.querySelectorAll(".nyu-rmp-card"))
+    .map((card) => normalizeInstructorName(card.dataset.nyuRmpRequestedName))
+    .filter(Boolean);
 }
 
 function pruneStaleMountedProfessorCards(container, currentNameKeys) {
@@ -1079,6 +1092,26 @@ function pruneStaleMountedProfessorCards(container, currentNameKeys) {
       card.remove();
     }
   }
+}
+
+function resetStaleRatingRoot(container) {
+  if (!isStaleRatingRoot(container)) {
+    return false;
+  }
+  container.replaceChildren();
+  container.dataset.nyuRmpVersion = EXTENSION_VERSION;
+  return true;
+}
+
+function isStaleRatingRoot(container) {
+  if (container.dataset.nyuRmpVersion !== EXTENSION_VERSION) {
+    return true;
+  }
+  return Array.from(container.querySelectorAll(".nyu-rmp-card"))
+    .some((card) => card.dataset.nyuRmpVersion !== EXTENSION_VERSION
+      || (!card.classList.contains("is-loading")
+        && !card.classList.contains("is-empty")
+        && !card.querySelector(":scope > .nyu-rmp-quick-grid")));
 }
 
 function wrapOriginalAlbertCellContent(element, document) {

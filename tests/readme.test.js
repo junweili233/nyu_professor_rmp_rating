@@ -10,6 +10,7 @@ describe("README", () => {
     expect(readme).toContain("npm run verify:albert-shape");
     expect(readme).toContain("npm run verify:diagnostics");
     expect(readme).toContain("npm run verify:release");
+    expect(readme).toContain("npm run package:release");
     expect(readme).toContain("npm run verify:live");
     expect(readme).toContain("refresh Albert");
     expect(readme).toContain("Show ratings on Albert");

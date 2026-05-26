@@ -10,6 +10,7 @@ npm test
 npm run build
 npm run verify:package
 npm run verify:release
+npm run package:release -- v0.1.2
 ```
 
 Load `dist` as an unpacked Chrome extension after `npm run build`.
@@ -53,6 +54,7 @@ npm test
 npm run build
 npm run verify:package
 npm run verify:release
+npm run package:release -- v0.1.2
 npm run verify:chrome-profile
 npm run verify:diagnostics -- .\popup-diagnostics.txt
 npm run verify:live
