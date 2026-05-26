@@ -77,6 +77,19 @@ describe("Albert content DOM injection", () => {
     expect(cellRootStyles).toContain("width: min(100%, 320px)");
   });
 
+  it("does not use an internal grid layout for processed Albert instructor cells", () => {
+    injectStyles(document);
+
+    const styles = document.getElementById("nyu-rmp-rating-styles").textContent;
+    const rootStart = styles.indexOf(".nyu-rmp-rating-root");
+    const rootCellStart = styles.indexOf("td > .nyu-rmp-rating-root");
+    const rootStyles = styles.slice(rootStart, rootCellStart);
+
+    expect(rootStyles).not.toContain("display: grid");
+    expect(rootStyles).toContain("display: block");
+    expect(rootStyles).toContain("clear: both");
+  });
+
   it("prevents long RMP text from forcing Albert cells wider", () => {
     injectStyles(document);
 
@@ -9379,6 +9392,26 @@ describe("Albert content DOM injection", () => {
     const row = document.querySelector("#section-row");
     expect(Array.from(row.children).map((child) => child.tagName)).toEqual(["TH", "TD"]);
     expect(row.querySelector("td .nyu-rmp-rating-root")).not.toBeNull();
+  });
+
+  it("keeps Albert gridcell instructor text readable when marking it processed", async () => {
+    document.body.innerHTML = `
+      <div role="row" id="grid-row">
+        <div role="gridcell">CSCI-UA 201 Computer Systems Organization</div>
+        <div role="gridcell" id="grid-instructor" aria-label="Instructor">YAP, CHEE KENG</div>
+        <div role="gridcell">Open</div>
+      </div>
+    `;
+    const lookupProfessor = vi.fn(async () => null);
+
+    await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
+
+    const instructorCell = document.getElementById("grid-instructor");
+    const ratingRoot = instructorCell.querySelector(":scope > .nyu-rmp-rating-root");
+    expect(instructorCell.dataset.nyuRmpProcessed).toBe("true");
+    expect(Array.from(instructorCell.childNodes)[0].textContent.trim()).toBe("YAP, CHEE KENG");
+    expect(ratingRoot).not.toBeNull();
+    expect(ratingRoot.querySelector(".nyu-rmp-card")).not.toBeNull();
   });
 
   it("injects one rating card for each adjacent-cell co-instructor", async () => {
