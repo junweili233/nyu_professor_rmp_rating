@@ -16,6 +16,7 @@ describe("README", () => {
     expect(readme).toContain("pick recommendation");
     expect(readme).toContain("course-match badge");
     expect(readme).toContain("CSCI-UA 0201");
+    expect(readme).toContain("Operating Systems, NLP, Calculus III, and Linear Algebra");
     expect(readme).toContain("Show more comments");
     expect(readme).toContain("counts every CS201-matched useful comment");
     expect(readme).toContain("samples 20 recent RMP ratings");

@@ -17,6 +17,13 @@ const COURSE_TITLE_CODE_ALIASES = [
   { pattern: /\bcomputer\s+systems?\s+organization\b/i, code: "CSCI-UA 201" },
   { pattern: /\bcomputer\s+systems?\s+org\.?\b/i, code: "CSCI-UA 201" },
   { pattern: /\bCSO\b/i, code: "CSCI-UA 201" },
+  { pattern: /\boperating\s+systems?\b/i, code: "CSCI-UA 202" },
+  { pattern: /\bOS\b/i, code: "CSCI-UA 202" },
+  { pattern: /\bnatural\s+language\s+processing\b/i, code: "CSCI-UA 469" },
+  { pattern: /\bNLP\b/i, code: "CSCI-UA 469" },
+  { pattern: /\bcalculus\s*(?:iii|3)\b/i, code: "MATH-UA 123" },
+  { pattern: /\bcalc\s*(?:iii|3)\b/i, code: "MATH-UA 123" },
+  { pattern: /\blinear\s+algebra\b/i, code: "MATH-UA 140" },
 ];
 const CONTROLLED_OPTION_SELECTOR = "[role='option'], [aria-selected], [aria-checked], [aria-current], [aria-pressed], [data-selected], [data-active], [data-checked], [data-current], [data-focus], [data-focused], [data-highlighted], [data-pressed], [data-state], [selected], [class]";
 const ALBERT_OBSERVER_OPTIONS = {
