@@ -493,6 +493,12 @@ describe("Albert content DOM injection", () => {
       "High take-again 91%",
       "64 ratings",
     ]);
+    expect(Array.from(evidence.querySelectorAll(".nyu-rmp-evidence-chip")).map((node) => node.className)).toEqual([
+      "nyu-rmp-evidence-chip is-strong",
+      "nyu-rmp-evidence-chip is-strong",
+      "nyu-rmp-evidence-chip is-strong",
+      "nyu-rmp-evidence-chip is-strong",
+    ]);
   });
 
   it("shows concrete risk evidence for a weak pick recommendation", async () => {
@@ -518,6 +524,12 @@ describe("Albert content DOM injection", () => {
       "High difficulty 4.5/5",
       "Low take-again 24%",
       "92 ratings",
+    ]);
+    expect(Array.from(evidence.querySelectorAll(".nyu-rmp-evidence-chip")).map((node) => node.className)).toEqual([
+      "nyu-rmp-evidence-chip is-weak",
+      "nyu-rmp-evidence-chip is-weak",
+      "nyu-rmp-evidence-chip is-weak",
+      "nyu-rmp-evidence-chip is-strong",
     ]);
     expect(document.querySelector(".nyu-rmp-card").getAttribute("aria-label")).toContain("recommendation Avoid if possible");
   });

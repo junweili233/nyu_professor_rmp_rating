@@ -1386,18 +1386,25 @@ function getPickRecommendation(radarFit) {
 
 function renderRecommendationEvidence({ rating, difficulty, ratingsCount, wouldTakeAgain, commentSignal = null, courseCode = "", courseMatchedCommentCount = 0 }) {
   const chips = [
-    ratingEvidenceLabel(rating),
-    difficultyEvidenceLabel(difficulty),
-    takeAgainEvidenceLabel(wouldTakeAgain),
-    ratingsCountEvidenceLabel(ratingsCount),
-    commentSignalEvidenceLabel(commentSignal, { courseCode, courseMatchedCommentCount }),
-  ].filter(Boolean);
+    evidenceChip(ratingEvidenceLabel(rating), ratingEvidenceState(rating)),
+    evidenceChip(difficultyEvidenceLabel(difficulty), difficultyEvidenceState(difficulty)),
+    evidenceChip(takeAgainEvidenceLabel(wouldTakeAgain), takeAgainEvidenceState(wouldTakeAgain)),
+    evidenceChip(ratingsCountEvidenceLabel(ratingsCount), ratingsCountEvidenceState(ratingsCount)),
+    evidenceChip(commentSignalEvidenceLabel(commentSignal, { courseCode, courseMatchedCommentCount }), commentSignalEvidenceState(commentSignal)),
+  ].filter((chip) => chip.label);
 
   return `
     <div class="nyu-rmp-evidence" role="list" aria-label="RMP recommendation evidence">
-      ${chips.map((chip) => `<span class="nyu-rmp-evidence-chip" role="listitem">${escapeHtml(chip)}</span>`).join("")}
+      ${chips.map((chip) => `<span class="nyu-rmp-evidence-chip is-${escapeHtml(chip.state)}" role="listitem">${escapeHtml(chip.label)}</span>`).join("")}
     </div>
   `;
+}
+
+function evidenceChip(label, state) {
+  return {
+    label,
+    state: state || "limited",
+  };
 }
 
 function commentSignalEvidenceLabel(commentSignal, { courseCode = "", courseMatchedCommentCount = 0 } = {}) {
@@ -1435,6 +1442,19 @@ function ratingEvidenceLabel(rating) {
   return `Mixed rating ${formatScore(rating)}/5`;
 }
 
+function ratingEvidenceState(rating) {
+  if (rating == null) {
+    return "limited";
+  }
+  if (rating >= 4) {
+    return "strong";
+  }
+  if (rating < 3) {
+    return "weak";
+  }
+  return "mixed";
+}
+
 function difficultyEvidenceLabel(difficulty) {
   if (difficulty == null) {
     return "Difficulty N/A";
@@ -1446,6 +1466,19 @@ function difficultyEvidenceLabel(difficulty) {
     return `Manageable difficulty ${formatScore(difficulty)}/5`;
   }
   return `Moderate difficulty ${formatScore(difficulty)}/5`;
+}
+
+function difficultyEvidenceState(difficulty) {
+  if (difficulty == null) {
+    return "limited";
+  }
+  if (difficulty >= 4) {
+    return "weak";
+  }
+  if (difficulty <= 2.5) {
+    return "strong";
+  }
+  return "mixed";
 }
 
 function takeAgainEvidenceLabel(wouldTakeAgain) {
@@ -1462,9 +1495,45 @@ function takeAgainEvidenceLabel(wouldTakeAgain) {
   return `Mixed take-again ${rounded}%`;
 }
 
+function takeAgainEvidenceState(wouldTakeAgain) {
+  if (wouldTakeAgain == null) {
+    return "limited";
+  }
+  const rounded = Math.round(wouldTakeAgain);
+  if (rounded >= 80) {
+    return "strong";
+  }
+  if (rounded < 50) {
+    return "weak";
+  }
+  return "mixed";
+}
+
 function ratingsCountEvidenceLabel(ratingsCount) {
   const normalizedRatingsCount = optionalNonNegativeCount(ratingsCount);
   return normalizedRatingsCount == null ? "N/A ratings" : formatRatingsCount(normalizedRatingsCount);
+}
+
+function ratingsCountEvidenceState(ratingsCount) {
+  const normalizedRatingsCount = optionalNonNegativeCount(ratingsCount);
+  if (normalizedRatingsCount == null || normalizedRatingsCount < MIN_CONFIDENT_RATING_COUNT) {
+    return "limited";
+  }
+  return "strong";
+}
+
+function commentSignalEvidenceState(commentSignal) {
+  if (commentSignal == null) {
+    return "limited";
+  }
+  const score = Math.round(commentSignal * 100);
+  if (score >= 70) {
+    return "strong";
+  }
+  if (score <= 40) {
+    return "weak";
+  }
+  return "mixed";
 }
 
 function commentFitSignal(comments = [], tags = [], albertCourseCode = "") {
@@ -1889,6 +1958,26 @@ export function injectStyles(document = globalThis.document) {
 	      letter-spacing: 0;
 	      line-height: 1.15;
 	      padding: 4px 7px;
+	    }
+	    .nyu-rmp-evidence-chip.is-strong {
+	      background: #edf7f1;
+	      border-color: #b8dcc8;
+	      color: #1a6a3e;
+	    }
+	    .nyu-rmp-evidence-chip.is-mixed {
+	      background: #fef7ed;
+	      border-color: #e8cf9a;
+	      color: #8a5a14;
+	    }
+	    .nyu-rmp-evidence-chip.is-weak {
+	      background: #fef4f4;
+	      border-color: #e8b8b8;
+	      color: #a82020;
+	    }
+	    .nyu-rmp-evidence-chip.is-limited {
+	      background: #f6f4f8;
+	      border-color: #ddd6e8;
+	      color: #6b5e7a;
 	    }
 	    .nyu-rmp-radar-wrap {
 	      align-items: center;
