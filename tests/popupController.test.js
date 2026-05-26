@@ -115,6 +115,33 @@ describe("extension popup controller", () => {
     expect(document.getElementById("page-status").dataset.state).toBe("connected");
   });
 
+  it("warns when the active Albert page is running an older content script version", async () => {
+    document.body.innerHTML = `
+      <p id="status"></p>
+      <p id="page-status"></p>
+      <input id="enable-overlay" type="checkbox" />
+      <button id="clear-cache"></button>
+    `;
+    const tabs = createTabsMock({
+      activeTab: { id: 12, url: "https://sis.portal.nyu.edu/psp/ihprod/EMPLOYEE/EMPL/h/" },
+      contentStatus: {
+        ok: true,
+        contentScript: "loaded",
+        version: "0.1.0",
+        overlayState: "enabled",
+        cardCount: 2,
+        radarCount: 1,
+      },
+    });
+
+    await initPopup({ document, storage: createStorageMock(), tabs });
+
+    expect(document.getElementById("page-status").textContent).toBe(
+      "Albert connected v0.1.0; popup v0.1.1. Reload the extension, then refresh Albert. 2 cards, 1 radar map",
+    );
+    expect(document.getElementById("page-status").dataset.state).toBe("warning");
+  });
+
   it("wakes an active Albert page by injecting the content script when the first ping fails", async () => {
     document.body.innerHTML = `
       <p id="status"></p>

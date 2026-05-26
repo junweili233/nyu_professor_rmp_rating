@@ -163,7 +163,7 @@ async function refreshAlbertPageStatus({ pageStatus, tabs, scripting }) {
 
     const response = await pingAlbertContentScript(tabs, activeTab.id);
     if (isLoadedContentResponse(response)) {
-      setPageStatus(pageStatus, formatAlbertConnectedStatus(response), "connected");
+      setPageStatus(pageStatus, formatAlbertConnectedStatus(response), albertPageStatusState(response));
       return;
     }
 
@@ -173,7 +173,7 @@ async function refreshAlbertPageStatus({ pageStatus, tabs, scripting }) {
       return;
     }
 
-    setPageStatus(pageStatus, formatAlbertConnectedStatus(wakeResponse), "connected");
+    setPageStatus(pageStatus, formatAlbertConnectedStatus(wakeResponse), albertPageStatusState(wakeResponse));
   } catch {
     setPageStatus(pageStatus, "Albert not connected. Reload the extension, then refresh Albert.", "warning");
   }
@@ -223,10 +223,22 @@ function formatAlbertConnectedStatus(response) {
   const cardLabel = cardCount === 1 ? "1 card" : `${cardCount} cards`;
   const radarLabel = radarCount === 1 ? "1 radar map" : `${radarCount} radar maps`;
   const versionLabel = formatVersionLabel(response.version);
+  if (isStaleContentVersion(response.version)) {
+    return `Albert connected${versionLabel}; popup v${EXTENSION_VERSION}. Reload the extension, then refresh Albert. ${cardLabel}, ${radarLabel}`;
+  }
   if (response.overlayState === "disabled") {
     return `Albert connected${versionLabel}; overlay disabled. ${cardLabel}, ${radarLabel}`;
   }
   return `Albert connected${versionLabel}: ${cardLabel}, ${radarLabel}`;
+}
+
+function albertPageStatusState(response) {
+  return isStaleContentVersion(response.version) ? "warning" : "connected";
+}
+
+function isStaleContentVersion(version) {
+  const normalized = String(version ?? "").trim();
+  return Boolean(normalized) && normalized !== EXTENSION_VERSION;
 }
 
 function formatVersionLabel(version) {
