@@ -15,5 +15,7 @@ describe("README", () => {
     expect(readme).toContain("pick recommendation");
     expect(readme).toContain("course-match badge");
     expect(readme).toContain("CSCI-UA 0201");
+    expect(readme).toContain("Show more comments");
+    expect(readme).toContain("counts every CS201-matched useful comment");
   });
 });
