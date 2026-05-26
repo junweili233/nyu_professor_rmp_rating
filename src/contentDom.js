@@ -1258,7 +1258,8 @@ function renderRadarChart({ chartId, professorName = "Professor", rating, diffic
 }
 
 function radarLegendItem(label, value, available) {
-  return `<li class="nyu-rmp-radar-legend-item is-${radarLegendState(value, available)}">${escapeHtml(label)}</li>`;
+  const state = radarLegendState(value, available);
+  return `<li class="nyu-rmp-radar-legend-item is-${state}" aria-label="${escapeHtml(evidenceChipStatePrefix(state))}: ${escapeHtml(label)}">${escapeHtml(label)}</li>`;
 }
 
 function radarLegendState(value, available) {

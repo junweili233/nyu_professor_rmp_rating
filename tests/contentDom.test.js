@@ -1135,6 +1135,13 @@ describe("Albert content DOM injection", () => {
       "nyu-rmp-radar-legend-item is-weak",
       "nyu-rmp-radar-legend-item is-weak",
     ]);
+    expect(legendItems.map((node) => node.getAttribute("aria-label"))).toEqual([
+      "Risk signal: Rating 2.1/5",
+      "Risk signal: Ease 0.5/5",
+      "Support signal: Volume 92",
+      "Risk signal: Take again 24%",
+      "Risk signal: Comments 0/100",
+    ]);
   });
 
   it("renders labeled radar nodes for each professor fit metric", async () => {
