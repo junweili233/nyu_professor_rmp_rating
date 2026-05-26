@@ -50,6 +50,24 @@ describe("Albert content DOM injection", () => {
     expect(styles).toContain("justify-items: start");
   });
 
+  it("keeps injected rating cards compact inside wide Albert cells", () => {
+    injectStyles(document);
+
+    const styles = document.getElementById("nyu-rmp-rating-styles").textContent;
+    const rootStart = styles.indexOf(".nyu-rmp-rating-root");
+    const rootCellStart = styles.indexOf("td > .nyu-rmp-rating-root");
+    const cardStart = styles.indexOf(".nyu-rmp-card");
+    const rootStyles = styles.slice(rootStart, rootCellStart);
+    const cellRootStyles = styles.slice(rootCellStart, cardStart);
+
+    expect(rootStyles).toContain("box-sizing: border-box");
+    expect(rootStyles).toContain("justify-self: start");
+    expect(rootStyles).toContain("max-width: min(100%, 360px)");
+    expect(rootStyles).toContain("width: min(100%, 360px)");
+    expect(cellRootStyles).toContain("max-width: min(100%, 320px)");
+    expect(cellRootStyles).toContain("width: min(100%, 320px)");
+  });
+
   it("hides decorative radar axis labels in extremely narrow Albert cells", () => {
     injectStyles(document);
 

@@ -1846,9 +1846,14 @@ export function injectStyles(document = globalThis.document) {
   style.id = STYLE_ID;
   style.textContent = `
 	    .${ROOT_CLASS} {
+	      box-sizing: border-box;
 	      display: grid;
 	      gap: 6px;
+	      justify-self: start;
 	      margin: 6px 0 8px;
+	      max-width: min(100%, 360px);
+	      min-width: 0;
+	      width: min(100%, 360px);
 	      font-family: Aptos, "Segoe UI", sans-serif;
 	    }
 	    td > .nyu-rmp-rating-root,
@@ -1859,17 +1864,22 @@ export function injectStyles(document = globalThis.document) {
 	    [class*="ps_box-scrollarea"] .nyu-rmp-rating-root {
 	      gap: 4px;
 	      margin: 2px 0 4px;
+	      max-width: min(100%, 320px);
+	      width: min(100%, 320px);
 	    }
 	    .nyu-rmp-card {
 	      border: 1px solid #d9dee8;
 	      border-left: 4px solid #667085;
 	      border-radius: 8px;
 	      background: #ffffff;
+	      box-sizing: border-box;
 	      color: #182033;
 	      container-type: inline-size;
+	      min-width: 0;
 	      padding: 12px 13px;
 	      box-shadow: 0 1px 2px rgba(16,24,40,0.06), 0 8px 20px rgba(16,24,40,0.07);
 	      transition: transform 160ms ease, box-shadow 160ms ease, border-color 160ms ease;
+	      width: 100%;
 	    }
 	    td .nyu-rmp-card,
 	    th .nyu-rmp-card,
