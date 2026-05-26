@@ -919,6 +919,51 @@ describe("Albert content DOM injection", () => {
     expect(metadata.classList.contains("is-course-match")).toBe(true);
   });
 
+  it("labels when useful RMP comments do not match the nearby Albert course", async () => {
+    document.body.innerHTML = `
+      <table>
+        <thead>
+          <tr>
+            <th>Course</th>
+            <th>Instructor</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>CSCI-UA 201 Computer Systems Organization</td>
+            <td>YAP, CHEE KENG</td>
+          </tr>
+        </tbody>
+      </table>
+    `;
+    const lookupProfessor = vi.fn(async (name) => ({
+      name,
+      department: "Computer Science",
+      rating: 2.1,
+      difficulty: 4.5,
+      ratingsCount: 92,
+      tags: [],
+      topComments: [
+        {
+          text: "Useful but from a different course.",
+          course: "CSCI-UA 102",
+          helpfulRating: 14,
+        },
+      ],
+      url: "https://www.ratemyprofessors.com/professor/419998",
+    }));
+
+    await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
+
+    const badge = document.querySelector(".nyu-rmp-comments-course-match");
+    const comments = document.querySelector(".nyu-rmp-comments");
+    const panel = document.querySelector(".nyu-rmp-comments-panel");
+    expect(badge.textContent).toBe("No CSCI-UA 201 matches");
+    expect(badge.classList.contains("is-empty")).toBe(true);
+    expect(comments.getAttribute("aria-label")).toBe("Most useful RMP comments, 1 shown, no CSCI-UA 201 comment matches");
+    expect(panel.getAttribute("aria-label")).toBe("Most useful RMP comments, 1 shown, no CSCI-UA 201 comment matches");
+  });
+
   it("matches useful comments when Albert pads CS201 course numbers with a leading zero", async () => {
     document.body.innerHTML = `
       <table>

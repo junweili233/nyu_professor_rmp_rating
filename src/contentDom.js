@@ -1808,6 +1808,11 @@ export function injectStyles(document = globalThis.document) {
 	      padding: 2px 6px;
 	      text-transform: uppercase;
 	    }
+	    .nyu-rmp-comments-course-match.is-empty {
+	      background: #f6f4f8;
+	      border-color: #ddd6e8;
+	      color: #6b5e7a;
+	    }
 	    .nyu-rmp-comments {
 	      margin: 0;
 	      padding-left: 13px;
@@ -2087,18 +2092,27 @@ function renderCommentsPanel(comments, { courseMatchedCommentCount = 0, courseCo
   const heading = shownCommentCount > 0 ? `Most useful comments (${shownCommentCount})` : "Most useful comments";
   const usefulCommentCount = Number.isFinite(totalUsefulCommentCount) ? totalUsefulCommentCount : renderedCommentCount;
   const hiddenCommentCount = Math.max(0, usefulCommentCount - shownCommentCount);
-  const matchBadge = courseMatchedCommentCount > 0 && courseCode
+  const hasCourseContext = Boolean(courseCode);
+  const hasUsefulComments = usefulCommentCount > 0;
+  const matchBadge = courseMatchedCommentCount > 0 && hasCourseContext
     ? `<span class="nyu-rmp-comments-course-match">${escapeHtml(formatCourseMatchBadge(courseMatchedCommentCount, courseCode))}</span>`
+    : hasCourseContext && hasUsefulComments
+      ? `<span class="nyu-rmp-comments-course-match is-empty">${escapeHtml(formatNoCourseMatchBadge(courseCode))}</span>`
+      : "";
+  const courseMatchLabel = courseMatchedCommentCount > 0 && courseCode
+    ? formatCourseMatchSummary(courseMatchedCommentCount, courseCode)
+    : courseCode && hasUsefulComments
+      ? formatNoCourseMatchSummary(courseCode)
     : "";
   const shownLabel = hiddenCommentCount > 0
     ? `${shownCommentCount} of ${usefulCommentCount} useful comments shown`
     : `${shownCommentCount} shown`;
   const expandedShownLabel = `${usefulCommentCount} of ${usefulCommentCount} useful comments shown`;
-  const listLabel = courseMatchedCommentCount > 0 && courseCode
-    ? `Most useful RMP comments, ${shownLabel}, ${formatCourseMatchSummary(courseMatchedCommentCount, courseCode)}`
+  const listLabel = courseMatchLabel
+    ? `Most useful RMP comments, ${shownLabel}, ${courseMatchLabel}`
     : `Most useful RMP comments, ${shownLabel}`;
-  const expandedListLabel = courseMatchedCommentCount > 0 && courseCode
-    ? `Most useful RMP comments, ${expandedShownLabel}, ${formatCourseMatchSummary(courseMatchedCommentCount, courseCode)}`
+  const expandedListLabel = courseMatchLabel
+    ? `Most useful RMP comments, ${expandedShownLabel}, ${courseMatchLabel}`
     : `Most useful RMP comments, ${expandedShownLabel}`;
   const truncationNote = hiddenCommentCount > 0
     ? `<p class="nyu-rmp-comments-truncated">Showing ${shownCommentCount} of ${usefulCommentCount} useful comments</p>`
@@ -2122,6 +2136,14 @@ function renderCommentsPanel(comments, { courseMatchedCommentCount = 0, courseCo
 function formatCourseMatchBadge(courseMatchedCommentCount, courseCode) {
   const matchLabel = courseMatchedCommentCount === 1 ? "match" : "matches";
   return `${courseMatchedCommentCount} ${courseCode} ${matchLabel}`;
+}
+
+function formatNoCourseMatchBadge(courseCode) {
+  return `No ${courseCode} matches`;
+}
+
+function formatNoCourseMatchSummary(courseCode) {
+  return `no ${courseCode} comment matches`;
 }
 
 function countRenderedComments(comments) {
