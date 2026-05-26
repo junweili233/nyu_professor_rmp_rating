@@ -1391,15 +1391,21 @@ function updateRatingCard(card, result, { requestedName = "Professor", lookupPro
     collapsedCardLabel,
   );
   card.innerHTML = `
-    <div class="nyu-rmp-score-strip" aria-label="${escapeHtml(`RMP score for ${professorName}: ${formatRatingLabel(rating)}`)}">
-      <span>RMP</span>
-      <strong class="nyu-rmp-score-compact" aria-label="${escapeHtml(formatRatingLabel(rating))}">${formatScore(rating)}</strong>
-      <em>${escapeHtml(ratingVerdict.label)}</em>
-      <small>${escapeHtml(ratingsCountLabel)}</small>
-    </div>
-    <div class="nyu-rmp-feature-actions" aria-label="${escapeHtml(`Optional RMP details for ${professorName}`)}">
-      <button class="nyu-rmp-feature-toggle" type="button" aria-expanded="false" aria-controls="${escapeHtml(commentsPanelId)}">Recent comments</button>
-      <button class="nyu-rmp-feature-toggle" type="button" aria-expanded="false" aria-controls="${escapeHtml(radarPanelId)}">Radar map</button>
+    <div class="nyu-rmp-quick-grid" aria-label="${escapeHtml(`RMP quick view for ${professorName}`)}">
+      <section class="nyu-rmp-quick-section is-score" aria-label="${escapeHtml(`RMP score for ${professorName}`)}">
+        <div class="nyu-rmp-score-strip" aria-label="${escapeHtml(`RMP score for ${professorName}: ${formatRatingLabel(rating)}`)}">
+          <span>RMP</span>
+          <strong class="nyu-rmp-score-compact" aria-label="${escapeHtml(formatRatingLabel(rating))}">${formatScore(rating)}</strong>
+          <em>${escapeHtml(ratingVerdict.label)}</em>
+          <small>${escapeHtml(ratingsCountLabel)}</small>
+        </div>
+      </section>
+      <section class="nyu-rmp-quick-section is-tools" aria-label="${escapeHtml(`Optional RMP tools for ${professorName}`)}">
+        <div class="nyu-rmp-feature-actions" aria-label="${escapeHtml(`Optional RMP details for ${professorName}`)}">
+          <button class="nyu-rmp-feature-toggle" type="button" aria-expanded="false" aria-controls="${escapeHtml(commentsPanelId)}">Recent comments</button>
+          <button class="nyu-rmp-feature-toggle" type="button" aria-expanded="false" aria-controls="${escapeHtml(radarPanelId)}">Radar map</button>
+        </div>
+      </section>
     </div>
     ${hiddenCommentsPanel}
     <div class="nyu-rmp-radar-panel" id="${escapeHtml(radarPanelId)}" hidden>
@@ -2337,11 +2343,35 @@ export function injectStyles(document = globalThis.document) {
 	    .nyu-rmp-actions a:hover {
 	      text-decoration: underline;
 	    }
+	    .nyu-rmp-quick-grid {
+	      align-items: stretch;
+	      display: grid;
+	      gap: 8px;
+	      grid-template-columns: minmax(92px, 0.9fr) minmax(128px, 1.1fr);
+	      min-width: 0;
+	    }
+	    .nyu-rmp-quick-section {
+	      border: 1px solid #e3e8ef;
+	      border-radius: 7px;
+	      box-sizing: border-box;
+	      display: grid;
+	      min-width: 0;
+	      padding: 8px 9px;
+	    }
+	    .nyu-rmp-quick-section.is-score {
+	      background: #f8fafc;
+	      align-content: center;
+	    }
+	    .nyu-rmp-quick-section.is-tools {
+	      background: #ffffff;
+	      align-content: stretch;
+	    }
 	    .nyu-rmp-feature-actions {
 	      display: grid;
 	      gap: 6px;
-	      grid-template-columns: repeat(2, minmax(0, 1fr));
-	      margin: 6px 0 2px;
+	      grid-template-columns: minmax(0, 1fr);
+	      margin: 0;
+	      min-width: 0;
 	    }
 	    .nyu-rmp-feature-toggle {
 	      background: #ffffff;
@@ -2394,15 +2424,15 @@ export function injectStyles(document = globalThis.document) {
 	    }
 	    .nyu-rmp-score-strip {
 	      align-items: center;
-	      background: #f8fafc;
-	      border: 1px solid #e3e8ef;
-	      border-radius: 7px;
+	      background: transparent;
+	      border: 0;
+	      border-radius: 0;
 	      display: grid;
 	      gap: 4px 8px;
 	      grid-template-columns: auto auto minmax(0, 1fr);
-	      margin: 7px 0;
+	      margin: 0;
 	      min-width: 0;
-	      padding: 8px 9px;
+	      padding: 0;
 	    }
 	    .nyu-rmp-score-strip span,
 	    .nyu-rmp-score-strip small {
@@ -3040,6 +3070,9 @@ export function injectStyles(document = globalThis.document) {
 	      .nyu-rmp-actions {
 	        gap: 5px;
 	      }
+	      .nyu-rmp-quick-grid {
+	        grid-template-columns: minmax(88px, 0.9fr) minmax(104px, 1.1fr);
+	      }
 	      .nyu-rmp-metrics,
 	      .nyu-rmp-radar-wrap,
 	      .nyu-rmp-radar-legend {
@@ -3064,7 +3097,18 @@ export function injectStyles(document = globalThis.document) {
 	        display: none;
 	      }
 	    }
+	    @container (max-width: 260px) {
+	      .nyu-rmp-quick-grid {
+	        grid-template-columns: 1fr;
+	      }
+	      .nyu-rmp-feature-actions {
+	        grid-template-columns: repeat(2, minmax(0, 1fr));
+	      }
+	    }
 	    @container (max-width: 180px) {
+	      .nyu-rmp-feature-actions {
+	        grid-template-columns: 1fr;
+	      }
 	      .nyu-rmp-radar {
 	        overflow: hidden;
 	      }

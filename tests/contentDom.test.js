@@ -90,6 +90,26 @@ describe("Albert content DOM injection", () => {
     expect(rootStyles).toContain("clear: both");
   });
 
+  it("divides the compact first-view controls into stable rating and tool sections", () => {
+    injectStyles(document);
+
+    const styles = document.getElementById("nyu-rmp-rating-styles").textContent;
+    const quickGridStart = styles.indexOf(".nyu-rmp-quick-grid");
+    const featureStart = styles.indexOf(".nyu-rmp-feature-actions", quickGridStart);
+    const quickGridStyles = styles.slice(quickGridStart, featureStart);
+    const narrowQuickStart = styles.indexOf("@container (max-width: 260px)");
+    const narrowQuickStyles = styles.slice(narrowQuickStart, styles.indexOf("@container (max-width: 180px)"));
+
+    expect(quickGridStyles).toContain("grid-template-columns: minmax(92px, 0.9fr) minmax(128px, 1.1fr)");
+    expect(quickGridStyles).toContain(".nyu-rmp-quick-section");
+    expect(quickGridStyles).toContain("display: grid");
+    expect(quickGridStyles).toContain("min-width: 0");
+    expect(narrowQuickStyles).toContain(".nyu-rmp-quick-grid");
+    expect(narrowQuickStyles).toContain("grid-template-columns: 1fr");
+    expect(narrowQuickStyles).toContain(".nyu-rmp-feature-actions");
+    expect(narrowQuickStyles).toContain("repeat(2, minmax(0, 1fr))");
+  });
+
   it("separates cell-mounted RMP cards from Albert gridcell text flow", () => {
     injectStyles(document);
 
@@ -875,15 +895,26 @@ describe("Albert content DOM injection", () => {
     await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
 
     const card = document.querySelector(".nyu-rmp-card");
+    const quickGrid = card.querySelector(".nyu-rmp-quick-grid");
     const scoreStrip = card.querySelector(".nyu-rmp-score-strip");
+    const quickSections = Array.from(card.querySelectorAll(".nyu-rmp-quick-section"));
     const toggles = Array.from(card.querySelectorAll(".nyu-rmp-feature-toggle"));
     const visibleChildClasses = Array.from(card.children)
       .filter((node) => !node.hidden)
       .map((node) => node.className);
+    expect(quickGrid.getAttribute("aria-label")).toBe("RMP quick view for Ada Lovelace");
+    expect(quickSections.map((section) => section.className)).toEqual([
+      "nyu-rmp-quick-section is-score",
+      "nyu-rmp-quick-section is-tools",
+    ]);
+    expect(quickSections.map((section) => section.getAttribute("aria-label"))).toEqual([
+      "RMP score for Ada Lovelace",
+      "Optional RMP tools for Ada Lovelace",
+    ]);
     expect(scoreStrip.textContent.replace(/\s+/g, " ").trim()).toBe("RMP 4.7 Strong rating 38 ratings");
     expect(toggles.map((button) => button.textContent)).toEqual(["Recent comments", "Radar map"]);
     expect(toggles.map((button) => button.getAttribute("aria-expanded"))).toEqual(["false", "false"]);
-    expect(visibleChildClasses).toEqual(["nyu-rmp-score-strip", "nyu-rmp-feature-actions"]);
+    expect(visibleChildClasses).toEqual(["nyu-rmp-quick-grid"]);
     expect(card.querySelector(":scope > .nyu-rmp-card-head")).toBeNull();
     expect(card.querySelector(":scope > .nyu-rmp-department")).toBeNull();
     expect(card.querySelector(":scope > .nyu-rmp-course-context")).toBeNull();
