@@ -265,7 +265,10 @@ export function scanAlbertPageOnce({ document = globalThis.document, lookupProfe
   }
 
   injectStyles(document);
-  const targets = findInstructorTargets(document);
+  const targets = [
+    ...findInstructorTargets(document),
+    ...findUpdatedProcessedInstructorTargets(document),
+  ];
   const cachedLookupProfessor = createScanLookupCache(lookupProfessor);
   const pendingLookups = targets.flatMap((target) =>
     mountRatings({ ...target, document, lookupProfessor: cachedLookupProfessor }),
@@ -952,18 +955,27 @@ function mountRatings({ element, names, processedElements = [], document, lookup
   for (const processedElement of new Set([element, ...processedElements])) {
     processedElement.dataset.nyuRmpProcessed = "true";
   }
-  const container = document.createElement("div");
   const isCellMount = isTableCell(element);
-  container.className = isCellMount ? `${ROOT_CLASS} is-cell-mounted` : ROOT_CLASS;
-  container.dataset.nyuRmpVersion = EXTENSION_VERSION;
+  const existingContainer = isCellMount ? element.querySelector(`:scope > .${ROOT_CLASS}.is-cell-mounted`) : null;
+  const container = existingContainer ?? document.createElement("div");
+  if (!existingContainer) {
+    container.className = isCellMount ? `${ROOT_CLASS} is-cell-mounted` : ROOT_CLASS;
+    container.dataset.nyuRmpVersion = EXTENSION_VERSION;
+  }
   const courseCode = courseCodeForElement(element);
 
   const pendingLookups = [];
-  for (const name of uniqueNames(names.flatMap(splitInstructorList).map(normalizeInstructorName).filter(Boolean))) {
+  const mountedNameKeys = mountedProfessorNameKeys(container);
+  for (const name of uniqueNames(names.flatMap(splitInstructorList).map(normalizeInstructorName).filter(Boolean))
+    .filter((candidateName) => !mountedNameKeys.has(compactName(candidateName)))) {
     const card = createRatingShell(document, name, courseCode);
     container.append(card);
     const pendingLookup = loadRatingCard({ card, name, lookupProfessor, courseCode });
     pendingLookups.push(pendingLookup);
+  }
+
+  if (existingContainer) {
+    return pendingLookups;
   }
 
   if (isCellMount) {
@@ -973,6 +985,36 @@ function mountRatings({ element, names, processedElements = [], document, lookup
     element.insertAdjacentElement("afterend", container);
   }
   return pendingLookups;
+}
+
+function findUpdatedProcessedInstructorTargets(document = globalThis.document) {
+  return Array.from(document.querySelectorAll("[data-nyu-rmp-processed='true']"))
+    .filter((element) => isTableCell(element) && isElementVisible(element))
+    .flatMap((element) => {
+      const container = element.querySelector(`:scope > .${ROOT_CLASS}.is-cell-mounted`);
+      const originalContent = element.querySelector(`:scope > .${ORIGINAL_CONTENT_CLASS}`);
+      if (!container || !originalContent) {
+        return [];
+      }
+
+      const names = namesFromOriginalAlbertContent(originalContent)
+        .filter((name) => !mountedProfessorNameKeys(container).has(compactName(name)));
+      return names.length > 0 ? [{ element, names }] : [];
+    });
+}
+
+function namesFromOriginalAlbertContent(element) {
+  const text = visibleTextSegments(element).join("\n");
+  const names = hasInstructorText(text)
+    ? extractInstructorNamesFromText(text)
+    : instructorNameSegments(element).flatMap(splitInstructorList);
+  return uniqueNames(names.map(normalizeInstructorName).filter(Boolean));
+}
+
+function mountedProfessorNameKeys(container) {
+  return new Set(Array.from(container.querySelectorAll(".nyu-rmp-card"))
+    .map((card) => compactName(card.dataset.nyuRmpRequestedName))
+    .filter(Boolean));
 }
 
 function wrapOriginalAlbertCellContent(element, document) {
@@ -1083,6 +1125,7 @@ function createRatingShell(document, name, courseCode = "") {
   const card = document.createElement("article");
   card.className = "nyu-rmp-card is-loading";
   card.dataset.nyuRmpCardId = String(++nextCardId);
+  card.dataset.nyuRmpRequestedName = name;
   card.dataset.nyuRmpVersion = EXTENSION_VERSION;
   if (courseCode) {
     card.dataset.nyuRmpCourseCode = courseCode;
