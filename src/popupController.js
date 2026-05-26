@@ -354,16 +354,21 @@ function formatRatingColumnLabel(response) {
   const ratingCellCount = nonNegativeInteger(response.ratingCellCount);
   const trailingRatingRootCount = nonNegativeInteger(response.trailingRatingRootCount);
   const inlineProcessedRatingRootCount = nonNegativeInteger(response.inlineProcessedRatingRootCount);
+  const selectButtonRatingRootCount = nonNegativeInteger(response.selectButtonRatingRootCount);
+  const unexpectedInlineRatingRootCount = Math.max(0, inlineProcessedRatingRootCount - selectButtonRatingRootCount);
   const ratingCellLabel = ratingCellCount === 1
     ? "1 trailing rating column"
     : `${ratingCellCount} trailing rating columns`;
-  if (inlineProcessedRatingRootCount > 0) {
-    return `${ratingCellLabel}, ${inlineProcessedRatingRootCount} inline ${inlineProcessedRatingRootCount === 1 ? "rating root" : "rating roots"}`;
+  const selectButtonLabel = selectButtonRatingRootCount > 0
+    ? `${selectButtonRatingRootCount} under-button ${selectButtonRatingRootCount === 1 ? "rating" : "ratings"}`
+    : "";
+  if (unexpectedInlineRatingRootCount > 0) {
+    return [ratingCellLabel, selectButtonLabel, `${unexpectedInlineRatingRootCount} inline ${unexpectedInlineRatingRootCount === 1 ? "rating root" : "rating roots"}`].filter(Boolean).join(", ");
   }
   if (ratingCellCount > 0 && trailingRatingRootCount < ratingCellCount) {
-    return `${ratingCellLabel}, ${ratingCellCount - trailingRatingRootCount} empty ${ratingCellCount - trailingRatingRootCount === 1 ? "rating column" : "rating columns"}`;
+    return [ratingCellLabel, selectButtonLabel, `${ratingCellCount - trailingRatingRootCount} empty ${ratingCellCount - trailingRatingRootCount === 1 ? "rating column" : "rating columns"}`].filter(Boolean).join(", ");
   }
-  return ratingCellLabel;
+  return [ratingCellLabel, selectButtonLabel].filter(Boolean).join(", ");
 }
 
 function formatQuickGridLabel(cardCount, quickGridCount) {
@@ -430,12 +435,14 @@ function hasRatingColumnWarnings(response) {
   const ratingCellCount = nonNegativeInteger(response?.ratingCellCount);
   const trailingRatingRootCount = nonNegativeInteger(response?.trailingRatingRootCount);
   const inlineProcessedRatingRootCount = nonNegativeInteger(response?.inlineProcessedRatingRootCount);
+  const selectButtonRatingRootCount = nonNegativeInteger(response?.selectButtonRatingRootCount);
+  const unexpectedInlineRatingRootCount = Math.max(0, inlineProcessedRatingRootCount - selectButtonRatingRootCount);
   if (cardCount === 0 || processedCellCount === 0 || response?.overlayState === "disabled") {
-    return inlineProcessedRatingRootCount > 0;
+    return unexpectedInlineRatingRootCount > 0;
   }
-  return inlineProcessedRatingRootCount > 0
-    || ratingCellCount === 0
-    || trailingRatingRootCount < Math.min(cardCount, ratingCellCount);
+  return unexpectedInlineRatingRootCount > 0
+    || (ratingCellCount === 0 && selectButtonRatingRootCount === 0)
+    || trailingRatingRootCount < ratingCellCount;
 }
 
 function hasStaleQuickGridShape(response) {
@@ -464,8 +471,9 @@ function formatDiagnosticSummary(response = null) {
   const quickGridCount = nonNegativeInteger(response.quickGridCount);
   const processedCellCount = nonNegativeInteger(response.processedCellCount);
   const ratingCellCount = nonNegativeInteger(response.ratingCellCount);
+  const selectButtonRatingRootCount = nonNegativeInteger(response.selectButtonRatingRootCount);
   const ratingColumnSummary = hasRatingColumnDiagnostics(response)
-    ? ` | ${ratingCellCount} rating columns`
+    ? ` | ${ratingCellCount} rating columns${selectButtonRatingRootCount > 0 ? ` | ${selectButtonRatingRootCount} under-button ratings` : ""}`
     : "";
   return `Build v${EXTENSION_VERSION} | Albert ${version} | ${cardCount} cards | ${quickGridCount} quick views | ${processedCellCount} cells${ratingColumnSummary}`;
 }
@@ -473,7 +481,8 @@ function formatDiagnosticSummary(response = null) {
 function hasRatingColumnDiagnostics(response) {
   return Object.hasOwn(response ?? {}, "ratingCellCount")
     || Object.hasOwn(response ?? {}, "trailingRatingRootCount")
-    || Object.hasOwn(response ?? {}, "inlineProcessedRatingRootCount");
+    || Object.hasOwn(response ?? {}, "inlineProcessedRatingRootCount")
+    || Object.hasOwn(response ?? {}, "selectButtonRatingRootCount");
 }
 
 function formatDiagnosticsClipboardText({ diagnosticSummary, pageStatus }) {

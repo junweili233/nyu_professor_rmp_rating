@@ -9,9 +9,9 @@ describe("release packager", () => {
       outDir: ".",
       dryRun: false,
     });
-    expect(packageReleaseArgs(["dist", "v0.1.2", "release", "--dry-run"])).toEqual({
+    expect(packageReleaseArgs(["dist", "v0.1.3", "release", "--dry-run"])).toEqual({
       distDir: "dist",
-      releaseTag: "v0.1.2",
+      releaseTag: "v0.1.3",
       outDir: "release",
       dryRun: true,
     });
@@ -20,10 +20,10 @@ describe("release packager", () => {
   it("dry-runs the expected release asset without invoking compression", async () => {
     const execFileImpl = vi.fn();
 
-    await expect(packageRelease({ distDir: "dist", releaseTag: "v0.1.2", dryRun: true, execFileImpl })).resolves.toMatchObject({
+    await expect(packageRelease({ distDir: "dist", releaseTag: "v0.1.3", dryRun: true, execFileImpl })).resolves.toMatchObject({
       ok: true,
-      expectedTag: "v0.1.2",
-      expectedAssetName: "nyu-albert-rmp-ratings-v0.1.2.zip",
+      expectedTag: "v0.1.3",
+      expectedAssetName: "nyu-albert-rmp-ratings-v0.1.3.zip",
       dryRun: true,
     });
     expect(execFileImpl).not.toHaveBeenCalled();
@@ -32,11 +32,11 @@ describe("release packager", () => {
   it("builds the PowerShell compression command from verified release metadata", async () => {
     const execFileImpl = vi.fn(async () => ({ stdout: "", stderr: "" }));
 
-    const result = await packageRelease({ distDir: "dist", releaseTag: "v0.1.2", outDir: "release", execFileImpl });
+    const result = await packageRelease({ distDir: "dist", releaseTag: "v0.1.3", outDir: "release", execFileImpl });
 
-    expect(result.expectedAssetName).toBe("nyu-albert-rmp-ratings-v0.1.2.zip");
+    expect(result.expectedAssetName).toBe("nyu-albert-rmp-ratings-v0.1.3.zip");
     expect(result.command).toContain("Compress-Archive");
-    expect(result.command).toContain("nyu-albert-rmp-ratings-v0.1.2.zip");
+    expect(result.command).toContain("nyu-albert-rmp-ratings-v0.1.3.zip");
     expect(execFileImpl).toHaveBeenCalledWith("powershell", ["-NoProfile", "-Command", result.command]);
   });
 });

@@ -117,10 +117,12 @@ function contentStatusResponse(document) {
 
 function ratingColumnStatusResponse(document) {
   const ratingCellSelector = "[data-nyu-rmp-rating-cell='true']";
+  const selectButtonRatingRootSelector = "[data-nyu-rmp-select-button-rating='true'] > .nyu-rmp-rating-root";
   return {
     ratingCellCount: document?.querySelectorAll?.(ratingCellSelector).length ?? 0,
     trailingRatingRootCount: document?.querySelectorAll?.(`${ratingCellSelector} > .nyu-rmp-rating-root`).length ?? 0,
     inlineProcessedRatingRootCount: document?.querySelectorAll?.("[data-nyu-rmp-processed='true'] > .nyu-rmp-rating-root").length ?? 0,
+    selectButtonRatingRootCount: document?.querySelectorAll?.(selectButtonRatingRootSelector).length ?? 0,
   };
 }
 

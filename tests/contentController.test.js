@@ -49,7 +49,7 @@ describe("content script controller", () => {
     expect(sendResponse).toHaveBeenCalledWith({
       ok: true,
       contentScript: "loaded",
-      version: "0.1.2",
+      version: "0.1.3",
       overlayState: "enabled",
       ratingRootCount: 3,
       cardCount: 2,
@@ -59,6 +59,7 @@ describe("content script controller", () => {
       ratingCellCount: 0,
       trailingRatingRootCount: 0,
       inlineProcessedRatingRootCount: 0,
+      selectButtonRatingRootCount: 0,
       processedCellLayoutWarningCount: 0,
       staleCardLayoutMigrationCount: 0,
       processedCellLastRepairCount: 0,
@@ -189,6 +190,47 @@ describe("content script controller", () => {
       ratingCellCount: 1,
       trailingRatingRootCount: 1,
       inlineProcessedRatingRootCount: 0,
+      selectButtonRatingRootCount: 0,
+    });
+  });
+
+  it("reports when SELECT_BUTTON ratings are mounted under select buttons", async () => {
+    const document = globalThis.document;
+    document.body.innerHTML = `
+      <div role="row">
+        <div role="gridcell" data-nyu-rmp-processed="true" data-nyu-rmp-select-button-rating="true">
+          <div class="nyu-rmp-albert-original"><button>Select</button></div>
+          <div class="nyu-rmp-rating-root">
+            <div class="nyu-rmp-card">
+              <div class="nyu-rmp-quick-grid"></div>
+            </div>
+          </div>
+        </div>
+        <div role="gridcell" data-nyu-rmp-processed="true">Ada Lovelace</div>
+      </div>
+    `;
+    const chrome = createChromeMock({ "settings:overlayEnabled": true });
+
+    await initContentScript({
+      chrome,
+      document,
+      startAlbertRmpEnhancer: vi.fn(() => ({ disconnect: vi.fn() })),
+      removeAlbertRmpEnhancements: vi.fn(),
+      lookupProfessor: vi.fn(),
+    });
+
+    const sendResponse = vi.fn();
+    chrome.runtime.onMessage.listener({ type: "NYU_RMP_CONTENT_STATUS" }, {}, sendResponse);
+
+    expect(sendResponse.mock.calls[0][0]).toMatchObject({
+      ratingRootCount: 1,
+      cardCount: 1,
+      quickGridCount: 1,
+      processedCellCount: 2,
+      ratingCellCount: 0,
+      trailingRatingRootCount: 0,
+      inlineProcessedRatingRootCount: 1,
+      selectButtonRatingRootCount: 1,
     });
   });
 

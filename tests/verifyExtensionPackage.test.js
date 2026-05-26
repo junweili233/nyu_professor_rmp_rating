@@ -255,7 +255,7 @@ async function createPackageDist({ manifestOverrides = {}, files = {} } = {}) {
   const manifest = {
     manifest_version: 3,
     name: "NYU Albert RMP Ratings",
-    version: "0.1.2",
+    version: "0.1.3",
     action: { default_popup: "popup.html" },
     background: { service_worker: "background.js", type: "module" },
     content_scripts: [
@@ -275,7 +275,7 @@ async function createPackageDist({ manifestOverrides = {}, files = {} } = {}) {
   await mkdir(dist, { recursive: true });
   await writeFile(join(dist, "manifest.json"), JSON.stringify(manifest), "utf8");
   await writeFile(join(dist, "background.js"), "", "utf8");
-  await writeFile(join(dist, "content.js"), files["content.js"] ?? '(() => { const version = "0.1.2"; document.body.dataset.nyuRmpVersion = version; })();', "utf8");
+  await writeFile(join(dist, "content.js"), files["content.js"] ?? '(() => { const version = "0.1.3"; document.body.dataset.nyuRmpVersion = version; })();', "utf8");
   await writeFile(join(dist, "popup.html"), files["popup.html"] ?? '<script type="module" src="/popup.js"></script>', "utf8");
   await writeFile(join(dist, "popup.js"), "", "utf8");
   return dist;
