@@ -789,6 +789,7 @@ describe("Albert content DOM injection", () => {
 
     const tags = Array.from(document.querySelectorAll(".nyu-rmp-tags span")).map((tag) => tag.textContent);
     expect(tags).toEqual(["Clear grading criteria"]);
+    expect(document.querySelector(".nyu-rmp-card").getAttribute("aria-label")).toContain("tags Clear grading criteria");
   });
 
   it("does not render unsafe cached RMP profile URLs", async () => {
