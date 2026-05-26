@@ -117,11 +117,12 @@ describe("Albert content DOM injection", () => {
     const processedCellStyles = styles.slice(processedCellStart, originalStart);
     const processedChildStyles = styles.slice(originalStart, nextRuleStart);
 
-    expect(processedCellStyles).toContain("flex-wrap: wrap");
-    expect(processedCellStyles).toContain("grid-template-columns: minmax(0, 1fr)");
-    expect(processedCellStyles).toContain("min-width: 0");
-    expect(processedChildStyles).toContain("flex: 0 0 100%");
-    expect(processedChildStyles).toContain("width: 100%");
+    expect(processedCellStyles).toContain("align-items: flex-start !important");
+    expect(processedCellStyles).toContain("flex-wrap: wrap !important");
+    expect(processedCellStyles).toContain("grid-template-columns: minmax(0, 1fr) !important");
+    expect(processedCellStyles).toContain("min-width: 0 !important");
+    expect(processedChildStyles).toContain("flex: 0 0 100% !important");
+    expect(processedChildStyles).toContain("width: 100% !important");
     expect(processedChildStyles).toContain('[role="gridcell"][data-nyu-rmp-processed="true"] > .nyu-rmp-rating-root.is-cell-mounted');
   });
 
