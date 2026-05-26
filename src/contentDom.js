@@ -1794,8 +1794,9 @@ function formatComment(comment, textId) {
 function renderCommentsPanel(comments) {
   const commentCount = countRenderedComments(comments);
   const heading = commentCount > 0 ? `Most useful comments (${commentCount})` : "Most useful comments";
+  const listLabel = `Most useful RMP comments, ${commentCount} shown`;
   const body = comments
-    ? `<ul class="nyu-rmp-comments" aria-label="Most useful RMP comments">${comments}</ul>`
+    ? `<ul class="nyu-rmp-comments" aria-label="${escapeHtml(listLabel)}">${comments}</ul>`
     : `<p class="nyu-rmp-comments-empty">No useful comments found on RMP.</p>`;
   return `
     <div class="nyu-rmp-comments-panel">
