@@ -1017,7 +1017,7 @@ function updateRatingCard(card, result, { requestedName = "Professor", lookupPro
     chartId: card.dataset.nyuRmpCardId,
     rating,
     difficulty,
-    ratingsCount,
+    ratingsCount: result.ratingsCount,
     wouldTakeAgain,
   });
 
@@ -1082,20 +1082,23 @@ function updateErrorCard(card, { requestedName, lookupProfessor, message }) {
 
 function renderRadarChart({ chartId, rating, difficulty, ratingsCount, wouldTakeAgain }) {
   const ease = difficulty == null ? null : 5 - difficulty;
+  const normalizedRatingsCount = optionalNonNegativeCount(ratingsCount);
+  const ratingsCountLabel = normalizedRatingsCount == null ? "N/A ratings" : formatRatingsCount(normalizedRatingsCount);
+  const ratingsVolumeLabel = normalizedRatingsCount == null ? "N/A" : normalizedRatingsCount;
   const safeChartId = String(chartId ?? "0").replace(/\D+/g, "") || "0";
   const titleId = `nyu-rmp-radar-title-${safeChartId}`;
   const descId = `nyu-rmp-radar-desc-${safeChartId}`;
   const axes = [
     { label: "Rating", value: scaleFivePoint(rating) },
     { label: "Ease", value: scaleFivePoint(ease) },
-    { label: "Volume", value: scaleRatingVolume(ratingsCount) },
+    { label: "Volume", value: scaleRatingVolume(normalizedRatingsCount) },
     { label: "Again", value: scalePercent(wouldTakeAgain) },
   ];
   const points = axes
     .map(({ value }, index) => radarPoint(value, index, axes.length))
     .map(({ x, y }) => `${x},${y}`)
     .join(" ");
-  const radarSummary = `rating ${formatScore(rating)} out of 5, ease ${formatScore(ease)} out of 5, take again ${wouldTakeAgain == null ? "N/A" : `${Math.round(wouldTakeAgain)}%`}, ${formatRatingsCount(ratingsCount)}`;
+  const radarSummary = `rating ${formatScore(rating)} out of 5, ease ${formatScore(ease)} out of 5, take again ${wouldTakeAgain == null ? "N/A" : `${Math.round(wouldTakeAgain)}%`}, ${ratingsCountLabel}`;
   const ariaLabel = `Professor radar: ${radarSummary}`;
 
   return `
@@ -1115,11 +1118,19 @@ function renderRadarChart({ chartId, rating, difficulty, ratingsCount, wouldTake
       <ul class="nyu-rmp-radar-legend" aria-label="Radar chart values">
         <li>Rating ${formatScore(rating)}/5</li>
         <li>Ease ${formatScore(ease)}/5</li>
-        <li>Volume ${ratingsCount == null ? "N/A" : ratingsCount}</li>
+        <li>Volume ${ratingsVolumeLabel}</li>
         <li>Again ${wouldTakeAgain == null ? "N/A" : `${Math.round(wouldTakeAgain)}%`}</li>
       </ul>
     </div>
   `;
+}
+
+function optionalNonNegativeCount(value) {
+  const number = Number(value);
+  if (!Number.isFinite(number) || number < 0) {
+    return null;
+  }
+  return Math.floor(number);
 }
 
 function capitalizeSentence(value) {
