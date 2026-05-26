@@ -42,6 +42,7 @@ Load `dist` as an unpacked Chrome extension after `npm run build`.
 - Show ratings on Albert toggles the overlay on already-open and future Albert pages.
 - Clear cached ratings removes stored professor lookup results.
 - The popup shows how many professor lookups are cached locally.
+- Copy diagnostics copies only build, Albert content version, card count, quick-view count, cell count, and page status.
 - The popup warns when Albert is still rendering an old squeezed card layout instead of the segmented score/tools quick view.
 - If the current content script migrates stale card markup, the popup reports how many stale card layouts were cleaned up.
 
@@ -53,6 +54,7 @@ npm run build
 npm run verify:package
 npm run verify:release
 npm run verify:chrome-profile
+npm run verify:diagnostics -- .\popup-diagnostics.txt
 npm run verify:live
 ```
 
@@ -60,6 +62,12 @@ To verify an exported or saved Albert page snapshot is running the current segme
 
 ```powershell
 npm run verify:albert-shape -- .\albert-snapshot.html
+```
+
+To verify copied popup diagnostics without exposing Albert account details, paste the popup's Copy diagnostics output into a text file and run:
+
+```powershell
+npm run verify:diagnostics -- .\popup-diagnostics.txt
 ```
 
 To check a specific Chrome user-data folder, pass it after `dist`:

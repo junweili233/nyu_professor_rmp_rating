@@ -8,11 +8,13 @@ describe("README", () => {
     expect(readme).toContain("Load `dist` as an unpacked Chrome extension");
     expect(readme).toContain("npm run verify:chrome-profile");
     expect(readme).toContain("npm run verify:albert-shape");
+    expect(readme).toContain("npm run verify:diagnostics");
     expect(readme).toContain("npm run verify:release");
     expect(readme).toContain("npm run verify:live");
     expect(readme).toContain("refresh Albert");
     expect(readme).toContain("Show ratings on Albert");
     expect(readme).toContain("Clear cached ratings");
+    expect(readme).toContain("Copy diagnostics");
     expect(readme).toContain("old squeezed card layout");
     expect(readme).toContain("segmented score/tools quick view");
     expect(readme).toContain("stale card layouts were cleaned up");
@@ -36,6 +38,7 @@ describe("README", () => {
     expect(readme).toContain("confirm it reports segmented quick views");
     expect(readme).toContain("save an Albert page snapshot");
     expect(readme).toContain("Albert page snapshot");
+    expect(readme).toContain("popup-diagnostics.txt");
     expect(readme).toContain("Do not click enrollment, cart, or class-selection controls");
   });
 });
