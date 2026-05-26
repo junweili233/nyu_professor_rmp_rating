@@ -1694,7 +1694,8 @@ function formatRadarFitSummary(radarFit) {
   if (!radarFit) {
     return "";
   }
-  return `professor fit ${radarFit.score} out of 100 based on ${radarFit.availableMetricCount} of ${radarFit.totalMetricCount} radar metrics`;
+  const limitedData = radarFit.availableMetricCount < radarFit.totalMetricCount ? ", limited data" : "";
+  return `professor fit ${radarFit.score} out of 100 based on ${radarFit.availableMetricCount} of ${radarFit.totalMetricCount} radar metrics${limitedData}`;
 }
 
 function formatTagSummary(tagNames) {

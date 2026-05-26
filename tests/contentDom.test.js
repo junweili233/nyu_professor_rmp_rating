@@ -255,7 +255,7 @@ describe("Albert content DOM injection", () => {
     await Promise.all(mounted.pendingLookups);
 
     expect(card.hasAttribute("aria-busy")).toBe(false);
-    expect(card.getAttribute("aria-label")).toBe("RMP rating for Ada Lovelace: 4.7 out of 5, department Computer Science, Strong rating, professor fit 82 out of 100 based on 3 of 4 radar metrics, 38 ratings, difficulty 2.4 out of 5, ease 2.6 out of 5, take again N/A, 0 useful comments shown");
+    expect(card.getAttribute("aria-label")).toBe("RMP rating for Ada Lovelace: 4.7 out of 5, department Computer Science, Strong rating, professor fit 82 out of 100 based on 3 of 4 radar metrics, limited data, 38 ratings, difficulty 2.4 out of 5, ease 2.6 out of 5, take again N/A, 0 useful comments shown");
   });
 
   it("does not present missing RMP rating counts as zero ratings", async () => {
@@ -273,7 +273,7 @@ describe("Albert content DOM injection", () => {
     await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
 
     const card = document.querySelector(".nyu-rmp-card");
-    expect(card.getAttribute("aria-label")).toBe("RMP rating for Ada Lovelace: 4.7 out of 5, department Computer Science, Strong rating, professor fit 82 out of 100 based on 2 of 4 radar metrics, N/A ratings, difficulty 2.4 out of 5, ease 2.6 out of 5, take again N/A, 0 useful comments shown");
+    expect(card.getAttribute("aria-label")).toBe("RMP rating for Ada Lovelace: 4.7 out of 5, department Computer Science, Strong rating, professor fit 82 out of 100 based on 2 of 4 radar metrics, limited data, N/A ratings, difficulty 2.4 out of 5, ease 2.6 out of 5, take again N/A, 0 useful comments shown");
     expect(document.querySelector(".nyu-rmp-rating-count").textContent).toBe("N/A ratings");
     expect(document.querySelector(".nyu-rmp-radar").getAttribute("aria-label")).toContain("N/A ratings");
     expect(document.body.textContent).not.toContain("0 ratings");
