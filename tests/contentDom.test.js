@@ -1384,6 +1384,42 @@ describe("Albert content DOM injection", () => {
     expect(document.querySelector(".nyu-rmp-comment").className).toBe("nyu-rmp-comment is-course-match is-weak");
   });
 
+  it("treats no-late CS201 deadline policies as course risk", async () => {
+    document.body.innerHTML = `
+      <table>
+        <tbody>
+          <tr>
+            <td>CSCI-UA 201 Computer Systems Organization</td>
+            <td>Instructor: Ada Lovelace</td>
+          </tr>
+        </tbody>
+      </table>
+    `;
+    const lookupProfessor = vi.fn(async (name) => ({
+      name,
+      department: "Computer Science",
+      rating: 3.9,
+      difficulty: 3.4,
+      ratingsCount: 61,
+      wouldTakeAgain: 68,
+      tags: [],
+      topComments: [
+        {
+          text: "CS201 has strict deadlines, no late submissions, and no extensions.",
+          course: "CSCI-UA 201",
+        },
+      ],
+      url: "https://www.ratemyprofessors.com/professor/123",
+    }));
+
+    await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
+
+    expect(Array.from(document.querySelectorAll(".nyu-rmp-evidence-chip")).map((node) => node.textContent)).toContain("CSCI-UA 201 comment risk 0/100");
+    expect(document.querySelector(".nyu-rmp-radar").getAttribute("aria-label")).toContain("comment signal 0 out of 100");
+    expect(document.querySelector(".nyu-rmp-comments-course-match").className).toBe("nyu-rmp-comments-course-match is-weak");
+    expect(document.querySelector(".nyu-rmp-comment").className).toBe("nyu-rmp-comment is-course-match is-weak");
+  });
+
   it("treats quick CS201 feedback and replies as course support", async () => {
     document.body.innerHTML = `
       <table>
