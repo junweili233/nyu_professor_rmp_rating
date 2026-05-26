@@ -941,6 +941,7 @@ function normalizeCourseCode(value) {
     .trim()
     .replace(/\s+/g, " ")
     .toUpperCase()
+    .replace(/\b([A-Z]{2,5})([A-Z]{2})0*(\d{1,4})\b/, (_match, subject, school, courseNumber) => `${subject}-${school} ${Number(courseNumber)}`)
     .replace(/\b([A-Z]{2,5}-[A-Z]{2})\s*0*(\d{1,4})\b/, (_match, prefix, courseNumber) => `${prefix} ${Number(courseNumber)}`);
 }
 
