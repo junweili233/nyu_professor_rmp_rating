@@ -1058,7 +1058,12 @@ function updateRatingCard(card, result, { requestedName = "Professor", lookupPro
     </dl>
     ${radar}
     ${tags ? `<div class="nyu-rmp-tags">${tags}</div>` : ""}
-    ${comments ? `<div class="nyu-rmp-comments-panel"><ul class="nyu-rmp-comments">${comments}</ul></div>` : ""}
+    ${comments ? `
+      <div class="nyu-rmp-comments-panel">
+        <div class="nyu-rmp-comments-heading">Most useful comments</div>
+        <ul class="nyu-rmp-comments" aria-label="Most useful RMP comments">${comments}</ul>
+      </div>
+    ` : ""}
   `;
   wireRefreshAction(card, requestedName, lookupProfessor);
   wireCommentToggleActions(card);
@@ -1478,6 +1483,15 @@ export function injectStyles(document = globalThis.document) {
 	      border-left: 2px solid #c7d7ef;
 	      margin-top: 8px;
 	      padding: 7px 0 2px 9px;
+	    }
+	    .nyu-rmp-comments-heading {
+	      color: #475467;
+	      font-size: 9.5px;
+	      font-weight: 750;
+	      letter-spacing: 0;
+	      line-height: 1.1;
+	      margin: 0 0 5px;
+	      text-transform: uppercase;
 	    }
 	    .nyu-rmp-comments {
 	      margin: 0;
