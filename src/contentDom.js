@@ -942,7 +942,8 @@ function mountRatings({ element, names, processedElements = [], document, lookup
     processedElement.dataset.nyuRmpProcessed = "true";
   }
   const container = document.createElement("div");
-  container.className = ROOT_CLASS;
+  const isCellMount = isTableCell(element);
+  container.className = isCellMount ? `${ROOT_CLASS} is-cell-mounted` : ROOT_CLASS;
   container.dataset.nyuRmpVersion = EXTENSION_VERSION;
   const courseCode = courseCodeForElement(element);
 
@@ -954,7 +955,7 @@ function mountRatings({ element, names, processedElements = [], document, lookup
     pendingLookups.push(pendingLookup);
   }
 
-  if (isTableCell(element)) {
+  if (isCellMount) {
     element.append(container);
   } else {
     element.insertAdjacentElement("afterend", container);
@@ -1861,6 +1862,15 @@ export function injectStyles(document = globalThis.document) {
 	      min-width: 0;
 	      width: min(100%, 360px);
 	      font-family: Aptos, "Segoe UI", sans-serif;
+	    }
+	    .nyu-rmp-rating-root.is-cell-mounted {
+	      align-self: start;
+	      clear: both;
+	      display: flow-root;
+	      flex-basis: 100%;
+	      grid-column: 1 / -1;
+	      justify-self: start;
+	      margin-top: 6px;
 	    }
 	    td > .nyu-rmp-rating-root,
 	    th > .nyu-rmp-rating-root,

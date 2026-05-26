@@ -90,6 +90,20 @@ describe("Albert content DOM injection", () => {
     expect(rootStyles).toContain("clear: both");
   });
 
+  it("separates cell-mounted RMP cards from Albert gridcell text flow", () => {
+    injectStyles(document);
+
+    const styles = document.getElementById("nyu-rmp-rating-styles").textContent;
+    const cellMountedStart = styles.indexOf(".nyu-rmp-rating-root.is-cell-mounted");
+    const nextRuleStart = styles.indexOf(".nyu-rmp-card", cellMountedStart);
+    const cellMountedStyles = styles.slice(cellMountedStart, nextRuleStart);
+
+    expect(cellMountedStyles).toContain("display: flow-root");
+    expect(cellMountedStyles).toContain("flex-basis: 100%");
+    expect(cellMountedStyles).toContain("grid-column: 1 / -1");
+    expect(cellMountedStyles).toContain("margin-top: 6px");
+  });
+
   it("prevents long RMP text from forcing Albert cells wider", () => {
     injectStyles(document);
 
@@ -9411,6 +9425,7 @@ describe("Albert content DOM injection", () => {
     expect(instructorCell.dataset.nyuRmpProcessed).toBe("true");
     expect(Array.from(instructorCell.childNodes)[0].textContent.trim()).toBe("YAP, CHEE KENG");
     expect(ratingRoot).not.toBeNull();
+    expect(ratingRoot.classList.contains("is-cell-mounted")).toBe(true);
     expect(ratingRoot.querySelector(".nyu-rmp-card")).not.toBeNull();
   });
 
