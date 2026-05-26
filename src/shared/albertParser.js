@@ -40,7 +40,9 @@ const COURSE_METADATA_TERMS = new Set([
   "enrollment",
   "group",
   "instructor",
+  "instruction",
   "location",
+  "mode",
   "open",
   "permission",
   "required",
@@ -66,7 +68,7 @@ const TRAILING_INSTRUCTOR_ROLE_PATTERN =
 const PLACEHOLDER_ANNOTATION_PATTERN =
   /\((?:staff|tba|tbd|to be announced|to be assigned|to be determined|unassigned|not assigned|not available|no instructor assigned|n\/a|none)\)/gi;
 const INSTRUCTOR_SEPARATOR_PATTERN = String.raw`(?::|\.|-|\u2013|\u2014)`;
-const INSTRUCTOR_LABEL_PATTERN = String.raw`(?:(?:primary\s+)?(?:instructor(?:\(s\)|s)?(?:\s+name(?:\(s\)|s)?)?|instr\.?(?:\(s\)|s)?(?:\s+name(?:\(s\)|s)?)?)|professor(?:\s+name(?:\(s\)|s)?)?|prof\.?(?:\s+name(?:\(s\)|s)?)?|faculty(?:\s+name(?:\(s\)|s)?)?|teacher(?:s)?(?:\s+name(?:\(s\)|s)?)?|taught\s+by)`;
+const INSTRUCTOR_LABEL_PATTERN = String.raw`(?:(?:primary\s+)?(?:instructor(?:\(s\)|s)?(?:\s+name(?:\(s\)|s)?)?|instr(?:\.|\b)(?:\(s\)|s)?(?:\s+name(?:\(s\)|s)?)?)|professor(?:\s+name(?:\(s\)|s)?)?|prof\.?(?:\s+name(?:\(s\)|s)?)?|faculty(?:\s+name(?:\(s\)|s)?)?|teacher(?:s)?(?:\s+name(?:\(s\)|s)?)?|taught\s+by)`;
 const INSTRUCTOR_LABEL_WITH_SEPARATOR_PATTERN = new RegExp(
   String.raw`\b${INSTRUCTOR_LABEL_PATTERN}\s*${INSTRUCTOR_SEPARATOR_PATTERN}\s*(.*)$`,
   "i",

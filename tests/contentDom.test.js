@@ -8133,6 +8133,112 @@ describe("Albert content DOM injection", () => {
     expect(document.body.textContent).toContain("Albert CSCI-UA 202");
   });
 
+  it("injects ratings for the observed Fall 2026 Albert enrolled table without touching TBA rows", async () => {
+    document.body.innerHTML = `
+      <table>
+        <thead>
+          <tr>
+            <th>Course (Units/Grading Basis)</th>
+            <th>Instructor</th>
+            <th>Instruction Mode and Location</th>
+            <th>Time</th>
+            <th>Day</th>
+            <th>Dates</th>
+            <th>Deadlines</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Operating Systems<br />CSCI-UA 202 001 (4)</td>
+            <td>Walfish</td>
+            <td>In-Person: 251 Mercer St (Warren Weaver) Room 109 Loc:Washington Square</td>
+            <td>11:00 AM - 12:15 PM</td>
+            <td>MW</td>
+            <td>9/2/2026 - 12/14/2026</td>
+            <td></td>
+          </tr>
+          <tr>
+            <td>Calculus III<br />MATH-UA 123 011 (4)</td>
+            <td>Pang</td>
+            <td>In-Person: 19 University Pl Room 102 Loc:Washington Square</td>
+            <td>9:30 AM - 10:45 AM</td>
+            <td>TR</td>
+            <td>9/2/2026 - 12/14/2026</td>
+            <td></td>
+          </tr>
+          <tr>
+            <td>Calculus III<br />MATH-UA 123 013 (4)</td>
+            <td>TBA</td>
+            <td>In-Person: Washington Square</td>
+            <td>11:00 AM - 12:15 PM</td>
+            <td>TR</td>
+            <td>9/2/2026 - 12/14/2026</td>
+            <td></td>
+          </tr>
+          <tr>
+            <td>Linear Algebra<br />MATH-UA 140 011 (4)</td>
+            <td>Majmudar</td>
+            <td>In-Person: Washington Square</td>
+            <td>12:30 PM - 1:45 PM</td>
+            <td>TR</td>
+            <td>9/2/2026 - 12/14/2026</td>
+            <td></td>
+          </tr>
+          <tr>
+            <td>Linear Algebra<br />MATH-UA 140 015 (4)</td>
+            <td>TBA</td>
+            <td>In-Person: Washington Square</td>
+            <td>2:00 PM - 3:15 PM</td>
+            <td>TR</td>
+            <td>9/2/2026 - 12/14/2026</td>
+            <td></td>
+          </tr>
+          <tr>
+            <td>Natural Language Processing<br />CSCI-UA 469 002 (4)</td>
+            <td>Meyers</td>
+            <td>In-Person: Washington Square</td>
+            <td>3:30 PM - 4:45 PM</td>
+            <td>MW</td>
+            <td>9/2/2026 - 12/14/2026</td>
+            <td></td>
+          </tr>
+        </tbody>
+      </table>
+    `;
+    const lookupProfessor = vi.fn(async (name) => {
+      if (name === "Meyers") {
+        return null;
+      }
+      return {
+        name,
+        rating: 4.1,
+        difficulty: 3.2,
+        ratingsCount: 27,
+        tags: [],
+        topComments: [`${name} live Albert row rendered.`],
+        url: "https://www.ratemyprofessors.com/professor/419998",
+      };
+    });
+
+    await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
+
+    expect(lookupProfessor).toHaveBeenCalledTimes(4);
+    expect(lookupProfessor).toHaveBeenCalledWith("Walfish", { courseCode: "CSCI-UA 202" });
+    expect(lookupProfessor).toHaveBeenCalledWith("Pang", { courseCode: "MATH-UA 123" });
+    expect(lookupProfessor).toHaveBeenCalledWith("Majmudar", { courseCode: "MATH-UA 140" });
+    expect(lookupProfessor).toHaveBeenCalledWith("Meyers", { courseCode: "CSCI-UA 469" });
+    expect(document.querySelectorAll(".nyu-rmp-card")).toHaveLength(4);
+    expect(document.querySelectorAll(".nyu-rmp-radar")).toHaveLength(3);
+    expect(document.querySelectorAll(".nyu-rmp-card.is-empty")).toHaveLength(1);
+    expect(document.body.textContent).not.toContain("TBA live Albert row rendered.");
+    expect(Array.from(document.querySelectorAll(".nyu-rmp-course-context")).map((node) => node.textContent.replace(/\s+/g, " ").trim())).toEqual([
+      "Albert CSCI-UA 202",
+      "Albert MATH-UA 123",
+      "Albert MATH-UA 140",
+      "Albert CSCI-UA 469",
+    ]);
+  });
+
   it("injects ratings when Albert labels responsive table cells with data-label", async () => {
     document.body.innerHTML = `
       <table>
