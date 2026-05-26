@@ -779,6 +779,38 @@ describe("Albert content DOM injection", () => {
     ]);
   });
 
+  it("renders labeled radar nodes for each professor fit metric", async () => {
+    document.body.innerHTML = `<div>Instructor: Ada Lovelace</div>`;
+    const lookupProfessor = vi.fn(async (name) => ({
+      name,
+      department: "Computer Science",
+      rating: 4.5,
+      difficulty: 2.0,
+      ratingsCount: 64,
+      wouldTakeAgain: 80,
+      tags: [],
+      topComments: [],
+      url: "https://www.ratemyprofessors.com/professor/123",
+    }));
+
+    await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
+
+    const nodes = Array.from(document.querySelectorAll(".nyu-rmp-radar-node"));
+    expect(nodes).toHaveLength(4);
+    expect(nodes.map((node) => node.getAttribute("aria-label"))).toEqual([
+      "Radar metric Rating: 4.5 out of 5",
+      "Radar metric Ease: 3.0 out of 5",
+      "Radar metric Volume: 64 ratings",
+      "Radar metric Again: 80%",
+    ]);
+    expect(nodes.map((node) => node.querySelector("title")?.textContent)).toEqual([
+      "Rating: 4.5 out of 5",
+      "Ease: 3.0 out of 5",
+      "Volume: 64 ratings",
+      "Again: 80%",
+    ]);
+  });
+
   it("keeps radar labels and points stable when RMP metrics are partial", async () => {
     document.body.innerHTML = `<div>Instructor: Ada Lovelace</div>`;
     const lookupProfessor = vi.fn(async (name) => ({

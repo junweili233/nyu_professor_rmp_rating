@@ -1203,6 +1203,7 @@ function renderRadarChart({ chartId, professorName = "Professor", rating, diffic
         <line class="nyu-rmp-radar-spoke" x1="60" y1="60" x2="60" y2="108"></line>
         <line class="nyu-rmp-radar-spoke" x1="60" y1="60" x2="12" y2="60"></line>
         <polygon class="nyu-rmp-radar-shape" points="${escapeHtml(points)}"></polygon>
+        ${axes.map((axis, index) => radarMetricNode(axis, index, axes.length, { rating, ease, normalizedRatingsCount, wouldTakeAgain })).join("")}
         ${axes.map(({ label }, index) => radarAxisLabel(label, index, axes.length)).join("")}
       </svg>
       <div class="nyu-rmp-radar-summary">
@@ -1216,6 +1217,29 @@ function renderRadarChart({ chartId, professorName = "Professor", rating, diffic
       </div>
     </div>
   `;
+}
+
+function radarMetricNode(axis, index, total, metrics) {
+  const { x, y } = radarPoint(axis.value, index, total);
+  const label = radarMetricLabel(axis.label, metrics);
+  const className = axis.available ? "nyu-rmp-radar-node" : "nyu-rmp-radar-node is-unavailable";
+  return `<circle class="${className}" cx="${x}" cy="${y}" r="3.5" role="img" aria-label="${escapeHtml(`Radar metric ${label}`)}"><title>${escapeHtml(label)}</title></circle>`;
+}
+
+function radarMetricLabel(label, { rating, ease, normalizedRatingsCount, wouldTakeAgain }) {
+  if (label === "Rating") {
+    return `Rating: ${formatScore(rating)} out of 5`;
+  }
+  if (label === "Ease") {
+    return `Ease: ${formatScore(ease)} out of 5`;
+  }
+  if (label === "Volume") {
+    return `Volume: ${normalizedRatingsCount == null ? "N/A ratings" : formatRatingsCount(normalizedRatingsCount)}`;
+  }
+  if (label === "Again") {
+    return `Again: ${wouldTakeAgain == null ? "N/A" : `${Math.round(wouldTakeAgain)}%`}`;
+  }
+  return `${label}: N/A`;
 }
 
 function radarFitDetails({ rating, ease, normalizedRatingsCount, wouldTakeAgain }) {
@@ -1628,6 +1652,17 @@ export function injectStyles(document = globalThis.document) {
 	      stroke: #57068c;
 	      stroke-linejoin: round;
 	      stroke-width: 2;
+	    }
+	    .nyu-rmp-radar-node {
+	      fill: #ffffff;
+	      stroke: #57068c;
+	      stroke-width: 2;
+	    }
+	    .nyu-rmp-radar-node.is-unavailable {
+	      fill: #f8fafc;
+	      opacity: 0.62;
+	      stroke: #98a2b3;
+	      stroke-dasharray: 2 2;
 	    }
 	    .nyu-rmp-radar-axis {
 	      fill: #667085;
