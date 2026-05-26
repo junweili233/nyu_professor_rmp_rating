@@ -15,6 +15,7 @@ const CSCI_SHORTHAND_COURSE_CODE_PATTERN = /\b(CSCI[-\s]*0?\d{3,4})\b/i;
 const CS_SHORTHAND_COURSE_CODE_PATTERN = /\b(CS[-\s]*0?\d{3,4})\b/i;
 const COURSE_TITLE_CODE_ALIASES = [
   { pattern: /\bcomputer\s+systems?\s+organization\b/i, code: "CSCI-UA 201" },
+  { pattern: /\bCSO\b/i, code: "CSCI-UA 201" },
 ];
 const CONTROLLED_OPTION_SELECTOR = "[role='option'], [aria-selected], [aria-checked], [aria-current], [aria-pressed], [data-selected], [data-active], [data-checked], [data-current], [data-focus], [data-focused], [data-highlighted], [data-pressed], [data-state], [selected], [class]";
 const ALBERT_OBSERVER_OPTIONS = {

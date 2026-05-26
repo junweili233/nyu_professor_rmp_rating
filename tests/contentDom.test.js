@@ -1455,6 +1455,46 @@ describe("Albert content DOM injection", () => {
     expect(document.querySelector(".nyu-rmp-comments-course-match").textContent).toBe("1 CSCI-UA 201 match");
   });
 
+  it("promotes useful comments that mention the CSO shorthand without metadata", async () => {
+    document.body.innerHTML = `
+      <table>
+        <thead>
+          <tr>
+            <th>Course</th>
+            <th>Instructor</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>CSCI-UA 201 Computer Systems Organization</td>
+            <td>YAP, CHEE KENG</td>
+          </tr>
+        </tbody>
+      </table>
+    `;
+    const lookupProfessor = vi.fn(async (name) => ({
+      name,
+      department: "Computer Science",
+      rating: 2.1,
+      difficulty: 4.5,
+      ratingsCount: 92,
+      tags: [],
+      topComments: [
+        { text: "Generic advice for another class.", helpfulRating: 50 },
+        { text: "CSO labs move fast and the exams are systems-heavy.", helpfulRating: 3 },
+      ],
+      url: "https://www.ratemyprofessors.com/professor/419998",
+    }));
+
+    await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
+
+    const comments = Array.from(document.querySelectorAll(".nyu-rmp-comment-text")).map((node) => node.textContent);
+    const metadata = document.querySelector(".nyu-rmp-comment-meta");
+    expect(comments[0]).toBe("CSO labs move fast and the exams are systems-heavy.");
+    expect(metadata.textContent).toContain("Albert course match");
+    expect(document.querySelector(".nyu-rmp-comments-course-match").textContent).toBe("1 CSCI-UA 201 match");
+  });
+
   it("matches useful comments when RMP spaces CS201 course metadata", async () => {
     document.body.innerHTML = `
       <table>
