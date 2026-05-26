@@ -1363,6 +1363,47 @@ describe("Albert content DOM injection", () => {
     );
   });
 
+  it("matches useful comments when RMP abbreviates the CS201 course title as org", async () => {
+    document.body.innerHTML = `
+      <table>
+        <thead>
+          <tr>
+            <th>Course</th>
+            <th>Instructor</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>CSCI-UA 201 Computer Systems Organization</td>
+            <td>YAP, CHEE KENG</td>
+          </tr>
+        </tbody>
+      </table>
+    `;
+    const lookupProfessor = vi.fn(async (name) => ({
+      name,
+      department: "Computer Science",
+      rating: 2.1,
+      difficulty: 4.5,
+      ratingsCount: 92,
+      tags: [],
+      topComments: [
+        {
+          text: "The projects are tightly coupled to the lecture material.",
+          course: "Computer Systems Org",
+          helpfulRating: 8,
+        },
+      ],
+      url: "https://www.ratemyprofessors.com/professor/419998",
+    }));
+
+    await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
+
+    const metadata = document.querySelector(".nyu-rmp-comment-meta");
+    expect(metadata.textContent).toContain("Course Computer Systems Org (Albert match)");
+    expect(document.querySelector(".nyu-rmp-comments-course-match").textContent).toBe("1 CSCI-UA 201 match");
+  });
+
   it("promotes useful comments that mention CS201 when RMP omits course metadata", async () => {
     document.body.innerHTML = `
       <table>
