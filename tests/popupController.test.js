@@ -3,7 +3,7 @@ import { describe, expect, it, vi } from "vitest";
 import { initPopup } from "../src/popupController.js";
 
 describe("extension popup controller", () => {
-  it("shows the professor cache count on load", async () => {
+  it("shows the rating lookup cache count on load", async () => {
     document.body.innerHTML = `
       <p id="status"></p>
       <input id="enable-overlay" type="checkbox" />
@@ -17,11 +17,26 @@ describe("extension popup controller", () => {
 
     await initPopup({ document, storage });
 
-    expect(document.getElementById("status").textContent).toBe("2 professors cached");
+    expect(document.getElementById("status").textContent).toBe("2 rating lookups cached");
     expect(document.getElementById("enable-overlay").checked).toBe(true);
   });
 
-  it("treats an empty popup storage result as no cached professors", async () => {
+  it("uses singular wording for one cached rating lookup", async () => {
+    document.body.innerHTML = `
+      <p id="status"></p>
+      <input id="enable-overlay" type="checkbox" />
+      <button id="clear-cache"></button>
+    `;
+    const storage = createStorageMock({
+      "professor:ada lovelace:course:csci-ua 202": { value: { name: "Ada Lovelace" } },
+    });
+
+    await initPopup({ document, storage });
+
+    expect(document.getElementById("status").textContent).toBe("1 rating lookup cached");
+  });
+
+  it("treats an empty popup storage result as no cached rating lookups", async () => {
     document.body.innerHTML = `
       <p id="status"></p>
       <input id="enable-overlay" type="checkbox" />
@@ -39,7 +54,7 @@ describe("extension popup controller", () => {
 
     await initPopup({ document, storage });
 
-    expect(document.getElementById("status").textContent).toBe("0 professors cached");
+    expect(document.getElementById("status").textContent).toBe("0 rating lookups cached");
     expect(document.getElementById("clear-cache").disabled).toBe(true);
   });
 
@@ -77,7 +92,7 @@ describe("extension popup controller", () => {
     expect(document.getElementById("clear-cache").disabled).toBe(true);
   });
 
-  it("shows an inline error when cached professor count cannot be read", async () => {
+  it("shows an inline error when cached rating lookup count cannot be read", async () => {
     document.body.innerHTML = `
       <p id="status"></p>
       <input id="enable-overlay" type="checkbox" />
@@ -199,7 +214,7 @@ describe("extension popup controller", () => {
     expect(document.getElementById("status").textContent).toBe("Overlay setting failed: Storage unavailable");
   });
 
-  it("clears only cached professor lookups when the popup clear button is clicked", async () => {
+  it("clears only cached rating lookups when the popup clear button is clicked", async () => {
     document.body.innerHTML = `
       <p id="status"></p>
       <input id="enable-overlay" type="checkbox" />
@@ -218,7 +233,7 @@ describe("extension popup controller", () => {
 
     expect(runtime.sendMessage).toHaveBeenCalledWith({ type: "NYU_RMP_CLEAR_CACHE" });
     expect(storage.remove).not.toHaveBeenCalled();
-    expect(document.getElementById("status").textContent).toBe("2 cached professor ratings cleared");
+    expect(document.getElementById("status").textContent).toBe("2 cached rating lookups cleared");
   });
 
   it("disables and marks the clear button busy while cache clearing is in progress", async () => {
@@ -250,7 +265,7 @@ describe("extension popup controller", () => {
 
     expect(clearButton.disabled).toBe(true);
     expect(clearButton.getAttribute("aria-busy")).toBe("false");
-    expect(document.getElementById("status").textContent).toBe("1 cached professor rating cleared");
+    expect(document.getElementById("status").textContent).toBe("1 cached rating lookup cleared");
   });
 
   it("shows an inline error when the background cache clear fails", async () => {

@@ -54,7 +54,7 @@ export async function initPopup({
   async function refreshStatus() {
     try {
       const cached = await getProfessorCacheKeys(storage);
-      status.textContent = cached.length === 1 ? "1 professor cached" : `${cached.length} professors cached`;
+      status.textContent = formatCacheCountStatus(cached.length);
       if (clearButton) {
         clearButton.disabled = cached.length === 0;
       }
@@ -115,8 +115,14 @@ function syncSwitchState(input) {
 
 function formatCacheClearedStatus(count) {
   return count === 1
-    ? "1 cached professor rating cleared"
-    : `${count} cached professor ratings cleared`;
+    ? "1 cached rating lookup cleared"
+    : `${count} cached rating lookups cleared`;
+}
+
+function formatCacheCountStatus(count) {
+  return count === 1
+    ? "1 rating lookup cached"
+    : `${count} rating lookups cached`;
 }
 
 function nonNegativeInteger(value) {
