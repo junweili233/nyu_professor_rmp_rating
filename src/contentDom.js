@@ -1026,6 +1026,7 @@ function updateRatingCard(card, result, { requestedName = "Professor", lookupPro
   const tagListLabel = `RMP professor tags, ${tagNames.length} shown`;
   const radar = renderRadarChart({
     chartId: card.dataset.nyuRmpCardId,
+    professorName,
     rating,
     difficulty,
     ratingsCount: result.ratingsCount,
@@ -1090,7 +1091,7 @@ function updateErrorCard(card, { requestedName, lookupProfessor, message }) {
   wireRefreshAction(card, requestedName, lookupProfessor);
 }
 
-function renderRadarChart({ chartId, rating, difficulty, ratingsCount, wouldTakeAgain }) {
+function renderRadarChart({ chartId, professorName = "Professor", rating, difficulty, ratingsCount, wouldTakeAgain }) {
   const ease = difficulty == null ? null : 5 - difficulty;
   const normalizedRatingsCount = optionalNonNegativeCount(ratingsCount);
   const ratingsCountLabel = normalizedRatingsCount == null ? "N/A ratings" : formatRatingsCount(normalizedRatingsCount);
@@ -1119,7 +1120,7 @@ function renderRadarChart({ chartId, rating, difficulty, ratingsCount, wouldTake
   const ariaLabel = `Professor radar: ${radarSummary}`;
 
   return `
-    <div class="nyu-rmp-radar-wrap">
+    <div class="nyu-rmp-radar-wrap" role="group" aria-label="${escapeHtml(`Professor fit radar for ${professorName}`)}">
       <svg class="nyu-rmp-radar" viewBox="0 0 120 120" role="img" aria-label="${escapeHtml(ariaLabel)}" aria-labelledby="${titleId}" aria-describedby="${descId}" focusable="false">
         <title id="${titleId}">Professor rating radar</title>
         <desc id="${descId}">${escapeHtml(radarDescription)}</desc>

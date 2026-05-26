@@ -516,7 +516,10 @@ describe("Albert content DOM injection", () => {
 
     await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
 
+    const radarWrap = document.querySelector(".nyu-rmp-radar-wrap");
     const radar = document.querySelector(".nyu-rmp-radar");
+    expect(radarWrap.getAttribute("role")).toBe("group");
+    expect(radarWrap.getAttribute("aria-label")).toBe("Professor fit radar for Ada Lovelace");
     expect(radar).not.toBeNull();
     expect(radar.getAttribute("role")).toBe("img");
     expect(radar.getAttribute("aria-label")).toBe("Professor radar: professor fit 82 out of 100, rating 4.5 out of 5, ease 3.0 out of 5, take again 80%, 64 ratings");
