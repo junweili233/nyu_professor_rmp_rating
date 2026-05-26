@@ -81,6 +81,31 @@
         display: flex;
         gap: 9px;
       }
+      .feature-list {
+        border-top: 1px solid var(--border);
+        color: var(--muted);
+        display: grid;
+        gap: 6px;
+        font-size: 11px;
+        line-height: 1.35;
+        list-style: none;
+        margin: 12px 0 0;
+        padding: 12px 0 0;
+      }
+      .feature-list li {
+        align-items: start;
+        display: grid;
+        gap: 7px;
+        grid-template-columns: 8px 1fr;
+      }
+      .feature-list li::before {
+        background: var(--nv);
+        border-radius: 2px;
+        content: "";
+        height: 4px;
+        margin-top: 5px;
+        width: 4px;
+      }
       .dot {
         background: var(--good);
         border-radius: 999px;
@@ -205,6 +230,11 @@
           <span class="dot" aria-hidden="true"></span>
           <p id="status" role="status" aria-live="polite" aria-atomic="true">Extension ready</p>
         </div>
+        <ul class="feature-list" aria-label="Albert rating overlay features">
+          <li>Rating, difficulty, and take-again metrics</li>
+          <li>Most useful RMP comments</li>
+          <li>CS201 course-match comment highlights</li>
+        </ul>
         <button id="clear-cache" type="button">Clear cached ratings</button>
       </section>
     </main>

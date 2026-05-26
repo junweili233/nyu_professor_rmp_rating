@@ -15,4 +15,13 @@ describe("extension popup markup", () => {
     expect(popup).toContain("animation: none");
     expect(popup).toContain("transition: none");
   });
+
+  it("summarizes the Albert rating overlay features in the popup", async () => {
+    const popup = await readFile(new URL("../src/popup.html", import.meta.url), "utf8");
+
+    expect(popup).toContain('<ul class="feature-list" aria-label="Albert rating overlay features">');
+    expect(popup).toContain("Rating, difficulty, and take-again metrics");
+    expect(popup).toContain("Most useful RMP comments");
+    expect(popup).toContain("CS201 course-match comment highlights");
+  });
 });
