@@ -1574,7 +1574,7 @@ function commentFitSignal(comments = [], tags = [], albertCourseCode = "") {
   const positiveSignals = [
     /\bclear(?:ly)?\b/,
     /\bexplain(?:s|ed|ing)?\b/,
-    /\bhelpful\b/,
+    /(?<!not\s)(?<!not very\s)\bhelpful\b/,
     /\bfair\b/,
     /\borganized\b/,
     /\bpractical\b/,
@@ -1589,6 +1589,8 @@ function commentFitSignal(comments = [], tags = [], albertCourseCode = "") {
     /\bconfusing\b/,
     /\bdemanding\b/,
     /\bdisorganized\b/,
+    /\bnot\s+helpful\b/,
+    /\bnot\s+very\s+helpful\b/,
     /\bunclear\b/,
     /\bunfair\b/,
     /\bfast\b/,
