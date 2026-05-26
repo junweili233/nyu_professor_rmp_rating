@@ -9,6 +9,7 @@ npm install
 npm test
 npm run build
 npm run verify:package
+npm run verify:release
 ```
 
 Load `dist` as an unpacked Chrome extension after `npm run build`.
@@ -50,6 +51,7 @@ Load `dist` as an unpacked Chrome extension after `npm run build`.
 npm test
 npm run build
 npm run verify:package
+npm run verify:release
 npm run verify:chrome-profile
 npm run verify:live
 ```
