@@ -20,7 +20,8 @@ export function createProfessorLookupService({
       if (!String(name ?? "").trim()) {
         throw new Error("professor name is required");
       }
-      const key = professorCacheKey(name);
+      const normalizedName = normalizeProfessorName(name);
+      const key = professorCacheKey(normalizedName);
       const currentTime = now();
       const memoryEntry = memoryCache.get(key);
       if (!forceRefresh && memoryEntry && isFreshCacheEntry(memoryEntry, currentTime)) {
@@ -48,7 +49,7 @@ export function createProfessorLookupService({
 
       const inFlightKey = forceRefresh ? `${key}:force` : key;
       if (!inFlightLookups.has(inFlightKey)) {
-        inFlightLookups.set(inFlightKey, fetchAndCacheRating({ key, name, currentTime, findProfessorRating, memoryCache, storage }));
+        inFlightLookups.set(inFlightKey, fetchAndCacheRating({ key, name: normalizedName, currentTime, findProfessorRating, memoryCache, storage }));
       }
 
       return inFlightLookups.get(inFlightKey).finally(() => {
@@ -68,14 +69,14 @@ export function createProfessorLookupService({
 }
 
 export function professorCacheKey(name) {
-  return `professor:${foldDiacritics(normalizeProfessorCacheName(name))
+  return `professor:${foldDiacritics(normalizeProfessorName(name))
     .replace(/[^\p{L}\p{N}]+/gu, " ")
     .trim()
     .replace(/\s+/g, " ")
     .toLowerCase()}`;
 }
 
-function normalizeProfessorCacheName(name) {
+function normalizeProfessorName(name) {
   const pieces = splitInstructorList(name);
   if (pieces.length === 1) {
     return normalizeInstructorName(pieces[0]) || pieces[0];

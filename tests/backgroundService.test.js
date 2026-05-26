@@ -158,6 +158,24 @@ describe("background professor lookup service", () => {
     expect(findProfessorRating).not.toHaveBeenCalled();
   });
 
+  it("normalizes Albert last-first names before fresh RMP lookups", async () => {
+    const freshRating = {
+      name: "Chee Keng Yap",
+      rating: 2.1,
+      topComments: ["Fresh lookup should use RMP-style name order."],
+    };
+    const storage = createStorageMock();
+    const findProfessorRating = vi.fn(async () => freshRating);
+    const service = createProfessorLookupService({ storage, findProfessorRating });
+
+    await expect(service.lookup("YAP, CHEE KENG")).resolves.toMatchObject(freshRating);
+
+    expect(findProfessorRating).toHaveBeenCalledWith("Chee Keng Yap");
+    expect(storage.data[professorCacheKey("Chee Keng Yap")]).toMatchObject({
+      value: freshRating,
+    });
+  });
+
   it("reuses fresh timestamped persisted cache entries", async () => {
     const now = new Date("2026-05-24T12:00:00Z").getTime();
     const cachedRating = {
