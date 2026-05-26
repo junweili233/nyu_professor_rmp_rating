@@ -1085,10 +1085,13 @@ function renderRadarChart({ rating, difficulty, ratingsCount, wouldTakeAgain }) 
     .map(({ value }, index) => radarPoint(value, index, axes.length))
     .map(({ x, y }) => `${x},${y}`)
     .join(" ");
-  const ariaLabel = `Professor radar: rating ${formatScore(rating)} out of 5, ease ${formatScore(difficulty == null ? null : 5 - difficulty)} out of 5, take again ${wouldTakeAgain == null ? "N/A" : `${Math.round(wouldTakeAgain)}%`}, ${formatRatingsCount(ratingsCount)}`;
+  const radarSummary = `rating ${formatScore(rating)} out of 5, ease ${formatScore(difficulty == null ? null : 5 - difficulty)} out of 5, take again ${wouldTakeAgain == null ? "N/A" : `${Math.round(wouldTakeAgain)}%`}, ${formatRatingsCount(ratingsCount)}`;
+  const ariaLabel = `Professor radar: ${radarSummary}`;
 
   return `
     <svg class="nyu-rmp-radar" viewBox="0 0 120 120" role="img" aria-label="${escapeHtml(ariaLabel)}" focusable="false">
+      <title>Professor rating radar</title>
+      <desc>${escapeHtml(capitalizeSentence(radarSummary))}.</desc>
       <polygon class="nyu-rmp-radar-grid" points="60,12 108,60 60,108 12,60"></polygon>
       <polygon class="nyu-rmp-radar-grid inner" points="60,36 84,60 60,84 36,60"></polygon>
       <line class="nyu-rmp-radar-spoke" x1="60" y1="60" x2="60" y2="12"></line>
@@ -1099,6 +1102,11 @@ function renderRadarChart({ rating, difficulty, ratingsCount, wouldTakeAgain }) 
       ${axes.map(({ label }, index) => radarAxisLabel(label, index, axes.length)).join("")}
     </svg>
   `;
+}
+
+function capitalizeSentence(value) {
+  const text = String(value ?? "");
+  return text ? text.charAt(0).toUpperCase() + text.slice(1) : "";
 }
 
 function radarAxisLabel(label, index, total) {

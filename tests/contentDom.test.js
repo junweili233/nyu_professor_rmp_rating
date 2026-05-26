@@ -335,6 +335,27 @@ describe("Albert content DOM injection", () => {
     ]);
   });
 
+  it("describes radar charts with native SVG title and description", async () => {
+    document.body.innerHTML = `<div>Instructor: Ada Lovelace</div>`;
+    const lookupProfessor = vi.fn(async (name) => ({
+      name,
+      department: "Computer Science",
+      rating: 4.5,
+      difficulty: 2.0,
+      ratingsCount: 64,
+      wouldTakeAgain: 80,
+      tags: [],
+      topComments: [],
+      url: "https://www.ratemyprofessors.com/professor/123",
+    }));
+
+    await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
+
+    const radar = document.querySelector(".nyu-rmp-radar");
+    expect(radar.querySelector("title")?.textContent).toBe("Professor rating radar");
+    expect(radar.querySelector("desc")?.textContent).toBe("Rating 4.5 out of 5, ease 3.0 out of 5, take again 80%, 64 ratings.");
+  });
+
   it("renders useful-comment metadata from RMP ratings", async () => {
     document.body.innerHTML = `<div>Instructor: Ada Lovelace</div>`;
     const lookupProfessor = vi.fn(async (name) => ({
