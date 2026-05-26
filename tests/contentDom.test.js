@@ -703,6 +703,7 @@ describe("Albert content DOM injection", () => {
       topComments: [
         {
           text: "Explains low-level systems clearly and gives practical labs.",
+          course: "CSCI-UA 201",
           helpfulRating: 11,
           clarityRating: 5,
           difficultyRating: 2,
@@ -714,6 +715,7 @@ describe("Albert content DOM injection", () => {
     await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
 
     expect(document.body.textContent).toContain("Explains low-level systems clearly and gives practical labs.");
+    expect(document.body.textContent).toContain("Course CSCI-UA 201");
     expect(document.body.textContent).toContain("11 useful");
     expect(document.body.textContent).toContain("Clarity 5.0");
     expect(document.body.textContent).toContain("Difficulty 2.0");

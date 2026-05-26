@@ -31,6 +31,7 @@ describe("Rate My Professors client", () => {
                         {
                           node: {
                             comment: "Explains low-level systems clearly and gives practical labs.",
+                            class: "CSCI-UA 201",
                             helpfulRating: 11,
                             clarityRating: 5,
                             difficultyRating: 2,
@@ -65,6 +66,7 @@ describe("Rate My Professors client", () => {
       topComments: [
         {
           text: "Explains low-level systems clearly and gives practical labs.",
+          course: "CSCI-UA 201",
           helpfulRating: 11,
           clarityRating: 5,
           difficultyRating: 2,

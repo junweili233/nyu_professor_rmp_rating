@@ -1770,6 +1770,7 @@ function formatComment(comment, textId) {
   const preview = truncateComment(normalized.text);
   const isTruncated = preview !== normalized.text;
   const metadata = [
+    normalized.course ? `Course ${normalized.course}` : "",
     normalized.helpfulRating == null ? "" : `${normalized.helpfulRating} useful`,
     normalized.clarityRating == null ? "" : `Clarity ${formatScore(normalized.clarityRating)}`,
     normalized.difficultyRating == null ? "" : `Difficulty ${formatScore(normalized.difficultyRating)}`,
@@ -1846,6 +1847,7 @@ function normalizeComment(comment) {
 
   return {
     text: normalizeCommentText(comment?.text),
+    course: normalizeCommentMetadataText(comment?.course),
     helpfulRating: nonNegativeNumberOrNull(comment?.helpfulRating),
     clarityRating: rmpScaleNumberOrNull(comment?.clarityRating),
     difficultyRating: rmpScaleNumberOrNull(comment?.difficultyRating),
@@ -1860,6 +1862,10 @@ function isUsefulCommentText(value) {
 
 function normalizeCommentText(value) {
   return decodeHtmlEntities(value).trim().replace(/\s+/g, " ");
+}
+
+function normalizeCommentMetadataText(value) {
+  return typeof value === "string" ? normalizeCommentText(value) : "";
 }
 
 function decodeHtmlEntities(value) {

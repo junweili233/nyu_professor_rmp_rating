@@ -28,6 +28,7 @@ const PROFESSOR_SEARCH_QUERY = `
               edges {
                 node {
                   comment
+                  class
                   helpfulRating
                   clarityRating
                   difficultyRating
@@ -122,12 +123,16 @@ function toProfessorRating(teacher, requestedName) {
     .filter((rating) => isUsefulCommentText(rating?.comment))
     .sort((left, right) => commentHelpfulScore(right) - commentHelpfulScore(left))
     .filter(uniqueCommentText)
-    .map((rating) => ({
-      text: normalizeCommentText(rating.comment),
-      helpfulRating: nonNegativeNumberOrNull(rating.helpfulRating),
-      clarityRating: rmpScaleNumberOrNull(rating.clarityRating),
-      difficultyRating: rmpScaleNumberOrNull(rating.difficultyRating),
-    }))
+    .map((rating) => {
+      const course = normalizeCourseName(rating.class);
+      return {
+        text: normalizeCommentText(rating.comment),
+        ...(course ? { course } : {}),
+        helpfulRating: nonNegativeNumberOrNull(rating.helpfulRating),
+        clarityRating: rmpScaleNumberOrNull(rating.clarityRating),
+        difficultyRating: rmpScaleNumberOrNull(rating.difficultyRating),
+      };
+    })
     .filter(Boolean)
     .slice(0, 2) ?? [];
 
@@ -191,6 +196,10 @@ function isComputerScienceDepartment(value) {
 
 function normalizeTagName(value) {
   return typeof value === "string" ? value.trim() : "";
+}
+
+function normalizeCourseName(value) {
+  return typeof value === "string" ? normalizeCommentText(value) : "";
 }
 
 function asArray(value) {
