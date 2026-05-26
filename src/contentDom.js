@@ -1078,7 +1078,7 @@ function updateRatingCard(card, result, { requestedName = "Professor", lookupPro
   const tagNames = asArray(result.tags)
     .map(normalizeTagName)
     .filter(Boolean);
-  const commentSignal = commentFitSignal(usefulTopComments, tagNames);
+  const commentSignal = commentFitSignal(usefulTopComments, tagNames, courseCode);
   const radarFit = radarFitDetails({
     rating,
     ease,
@@ -1441,13 +1441,19 @@ function ratingsCountEvidenceLabel(ratingsCount) {
   return normalizedRatingsCount == null ? "N/A ratings" : formatRatingsCount(normalizedRatingsCount);
 }
 
-function commentFitSignal(comments = [], tags = []) {
+function commentFitSignal(comments = [], tags = [], albertCourseCode = "") {
   const sources = [
-    ...asArray(comments).map((comment) => normalizeComment(comment).text),
-    ...asArray(tags),
+    ...asArray(comments).map((comment) => {
+      const normalized = normalizeComment(comment);
+      return {
+        text: normalized.text,
+        weight: commentMatchesCourse(normalized, albertCourseCode) ? 3 : 1,
+      };
+    }),
+    ...asArray(tags).map((tag) => ({ text: tag, weight: 1 })),
   ]
-    .map((value) => String(value ?? "").toLowerCase())
-    .filter(Boolean);
+    .map(({ text, weight }) => ({ text: String(text ?? "").toLowerCase(), weight }))
+    .filter(({ text }) => Boolean(text));
   if (sources.length === 0) {
     return null;
   }
@@ -1484,8 +1490,8 @@ function commentFitSignal(comments = [], tags = []) {
 }
 
 function countSignalMatches(sources, patterns) {
-  return sources.reduce((count, source) => (
-    count + patterns.reduce((matches, pattern) => matches + (pattern.test(source) ? 1 : 0), 0)
+  return sources.reduce((count, { text, weight }) => (
+    count + patterns.reduce((matches, pattern) => matches + (pattern.test(text) ? weight : 0), 0)
   ), 0);
 }
 

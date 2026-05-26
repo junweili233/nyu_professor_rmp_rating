@@ -824,6 +824,43 @@ describe("Albert content DOM injection", () => {
     expect(Array.from(document.querySelectorAll(".nyu-rmp-evidence-chip")).map((node) => node.textContent)).toContain("Positive comment signal 83/100");
   });
 
+  it("weights Albert course-matched comments more heavily in the radar comment signal", async () => {
+    document.body.innerHTML = `
+      <table>
+        <tbody>
+          <tr>
+            <td>CSCI-UA 201 Computer Systems Organization</td>
+            <td>Instructor: Ada Lovelace</td>
+          </tr>
+        </tbody>
+      </table>
+    `;
+    const lookupProfessor = vi.fn(async (name) => ({
+      name,
+      department: "Computer Science",
+      rating: 4.5,
+      difficulty: 2.0,
+      ratingsCount: 64,
+      wouldTakeAgain: 80,
+      tags: [],
+      topComments: [
+        "Clear helpful fair great lectures overall.",
+        {
+          text: "CS201 projects are hard, confusing, overwhelming, avoid if behind.",
+          course: "CSCI-UA 201",
+        },
+      ],
+      url: "https://www.ratemyprofessors.com/professor/123",
+    }));
+
+    await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
+
+    expect(Array.from(document.querySelectorAll(".nyu-rmp-evidence-chip")).map((node) => node.textContent)).toContain("Risky comment signal 25/100");
+    expect(Array.from(document.querySelectorAll(".nyu-rmp-radar-legend li")).map((node) => node.textContent)).toContain("Comments 25/100");
+    expect(document.querySelector(".nyu-rmp-radar").getAttribute("aria-label")).toContain("comment signal 25 out of 100");
+    expect(document.querySelector(".nyu-rmp-comments-course-match").textContent).toBe("1 CSCI-UA 201 match");
+  });
+
   it("summarizes the professor radar as a rating-weighted fit score", async () => {
     document.body.innerHTML = `<div>Instructor: Ada Lovelace</div>`;
     const lookupProfessor = vi.fn(async (name) => ({
