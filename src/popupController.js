@@ -216,8 +216,14 @@ function formatAlbertConnectedStatus(response) {
   const radarCount = nonNegativeInteger(response.radarCount);
   const cardLabel = cardCount === 1 ? "1 card" : `${cardCount} cards`;
   const radarLabel = radarCount === 1 ? "1 radar map" : `${radarCount} radar maps`;
+  const versionLabel = formatVersionLabel(response.version);
   if (response.overlayState === "disabled") {
-    return `Albert connected; overlay disabled. ${cardLabel}, ${radarLabel}`;
+    return `Albert connected${versionLabel}; overlay disabled. ${cardLabel}, ${radarLabel}`;
   }
-  return `Albert connected: ${cardLabel}, ${radarLabel}`;
+  return `Albert connected${versionLabel}: ${cardLabel}, ${radarLabel}`;
+}
+
+function formatVersionLabel(version) {
+  const normalized = String(version ?? "").trim();
+  return normalized ? ` v${normalized}` : "";
 }

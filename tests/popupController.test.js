@@ -86,6 +86,7 @@ describe("extension popup controller", () => {
       contentStatus: {
         ok: true,
         contentScript: "loaded",
+        version: "0.1.1",
         overlayState: "enabled",
         cardCount: 4,
         radarCount: 3,
@@ -96,7 +97,7 @@ describe("extension popup controller", () => {
 
     expect(tabs.query).toHaveBeenCalledWith({ active: true, currentWindow: true });
     expect(tabs.sendMessage).toHaveBeenCalledWith(12, { type: "NYU_RMP_CONTENT_STATUS" });
-    expect(document.getElementById("page-status").textContent).toBe("Albert connected: 4 cards, 3 radar maps");
+    expect(document.getElementById("page-status").textContent).toBe("Albert connected v0.1.1: 4 cards, 3 radar maps");
     expect(document.getElementById("page-status").dataset.state).toBe("connected");
   });
 

@@ -1,3 +1,5 @@
+const EXTENSION_VERSION = "0.1.1";
+
 export async function initContentScript({
   chrome = globalThis.chrome,
   document = globalThis.document,
@@ -41,6 +43,7 @@ export async function initContentScript({
     sendResponse({
       ok: true,
       contentScript: document?.documentElement?.dataset.nyuRmpContentScript ?? "loaded",
+      version: document?.documentElement?.dataset.nyuRmpVersion ?? EXTENSION_VERSION,
       overlayState: document?.documentElement?.dataset.nyuRmpOverlayState ?? "unknown",
       cardCount: document?.querySelectorAll?.(".nyu-rmp-card").length ?? 0,
       radarCount: document?.querySelectorAll?.(".nyu-rmp-radar").length ?? 0,
@@ -59,6 +62,7 @@ export async function initContentScript({
 function markContentScriptLoaded(document) {
   if (document?.documentElement) {
     document.documentElement.dataset.nyuRmpContentScript = "loaded";
+    document.documentElement.dataset.nyuRmpVersion = EXTENSION_VERSION;
   }
 }
 
