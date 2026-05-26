@@ -1060,7 +1060,7 @@ function updateRatingCard(card, result, { requestedName = "Professor", lookupPro
   const usefulTopComments = sortedTopComments
     .filter((comment) => isUsefulCommentText(normalizeComment(comment).text));
   const displayedTopComments = usefulTopComments.slice(0, MAX_RENDERED_COMMENTS);
-  const courseMatchedCommentCount = countCourseMatchedComments(displayedTopComments, courseCode);
+  const courseMatchedCommentCount = countCourseMatchedComments(usefulTopComments, courseCode);
   const courseContext = renderCourseContext(courseCode);
   const comments = usefulTopComments
     .map((comment, index) => formatComment(comment, commentTextId(card, index), courseCode, { hidden: index >= MAX_RENDERED_COMMENTS }))

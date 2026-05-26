@@ -1382,6 +1382,54 @@ describe("Albert content DOM injection", () => {
     expect(list.getAttribute("aria-label")).toBe("Most useful RMP comments, 5 of 5 useful comments shown");
   });
 
+  it("counts hidden Albert course-matched useful comments in the CS201 badge", async () => {
+    document.body.innerHTML = `
+      <table>
+        <thead>
+          <tr>
+            <th>Course</th>
+            <th>Instructor</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>CSCI-UA 201 Computer Systems Organization</td>
+            <td>YAP, CHEE KENG</td>
+          </tr>
+        </tbody>
+      </table>
+    `;
+    const lookupProfessor = vi.fn(async (name) => ({
+      name,
+      department: "Computer Science",
+      rating: 3.9,
+      difficulty: 3.1,
+      ratingsCount: 92,
+      tags: [],
+      topComments: [
+        { text: "First CS201 comment.", course: "CSCI-UA 201", helpfulRating: 50 },
+        { text: "Second CS201 comment.", course: "CSCI-UA 201", helpfulRating: 40 },
+        { text: "Third CS201 comment.", course: "CSCI-UA 201", helpfulRating: 30 },
+        { text: "Fourth CS201 comment should start hidden.", course: "CSCI-UA 201", helpfulRating: 20 },
+        { text: "Generic useful comment.", helpfulRating: 10 },
+      ],
+      url: "https://www.ratemyprofessors.com/professor/419998",
+    }));
+
+    await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
+
+    expect(document.querySelector(".nyu-rmp-comments-course-match").textContent).toBe("4 CSCI-UA 201 matches");
+    expect(document.querySelector(".nyu-rmp-comments-panel").getAttribute("aria-label")).toContain(
+      "4 match Albert course CSCI-UA 201",
+    );
+    expect(document.querySelector(".nyu-rmp-card").getAttribute("aria-label")).toContain(
+      "3 useful comments shown, 4 match Albert course CSCI-UA 201",
+    );
+    expect(document.querySelector(".nyu-rmp-comment.is-hidden .nyu-rmp-comment-meta").textContent).toContain(
+      "Course CSCI-UA 201 (Albert match)",
+    );
+  });
+
   it("summarizes Albert course-matched useful comments in the rating card label", async () => {
     document.body.innerHTML = `
       <table>
