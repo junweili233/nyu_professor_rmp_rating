@@ -81,6 +81,17 @@
         display: flex;
         gap: 9px;
       }
+      .notice {
+        background: #f6f4f8;
+        border: 1px solid #ddd6e8;
+        border-radius: 7px;
+        color: #5f5270;
+        font-size: 10.5px;
+        font-weight: 650;
+        line-height: 1.35;
+        margin: 10px 0 0;
+        padding: 7px 8px;
+      }
       .feature-list {
         border-top: 1px solid var(--border);
         color: var(--muted);
@@ -247,11 +258,13 @@
           <span class="dot" aria-hidden="true"></span>
           <p id="status" role="status" aria-live="polite" aria-atomic="true">Extension ready</p>
         </div>
+        <p class="notice">Refresh Albert after loading or updating the extension.</p>
         <ul class="feature-list" aria-label="Albert rating overlay features">
           <li>Rating, difficulty, and take-again metrics</li>
           <li>Radar fit score and pick recommendation</li>
           <li>Most useful RMP comments from a 20-rating sample</li>
-          <li>CS201 comment risk/support highlighting</li>
+          <li>Course-aware matching for Albert surname rows</li>
+          <li>Course comment risk/support highlighting</li>
         </ul>
         <button id="clear-cache" type="button">Clear cached ratings</button>
       </section>
