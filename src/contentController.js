@@ -106,6 +106,7 @@ function contentStatusResponse(document) {
     processedCellLayoutWarningCount: countProcessedCellLayoutWarnings(document),
     processedCellLastRepairCount: nonNegativeInteger(document?.documentElement?.dataset.nyuRmpLastLayoutRepairCount),
     processedCellLastRepairWarningCount: nonNegativeInteger(document?.documentElement?.dataset.nyuRmpLastLayoutRepairWarningCount),
+    processedCellLastRepairRemainingWarningCount: nonNegativeInteger(document?.documentElement?.dataset.nyuRmpLastLayoutRepairRemainingWarningCount),
   };
 }
 

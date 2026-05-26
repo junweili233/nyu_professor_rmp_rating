@@ -283,7 +283,16 @@ function formatLayoutWarningLabel(response, processedCellLayoutWarningCount) {
   }
   return processedCellLayoutWarningCount === 0
     ? "layout OK"
-    : `${processedCellLayoutWarningCount} layout ${processedCellLayoutWarningCount === 1 ? "warning" : "warnings"}`;
+    : formatActiveLayoutWarningLabel(response, processedCellLayoutWarningCount);
+}
+
+function formatActiveLayoutWarningLabel(response, processedCellLayoutWarningCount) {
+  const remainingRepairWarningCount = nonNegativeInteger(response?.processedCellLastRepairRemainingWarningCount);
+  const lastRepairWarningCount = nonNegativeInteger(response?.processedCellLastRepairWarningCount);
+  if (remainingRepairWarningCount > 0 && lastRepairWarningCount > 0) {
+    return `${processedCellLayoutWarningCount} layout ${processedCellLayoutWarningCount === 1 ? "warning remains" : "warnings remain"} after repair`;
+  }
+  return `${processedCellLayoutWarningCount} layout ${processedCellLayoutWarningCount === 1 ? "warning" : "warnings"}`;
 }
 
 function isStaleContentVersion(version) {

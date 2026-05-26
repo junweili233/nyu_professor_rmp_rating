@@ -56,6 +56,7 @@ describe("content script controller", () => {
       processedCellLayoutWarningCount: 0,
       processedCellLastRepairCount: 0,
       processedCellLastRepairWarningCount: 0,
+      processedCellLastRepairRemainingWarningCount: 0,
     });
   });
 
