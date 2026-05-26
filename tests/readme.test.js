@@ -32,6 +32,8 @@ describe("README", () => {
     expect(readme).toContain("not installed from `dist`");
     expect(readme).toContain("your local repository `dist` folder");
     expect(readme).toContain("A current build should report segmented quick views");
+    expect(readme).toContain("confirm it reports segmented quick views");
+    expect(readme).toContain("save an Albert page snapshot");
     expect(readme).toContain("Albert page snapshot");
     expect(readme).toContain("Do not click enrollment, cart, or class-selection controls");
   });

@@ -59,6 +59,21 @@ describe("live Albert readiness verifier", () => {
       userDataDir: workspace.userData,
       extensionPath: workspace.dist,
     })).rejects.toThrow("Scanned Chrome user-data folder: %USERPROFILE%");
+    await expect(verifyLiveReadiness({
+      distDir: workspace.dist,
+      userDataDir: workspace.userData,
+      extensionPath: workspace.dist,
+    })).rejects.toThrow("confirm it reports segmented quick views");
+    await expect(verifyLiveReadiness({
+      distDir: workspace.dist,
+      userDataDir: workspace.userData,
+      extensionPath: workspace.dist,
+    })).rejects.toThrow("npm run verify:albert-shape");
+    await expect(verifyLiveReadiness({
+      distDir: workspace.dist,
+      userDataDir: workspace.userData,
+      extensionPath: workspace.dist,
+    })).rejects.toThrow("Do not click enrollment, cart, or class-selection controls");
 
     await rm(workspace.root, { recursive: true, force: true });
   });

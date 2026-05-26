@@ -78,6 +78,9 @@ If `npm run verify:live` reports that NYU Albert RMP Ratings is not installed fr
 6. Confirm the extension details show the path ending in your local repository `dist` folder.
 7. Run `npm run verify:chrome-profile`.
 8. Run `npm run verify:live`.
-9. Refresh Albert after both verifiers pass. Do not click enrollment, cart, or class-selection controls while testing the overlay.
+9. Refresh Albert after both verifiers pass.
+10. Open the extension popup on Albert and confirm it reports segmented quick views.
+11. If Albert still shows old squeezed cards, save an Albert page snapshot and run `npm run verify:albert-shape -- .\albert-snapshot.html`.
+12. Do not click enrollment, cart, or class-selection controls while testing the overlay.
 
 If the popup says `old squeezed card layout detected`, Chrome is still showing stale injected cards on Albert. Reload the unpacked extension from this repository's `dist` folder, refresh Albert, and open the popup again. A current build should report segmented quick views instead of the stale-layout warning.

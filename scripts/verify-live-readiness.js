@@ -31,7 +31,9 @@ export async function verifyLiveReadiness({
       `Expected extension folder: ${expectedPath}`,
       ...(expectedAccountName ? [`Expected Chrome account: ${redactAccountName(expectedAccountName)}`] : []),
       ...(userDataDir ? [`Scanned Chrome user-data folder: ${redactPath(resolve(userDataDir))}`] : []),
-      "Then refresh Albert and run this command again before live UI verification.",
+      "Then refresh Albert, open the extension popup on Albert, and confirm it reports segmented quick views.",
+      "If Albert still shows the old squeezed card layout, save an Albert page snapshot and run: npm run verify:albert-shape -- .\\albert-snapshot.html",
+      "Do not click enrollment, cart, or class-selection controls during live verification.",
     ].join("\n"));
   }
 }
