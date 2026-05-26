@@ -997,9 +997,10 @@ function findUpdatedProcessedInstructorTargets(document = globalThis.document) {
         return [];
       }
 
-      const currentNameKeys = new Set(namesFromOriginalAlbertContent(originalContent).map(compactName).filter(Boolean));
+      const currentNames = namesFromOriginalAlbertContent(originalContent);
+      const currentNameKeys = new Set(currentNames.map(compactName).filter(Boolean));
       pruneStaleMountedProfessorCards(container, currentNameKeys);
-      const names = namesFromOriginalAlbertContent(originalContent)
+      const names = currentNames
         .filter((name) => !mountedProfessorNameKeys(container).has(compactName(name)));
       return names.length > 0 ? [{ element, names }] : [];
     });
