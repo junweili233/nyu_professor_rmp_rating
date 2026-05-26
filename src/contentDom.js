@@ -1591,6 +1591,14 @@ function commentFitSignal(comments = [], tags = [], albertCourseCode = "") {
     /\bnot\s+very\s+demanding\b/,
     /\bnot\s+overwhelming\b/,
     /\bnot\s+very\s+overwhelming\b/,
+    /\bnot\s+heavy\b/,
+    /\bnot\s+very\s+heavy\b/,
+    /\bnot\s+too\s+heavy\b/,
+    /\bnot\s+fast\b/,
+    /\bnot\s+very\s+fast\b/,
+    /\bnot\s+too\s+fast\b/,
+    /\bnot\s+heavy\s+workload\b/,
+    /\bnot\s+too\s+heavy\s+workload\b/,
   ];
   const riskSignals = [
     /(?<!not\s)(?<!not very\s)\bhard\b/,
@@ -1613,10 +1621,10 @@ function commentFitSignal(comments = [], tags = [], albertCourseCode = "") {
     /\bnot\s+very\s+manageable\b/,
     /\bunclear\b/,
     /\bunfair\b/,
-    /\bfast\b/,
-    /\bheavy\b/,
+    /(?<!not\s)(?<!not very\s)(?<!not too\s)\bfast\b/,
+    /(?<!not\s)(?<!not very\s)(?<!not too\s)\bheavy\b/,
     /(?<!not\s)(?<!not very\s)\boverwhelming\b/,
-    /\bworkload\b/,
+    /(?<!not heavy\s)(?<!not too heavy\s)(?<!manageable\s)(?<!light\s)\bworkload\b/,
   ];
   const positives = countSignalMatches(sources, positiveSignals);
   const risks = countSignalMatches(sources, riskSignals);
