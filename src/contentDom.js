@@ -330,6 +330,7 @@ export function removeAlbertRmpEnhancements(document = globalThis.document) {
   for (const element of document.querySelectorAll("[data-nyu-rmp-processed]")) {
     removeProcessedCellLayoutSafeguards(element);
     delete element.dataset.nyuRmpProcessed;
+    delete element.dataset.nyuRmpSelectButtonRating;
   }
 }
 
@@ -388,13 +389,14 @@ function findSelectButtonRowInstructorTargets(document) {
 
 function selectButtonRowInstructorTargets(row) {
   const rowCells = visibleRowCells(row);
+  const selectButtonCell = selectButtonCellForRow(rowCells);
   const cells = rowCells
     .filter((cell) => cell.dataset.nyuRmpRatingCell !== "true")
     .filter((cell) => !cell.querySelector?.(`.${ROOT_CLASS}, [data-nyu-rmp-rating-cell='true']`))
     .filter((cell) => !cell.querySelector?.("button, input, a, [role='button']") || !Array.from(cell.querySelectorAll("button, input, a, [role='button']")).some(isAlbertSelectButton));
   const labelledTargets = cells
     .filter((cell) => cellHeaderText(cell).split("\n").some(isInstructorLabel))
-    .map((cell) => ({ element: cell, names: instructorNamesFromSelectButtonRowCell(cell), preferContainer: true }))
+    .map((cell) => selectButtonRatingTarget(cell, selectButtonCell))
     .filter((target) => target.names.length > 0);
   if (labelledTargets.length > 0) {
     return labelledTargets;
@@ -402,7 +404,7 @@ function selectButtonRowInstructorTargets(row) {
 
   const inferredTargets = cells
     .filter(isLikelySelectButtonRowInstructorCell)
-    .map((cell) => ({ element: cell, names: instructorNamesFromSelectButtonRowCell(cell), preferContainer: true }))
+    .map((cell) => selectButtonRatingTarget(cell, selectButtonCell))
     .filter((target) => target.names.length > 0);
   if (inferredTargets.length > 0) {
     return inferredTargets;
@@ -412,8 +414,24 @@ function selectButtonRowInstructorTargets(row) {
     .filter((cell) => cell.dataset.nyuRmpRatingCell !== "true")
     .filter((cell) => !cell.querySelector?.(`.${ROOT_CLASS}, [data-nyu-rmp-rating-cell='true']`))
     .filter((cell) => cell.querySelector?.("button, input, a, [role='button']") && Array.from(cell.querySelectorAll("button, input, a, [role='button']")).some(isAlbertSelectButton))
-    .map((cell) => ({ element: cell, names: instructorNamesFromSelectButtonRowCell(cell), preferContainer: true }))
+    .map((cell) => selectButtonRatingTarget(cell, selectButtonCell))
     .filter((target) => target.names.length > 0);
+}
+
+function selectButtonCellForRow(rowCells) {
+  return rowCells.find((cell) => cell.querySelector?.("button, input, a, [role='button']")
+    && Array.from(cell.querySelectorAll("button, input, a, [role='button']")).some(isAlbertSelectButton)) ?? null;
+}
+
+function selectButtonRatingTarget(sourceCell, selectButtonCell) {
+  const mountCell = selectButtonCell ?? sourceCell;
+  return {
+    element: mountCell,
+    processedElements: sourceCell === mountCell ? [mountCell] : [mountCell, sourceCell],
+    names: instructorNamesFromSelectButtonRowCell(sourceCell),
+    preferContainer: true,
+    mountInSourceCell: true,
+  };
 }
 
 function isAlbertSelectButton(element) {
@@ -1119,15 +1137,18 @@ function preferMostSpecificTargets(targets) {
   });
 }
 
-function mountRatings({ element, names, processedElements = [], document, lookupProfessor }) {
+function mountRatings({ element, names, processedElements = [], document, lookupProfessor, mountInSourceCell = false }) {
   for (const processedElement of new Set([element, ...processedElements])) {
     processedElement.dataset.nyuRmpProcessed = "true";
     if (isTableCell(processedElement)) {
       applyProcessedCellLayoutSafeguards(processedElement);
     }
   }
+  if (mountInSourceCell) {
+    element.dataset.nyuRmpSelectButtonRating = "true";
+  }
   const isCellMount = isTableCell(element);
-  const mountElement = isCellMount ? ratingMountElementForCell(element, document) : element;
+  const mountElement = isCellMount ? ratingMountElementForCell(element, document, { mountInSourceCell }) : element;
   const existingContainer = isCellMount ? existingRatingContainerForCell(element, mountElement) : null;
   const container = existingContainer ?? document.createElement("div");
   if (!existingContainer) {
@@ -1176,13 +1197,25 @@ function findUpdatedProcessedInstructorTargets(document = globalThis.document) {
     .filter((element) => isTableCell(element) && isElementVisible(element))
     .flatMap((element) => {
       applyProcessedCellLayoutSafeguards(element);
+      const originalContent = element.querySelector(`:scope > .${ORIGINAL_CONTENT_CLASS}`);
+      const directContainer = element.querySelector(`:scope > .${ROOT_CLASS}.is-cell-mounted, :scope > .${ROOT_CLASS}`);
+      if (!originalContent && !directContainer && element.dataset.nyuRmpSelectButtonRating !== "true") {
+        return [];
+      }
       const mountElement = ratingMountElementForCell(element, document);
       const container = existingRatingContainerForCell(element, mountElement);
-      const originalContent = element.querySelector(`:scope > .${ORIGINAL_CONTENT_CLASS}`);
       if (!container || !originalContent) {
         if (container && isStaleRatingRoot(container)) {
           const staleNames = mountedProfessorNames(container);
           return staleNames.length > 0 ? [{ element, names: staleNames }] : [];
+        }
+        return [];
+      }
+
+      if (element.dataset.nyuRmpSelectButtonRating === "true") {
+        if (isStaleRatingRoot(container)) {
+          const staleNames = mountedProfessorNames(container);
+          return staleNames.length > 0 ? [{ element, names: staleNames, mountInSourceCell: true }] : [];
         }
         return [];
       }
@@ -1226,7 +1259,11 @@ function pruneStaleMountedProfessorCards(container, currentNameKeys) {
   }
 }
 
-function ratingMountElementForCell(element, document) {
+function ratingMountElementForCell(element, document, { mountInSourceCell = element.dataset.nyuRmpSelectButtonRating === "true" } = {}) {
+  if (mountInSourceCell) {
+    return element;
+  }
+
   const row = closestAlbertRow(element);
   if (!row) {
     return element;

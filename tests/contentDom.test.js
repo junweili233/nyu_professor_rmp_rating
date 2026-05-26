@@ -9613,12 +9613,15 @@ describe("Albert content DOM injection", () => {
 
     await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
 
-    const firstRowRatingCell = document.querySelector("#select-row-0 > [data-nyu-rmp-rating-cell='true']");
-    const secondRowRatingCell = document.querySelector("#select-row-1 > [data-nyu-rmp-rating-cell='true']");
-    expect(firstRowRatingCell).toBe(document.getElementById("select-row-0").lastElementChild);
-    expect(secondRowRatingCell).toBe(document.getElementById("select-row-1").lastElementChild);
-    expect(firstRowRatingCell.textContent).toContain("Chee Keng Yap SELECT_BUTTON row comment");
-    expect(secondRowRatingCell.textContent).toContain("Grace Hopper SELECT_BUTTON row comment");
+    const firstSelectCell = document.querySelector("#select-row-0 > td");
+    const secondSelectCell = document.querySelector("#select-row-1 > td");
+    expect(document.querySelector("#select-row-0 > [data-nyu-rmp-rating-cell='true']")).toBeNull();
+    expect(document.querySelector("#select-row-1 > [data-nyu-rmp-rating-cell='true']")).toBeNull();
+    expect(firstSelectCell.dataset.nyuRmpSelectButtonRating).toBe("true");
+    expect(secondSelectCell.dataset.nyuRmpSelectButtonRating).toBe("true");
+    expect(firstSelectCell.querySelector(":scope > .nyu-rmp-albert-original input")).not.toBeNull();
+    expect(firstSelectCell.querySelector(":scope > .nyu-rmp-rating-root").textContent).toContain("Chee Keng Yap SELECT_BUTTON row comment");
+    expect(secondSelectCell.querySelector(":scope > .nyu-rmp-rating-root").textContent).toContain("Grace Hopper SELECT_BUTTON row comment");
     expect(lookupProfessor).toHaveBeenCalledWith("Chee Keng Yap");
     expect(lookupProfessor).toHaveBeenCalledWith("Grace Hopper");
   });
@@ -9653,12 +9656,45 @@ describe("Albert content DOM injection", () => {
 
     await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
 
-    const rowCards = Array.from(document.querySelectorAll("[data-nyu-rmp-rating-cell='true'] .nyu-rmp-card"));
+    const rowCards = Array.from(document.querySelectorAll("td[data-nyu-rmp-select-button-rating='true'] > .nyu-rmp-rating-root .nyu-rmp-card"));
     expect(rowCards).toHaveLength(2);
     expect(rowCards.map((card) => card.dataset.nyuRmpRequestedName)).toEqual(["Chee Keng Yap", "Chee Keng Yap"]);
     expect(rowCards.every((card) => card.textContent.includes("Same professor should appear for every selectable class row."))).toBe(true);
+    expect(document.querySelector("[data-nyu-rmp-rating-cell='true']")).toBeNull();
     expect(lookupProfessor).toHaveBeenCalledTimes(1);
     expect(lookupProfessor).toHaveBeenCalledWith("Chee Keng Yap");
+  });
+
+  it("keeps SELECT_BUTTON ratings under the button after rescans", async () => {
+    document.body.innerHTML = `
+      <table>
+        <tbody>
+          <tr id="rescan-select-row">
+            <td><button name="SSR_CLSRCH_WRK_SELECT_BUTTON$0">Select</button></td>
+            <td>CSCI-UA 201 Computer Systems Organization</td>
+            <td>YAP, CHEE KENG</td>
+            <td>Open</td>
+          </tr>
+        </tbody>
+      </table>
+    `;
+    const lookupProfessor = vi.fn(async () => ({
+      name: "Chee Keng Yap",
+      rating: 2.1,
+      difficulty: 4.5,
+      ratingsCount: 92,
+      topComments: ["Rescan keeps this below the button."],
+      url: "https://www.ratemyprofessors.com/professor/419998",
+    }));
+
+    await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
+    await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
+
+    const selectCell = document.querySelector("#rescan-select-row > td");
+    expect(selectCell.dataset.nyuRmpSelectButtonRating).toBe("true");
+    expect(selectCell.querySelectorAll(":scope > .nyu-rmp-rating-root .nyu-rmp-card")).toHaveLength(1);
+    expect(document.querySelector("#rescan-select-row > [data-nyu-rmp-rating-cell='true']")).toBeNull();
+    expect(lookupProfessor).toHaveBeenCalledTimes(1);
   });
 
   it("shows a SELECT_BUTTON row rating when Albert puts the button and professor in one gridcell", async () => {
@@ -9692,9 +9728,9 @@ describe("Albert content DOM injection", () => {
     expect(scan.targets.map((target) => target.element.id || target.element.textContent.trim())).toEqual(["compact-cell"]);
     expect(compactCell.dataset.nyuRmpProcessed).toBe("true");
     expect(compactCell.querySelector(":scope > .nyu-rmp-albert-original button")).not.toBeNull();
-    expect(compactCell.querySelector("[data-nyu-rmp-rating-cell='true']")).toBeNull();
-    expect(document.querySelector("#compact-select-row > [data-nyu-rmp-rating-cell='true']")).not.toBeNull();
-    expect(document.querySelector("[data-nyu-rmp-rating-cell='true'] .nyu-rmp-card").textContent).toContain("Compact SELECT_BUTTON row comment.");
+    expect(compactCell.dataset.nyuRmpSelectButtonRating).toBe("true");
+    expect(document.querySelector("#compact-select-row > [data-nyu-rmp-rating-cell='true']")).toBeNull();
+    expect(compactCell.querySelector(":scope > .nyu-rmp-rating-root .nyu-rmp-card").textContent).toContain("Compact SELECT_BUTTON row comment.");
     expect(lookupProfessor).toHaveBeenCalledWith("Chee Keng Yap");
   });
 
