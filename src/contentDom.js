@@ -499,6 +499,11 @@ function findInstructorTargetsForElement(element) {
     return [{ element, names: ariaValueControlNames }];
   }
 
+  const metadataLabeledNames = instructorNamesFromMetadataLabeledElement(element);
+  if (metadataLabeledNames.length > 0) {
+    return [{ element, names: metadataLabeledNames }];
+  }
+
   const headeredCellNames = instructorNamesFromHeaderedCell(element);
   if (headeredCellNames.length > 0) {
     return [{ element, names: headeredCellNames }];
@@ -825,6 +830,76 @@ function isInstructorLabeledControlledElement(element, id) {
     element?.getAttribute?.("title"),
     element ? ariaLabelledByText(element) : "",
   ].some((value) => value && /\b(?:instructor|instr)\b/i.test(normalizeLabelText(value)));
+}
+
+function instructorNamesFromMetadataLabeledElement(element) {
+  if (!isInstructorMetadataLabeledElement(element)) {
+    return [];
+  }
+
+  return instructorNameSegments(element)
+    .flatMap(splitInstructorList)
+    .filter(isLikelyHeaderedInstructorName)
+    .map(normalizeInstructorName)
+    .filter(Boolean);
+}
+
+function isInstructorMetadataLabeledElement(element) {
+  if (isControlledSelectionElement(element) || isUnlabeledInteractiveMetadataElement(element)) {
+    return false;
+  }
+  return cellLabelAttributeText(element)
+    .split("\n")
+    .some(isInstructorLabel);
+}
+
+function isControlledSelectionElement(element) {
+  const role = element.getAttribute("role")?.trim().toLowerCase();
+  return ["option", "menuitem", "menuitemcheckbox", "menuitemradio"].includes(role)
+    || element.hasAttribute("aria-selected")
+    || element.hasAttribute("aria-checked")
+    || element.hasAttribute("aria-current")
+    || element.hasAttribute("aria-pressed")
+    || element.hasAttribute("selected")
+    || element.hasAttribute("data-selected")
+    || element.hasAttribute("data-active")
+    || element.hasAttribute("data-checked")
+    || element.hasAttribute("data-current")
+    || element.hasAttribute("data-focus")
+    || element.hasAttribute("data-focused")
+    || element.hasAttribute("data-highlighted")
+    || element.hasAttribute("data-pressed")
+    || element.hasAttribute("data-state")
+    || Boolean(element.closest("[role='listbox'], [role='menu'], [role='option']"));
+}
+
+function isUnlabeledInteractiveMetadataElement(element) {
+  if (!["A", "BUTTON"].includes(element.tagName) && !["button", "link"].includes(element.getAttribute("role")?.trim().toLowerCase())) {
+    return false;
+  }
+  return !hasExplicitInstructorLabelAttribute(element);
+}
+
+function hasExplicitInstructorLabelAttribute(element) {
+  return [
+    "data-label",
+    "data-header",
+    "data-heading",
+    "data-field-label",
+    "data-fld-label",
+    "data-column-label",
+    "data-col-label",
+    "data-instructor-label",
+    "data-instructor-text",
+    "data-faculty-label",
+    "data-faculty-text",
+    "data-professor-label",
+    "data-professor-text",
+    "aria-label",
+  ].some((attributeName) => {
+    const value = element.getAttribute(attributeName);
+    return value && isInstructorLabel(value);
+  });
 }
 
 function instructorNamesFromHeaderedCell(element) {

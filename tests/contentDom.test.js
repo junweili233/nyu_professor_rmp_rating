@@ -42,9 +42,9 @@ describe("Albert content DOM injection", () => {
     injectStyles(document);
 
     const style = document.getElementById("nyu-rmp-rating-styles");
-    expect(style.dataset.nyuRmpVersion).toBe("0.1.4");
-    expect(style.textContent).toContain("NYU Albert RMP Ratings v0.1.4");
-    expect(style.textContent).toContain("--nyu-rmp-extension-version: \"0.1.4\"");
+    expect(style.dataset.nyuRmpVersion).toBe("0.1.5");
+    expect(style.textContent).toContain("NYU Albert RMP Ratings v0.1.5");
+    expect(style.textContent).toContain("--nyu-rmp-extension-version: \"0.1.5\"");
   });
 
   it("includes narrow Albert cell layout safeguards for the radar and metrics", () => {
@@ -4738,8 +4738,8 @@ describe("Albert content DOM injection", () => {
 
     await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
 
-    expect(document.querySelector(".nyu-rmp-rating-root").dataset.nyuRmpVersion).toBe("0.1.4");
-    expect(document.querySelector(".nyu-rmp-card").dataset.nyuRmpVersion).toBe("0.1.4");
+    expect(document.querySelector(".nyu-rmp-rating-root").dataset.nyuRmpVersion).toBe("0.1.5");
+    expect(document.querySelector(".nyu-rmp-card").dataset.nyuRmpVersion).toBe("0.1.5");
   });
 
   it("ignores hidden Albert instructor templates during scans", async () => {
@@ -9707,8 +9707,8 @@ describe("Albert content DOM injection", () => {
             <td>YAP, CHEE KENG</td>
             <td>Open</td>
             <td data-nyu-rmp-rating-cell="true">
-              <div class="nyu-rmp-rating-root is-cell-mounted" data-nyu-rmp-version="0.1.4">
-                <article class="nyu-rmp-card rating-poor" data-nyu-rmp-requested-name="Chee Keng Yap" data-nyu-rmp-version="0.1.4">
+              <div class="nyu-rmp-rating-root is-cell-mounted" data-nyu-rmp-version="0.1.5">
+                <article class="nyu-rmp-card rating-poor" data-nyu-rmp-requested-name="Chee Keng Yap" data-nyu-rmp-version="0.1.5">
                   <div class="nyu-rmp-quick-grid">RMP 2.1 Recent comments Radar map</div>
                 </article>
               </div>
@@ -9792,7 +9792,7 @@ describe("Albert content DOM injection", () => {
     expect(instructorCell.dataset.nyuRmpProcessed).toBe("true");
     expect(originalContent).not.toBeNull();
     expect(originalContent.dataset.nyuRmpOriginal).toBe("true");
-    expect(originalContent.dataset.nyuRmpVersion).toBe("0.1.4");
+    expect(originalContent.dataset.nyuRmpVersion).toBe("0.1.5");
     expect(originalContent.textContent.trim()).toBe("YAP, CHEE KENG");
     expect(instructorCell.style.display).toBe("block");
     expect(instructorCell.style.alignItems).toBe("flex-start");
@@ -9888,7 +9888,7 @@ describe("Albert content DOM injection", () => {
       <div role="row">
         <div role="gridcell" id="grid-instructor" data-nyu-rmp-processed="true">
           <div class="nyu-rmp-albert-original" data-nyu-rmp-original="true">Ada Lovelace</div>
-          <div class="nyu-rmp-rating-root is-cell-mounted" data-nyu-rmp-version="0.1.4"></div>
+          <div class="nyu-rmp-rating-root is-cell-mounted" data-nyu-rmp-version="0.1.5"></div>
         </div>
       </div>
     `;
@@ -9946,8 +9946,8 @@ describe("Albert content DOM injection", () => {
       <div role="row">
         <div role="gridcell" id="grid-instructor" data-nyu-rmp-processed="true">
           <div class="nyu-rmp-albert-original" data-nyu-rmp-original="true">Ada Lovelace</div>
-          <div class="nyu-rmp-rating-root is-cell-mounted" data-nyu-rmp-version="0.1.4">
-            <article class="nyu-rmp-card rating-good" data-nyu-rmp-requested-name="Ada Lovelace" data-nyu-rmp-version="0.1.4">
+          <div class="nyu-rmp-rating-root is-cell-mounted" data-nyu-rmp-version="0.1.5">
+            <article class="nyu-rmp-card rating-good" data-nyu-rmp-requested-name="Ada Lovelace" data-nyu-rmp-version="0.1.5">
               <div class="nyu-rmp-card-head"><strong>Ada Lovelace</strong></div>
               <div class="nyu-rmp-department">Computer Science</div>
               <dl class="nyu-rmp-score-row nyu-rmp-metrics"></dl>
@@ -9975,7 +9975,7 @@ describe("Albert content DOM injection", () => {
     const ratingRoot = document.querySelector("[data-nyu-rmp-rating-cell='true'] > .nyu-rmp-rating-root");
     const card = ratingRoot.querySelector(".nyu-rmp-card");
     const quickGrid = card.querySelector(":scope > .nyu-rmp-quick-grid");
-    expect(ratingRoot.dataset.nyuRmpVersion).toBe("0.1.4");
+    expect(ratingRoot.dataset.nyuRmpVersion).toBe("0.1.5");
     expect(ratingRoot.querySelectorAll(".nyu-rmp-card")).toHaveLength(1);
     expect(quickGrid).not.toBeNull();
     expect(quickGrid.textContent.replace(/\s+/g, " ").trim()).toBe("RMP 4.7 Strong rating 38 ratings Recent comments Radar map");
@@ -10021,7 +10021,7 @@ describe("Albert content DOM injection", () => {
     document.body.innerHTML = `
       <div role="gridcell" id="grid-instructor" data-nyu-rmp-processed="true">
         <div class="nyu-rmp-albert-original" data-nyu-rmp-original="true">Ada Lovelace</div>
-        <div class="nyu-rmp-rating-root is-cell-mounted" data-nyu-rmp-version="0.1.4"></div>
+        <div class="nyu-rmp-rating-root is-cell-mounted" data-nyu-rmp-version="0.1.5"></div>
       </div>
     `;
 
@@ -10065,6 +10065,63 @@ describe("Albert content DOM injection", () => {
     expect(lookupProfessor).toHaveBeenCalledTimes(2);
     expect(lookupProfessor).toHaveBeenCalledWith("Ada Lovelace");
     expect(lookupProfessor).toHaveBeenCalledWith("Grace Hopper");
+  });
+
+  it("scans PeopleSoft shopping cart instructor fields labeled by metadata", async () => {
+    document.body.innerHTML = `
+      <section id="cart-row">
+        <div class="ps_box-grid-list">
+          <span id="DERIVED_REGFRM1_DESCR$0">Operating Systems CSCI-UA 202 001 (4)</span>
+          <span id="DERIVED_REGFRM1_INSTR$0" data-label="Instructor">Walfish</span>
+          <span id="DERIVED_REGFRM1_LOCATION$0">Washington Square</span>
+        </div>
+      </section>
+    `;
+    const lookupProfessor = vi.fn(async () => ({
+      name: "Walfish",
+      rating: 4.3,
+      difficulty: 3.2,
+      ratingsCount: 31,
+      topComments: ["Shopping cart metadata field should be rated."],
+      url: "https://www.ratemyprofessors.com/professor/419998",
+    }));
+
+    await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
+
+    const instructorField = document.getElementById("DERIVED_REGFRM1_INSTR$0");
+    const ratingRoot = document.querySelector("#cart-row .nyu-rmp-rating-root");
+    expect(instructorField.dataset.nyuRmpProcessed).toBe("true");
+    expect(ratingRoot).not.toBeNull();
+    expect(ratingRoot.previousElementSibling).toBe(instructorField);
+    expect(ratingRoot.querySelector(".nyu-rmp-card").dataset.nyuRmpRequestedName).toBe("Walfish");
+    expect(ratingRoot.textContent).toContain("Shopping cart metadata field should be rated.");
+    expect(lookupProfessor).toHaveBeenCalledWith("Walfish", { courseCode: "CSCI-UA 202" });
+  });
+
+  it("scans live Albert accordion instructor cells labeled by data-label", async () => {
+    document.body.innerHTML = `
+      <table>
+        <tbody>
+          <tr class="hidden-accordion-row">
+            <th id="tbl_Course_2_1268">Course (Units/Grading Basis)</th>
+            <th id="tbl_Instructor_2_1268">Instructor</th>
+            <th id="tbl_Location_2_1268">Instruction Mode and Location</th>
+          </tr>
+          <tr class="accordion-row accordion-row-open">
+            <td class="accordion-head" headers="tbl_Course_2_1268" data-label="Course(Units/Grading Basis)">Operating Systems CSCI-UA 202 001 (4)</td>
+            <td class="accordion-data" headers="tbl_Instructor_2_1268" data-label="Instructor">Walfish</td>
+            <td class="accordion-data" headers="tbl_Location_2_1268" data-label="Instruction Mode and Location">Washington Square</td>
+          </tr>
+        </tbody>
+      </table>
+    `;
+    const lookupProfessor = vi.fn(async () => null);
+
+    await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
+
+    expect(document.querySelector("[data-label='Instructor']").dataset.nyuRmpProcessed).toBe("true");
+    expect(document.querySelector("[data-nyu-rmp-rating-cell='true'] .nyu-rmp-card").dataset.nyuRmpRequestedName).toBe("Walfish");
+    expect(lookupProfessor).toHaveBeenCalledWith("Walfish", { courseCode: "CSCI-UA 202" });
   });
 
   it("scans a newly added co-instructor inside an already processed Albert gridcell", async () => {
