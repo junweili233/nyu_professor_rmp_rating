@@ -1101,6 +1101,9 @@ function renderRadarChart({ chartId, rating, difficulty, ratingsCount, wouldTake
   const axes = radarFit.axes;
   const metricCountLabel = `${radarFit.availableMetricCount} of ${radarFit.totalMetricCount} radar metrics`;
   const compactMetricCountLabel = `${radarFit.availableMetricCount}/${radarFit.totalMetricCount} metrics`;
+  const isLimitedData = radarFit.availableMetricCount < radarFit.totalMetricCount;
+  const limitedDataLabel = isLimitedData ? ", limited data" : "";
+  const limitedDataText = isLimitedData ? " <em>Limited data</em>" : "";
   const fitSummary = `professor fit ${radarFit.score} out of 100`;
   const points = axes
     .map(({ value }, index) => radarPoint(value, index, axes.length))
@@ -1125,7 +1128,7 @@ function renderRadarChart({ chartId, rating, difficulty, ratingsCount, wouldTake
         ${axes.map(({ label }, index) => radarAxisLabel(label, index, axes.length)).join("")}
       </svg>
       <div class="nyu-rmp-radar-summary">
-        <div class="nyu-rmp-radar-fit" aria-label="Professor fit score ${radarFit.score} out of 100, based on ${metricCountLabel}"><span>Fit</span> <strong>${radarFit.score}</strong> <em>${compactMetricCountLabel}</em></div>
+        <div class="nyu-rmp-radar-fit${isLimitedData ? " is-limited" : ""}" aria-label="Professor fit score ${radarFit.score} out of 100, based on ${metricCountLabel}${limitedDataLabel}"><span>Fit</span> <strong>${radarFit.score}</strong> <em>${compactMetricCountLabel}</em>${limitedDataText}</div>
         <ul class="nyu-rmp-radar-legend" aria-label="Radar chart values">
           <li>Rating ${formatScore(rating)}/5</li>
           <li>Ease ${formatScore(ease)}/5</li>
@@ -1478,6 +1481,10 @@ export function injectStyles(document = globalThis.document) {
 	      line-height: 1;
 	      padding: 6px 7px;
 	    }
+	    .nyu-rmp-radar-fit.is-limited {
+	      background: #2f2a1f;
+	      border-color: #5f4a1f;
+	    }
 	    .nyu-rmp-radar-fit span {
 	      color: #d8d1e6;
 	      font-size: 9.5px;
@@ -1499,6 +1506,11 @@ export function injectStyles(document = globalThis.document) {
 	      font-weight: 650;
 	      grid-column: 1 / -1;
 	      letter-spacing: 0;
+	    }
+	    .nyu-rmp-radar-fit.is-limited em:last-child {
+	      color: #f2d28a;
+	      font-weight: 750;
+	      text-transform: uppercase;
 	    }
 	    .nyu-rmp-radar-legend li {
 	      background: #f8fafc;

@@ -600,7 +600,9 @@ describe("Albert content DOM injection", () => {
     const radar = document.querySelector(".nyu-rmp-radar");
     const fit = document.querySelector(".nyu-rmp-radar-fit");
     const shapePoints = radar.querySelector(".nyu-rmp-radar-shape").getAttribute("points");
-    expect(fit.getAttribute("aria-label")).toBe("Professor fit score 81 out of 100, based on 2 of 4 radar metrics");
+    expect(fit.classList.contains("is-limited")).toBe(true);
+    expect(fit.getAttribute("aria-label")).toBe("Professor fit score 81 out of 100, based on 2 of 4 radar metrics, limited data");
+    expect(fit.textContent).toContain("Limited data");
     expect(fit.textContent).toContain("2/4 metrics");
     expect(radar.getAttribute("aria-label")).toBe("Professor radar: professor fit 81 out of 100, rating 4.5 out of 5, ease 3.0 out of 5, take again N/A, N/A ratings");
     expect(radar.querySelector("desc")?.textContent).toBe("Professor fit 81 out of 100. Rating 4.5 out of 5, ease 3.0 out of 5, take again N/A, N/A ratings.");
