@@ -586,8 +586,29 @@ describe("Albert content DOM injection", () => {
     await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
 
     const panel = document.querySelector(".nyu-rmp-comments-panel");
-    expect(panel.querySelector(".nyu-rmp-comments-heading").textContent).toBe("Most useful comments");
+    expect(panel.querySelector(".nyu-rmp-comments-heading").textContent).toBe("Most useful comments (1)");
     expect(panel.querySelector(".nyu-rmp-comments").getAttribute("aria-label")).toBe("Most useful RMP comments");
+  });
+
+  it("shows how many useful comments are displayed", async () => {
+    document.body.innerHTML = `<div>Instructor: Ada Lovelace</div>`;
+    const lookupProfessor = vi.fn(async (name) => ({
+      name,
+      department: "Computer Science",
+      rating: 4.7,
+      difficulty: 2.4,
+      ratingsCount: 38,
+      tags: [],
+      topComments: [
+        "Explains low-level systems clearly and gives practical labs.",
+        "Office hours make the systems projects easier to reason about.",
+      ],
+      url: "https://www.ratemyprofessors.com/professor/123",
+    }));
+
+    await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
+
+    expect(document.querySelector(".nyu-rmp-comments-heading").textContent).toBe("Most useful comments (2)");
   });
 
   it("shows an explicit empty state when RMP has no useful comments", async () => {

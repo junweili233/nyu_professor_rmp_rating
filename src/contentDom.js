@@ -1676,15 +1676,21 @@ function formatComment(comment, textId) {
 }
 
 function renderCommentsPanel(comments) {
+  const commentCount = countRenderedComments(comments);
+  const heading = commentCount > 0 ? `Most useful comments (${commentCount})` : "Most useful comments";
   const body = comments
     ? `<ul class="nyu-rmp-comments" aria-label="Most useful RMP comments">${comments}</ul>`
     : `<p class="nyu-rmp-comments-empty">No useful comments found on RMP.</p>`;
   return `
     <div class="nyu-rmp-comments-panel">
-      <div class="nyu-rmp-comments-heading">Most useful comments</div>
+      <div class="nyu-rmp-comments-heading">${heading}</div>
       ${body}
     </div>
   `;
+}
+
+function countRenderedComments(comments) {
+  return (String(comments ?? "").match(/<li\b/g) ?? []).length;
 }
 
 function commentTextId(card, index) {
