@@ -1390,7 +1390,9 @@ describe("Albert content DOM injection", () => {
 
     await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
 
+    const actions = document.querySelector(".nyu-rmp-actions");
     const searchLink = document.querySelector(".nyu-rmp-search");
+    expect(actions.getAttribute("aria-label")).toBe("RMP actions for Ada Lovelace");
     expect(searchLink.textContent).toBe("Search RMP");
     expect(searchLink.href).toBe("https://www.ratemyprofessors.com/search/professors/1381?q=Ada%20Lovelace");
     expect(searchLink.getAttribute("aria-label")).toBe("Search RMP for Ada Lovelace");
@@ -1455,7 +1457,9 @@ describe("Albert content DOM injection", () => {
 
     await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
 
+    const actions = document.querySelector(".nyu-rmp-actions");
     const searchLink = document.querySelector(".nyu-rmp-search");
+    expect(actions.getAttribute("aria-label")).toBe("RMP actions for Ada Lovelace");
     expect(searchLink.textContent).toBe("Search RMP");
     expect(searchLink.href).toBe("https://www.ratemyprofessors.com/search/professors/1381?q=Ada%20Lovelace");
     expect(searchLink.getAttribute("aria-label")).toBe("Search RMP for Ada Lovelace");
