@@ -1001,6 +1001,7 @@ function updateRatingCard(card, result, { requestedName = "Professor", lookupPro
   const ratingClass = ratingVerdict.className;
   const professorName = result.name || requestedName;
   const ratingsCount = nonNegativeCount(result.ratingsCount);
+  const ratingsCountLabel = formatOptionalRatingsCount(result.ratingsCount);
   const rmpUrl = safeRmpUrl(result.url);
   const department = String(result.department ?? "").trim();
   const updatedAt = formatUpdatedAt(result.cacheUpdatedAt);
@@ -1024,7 +1025,7 @@ function updateRatingCard(card, result, { requestedName = "Professor", lookupPro
   card.classList.add(`rating-${ratingClass}`);
   card.setAttribute(
     "aria-label",
-    `RMP rating for ${professorName}: ${formatRatingSummary(rating)}, ${formatRatingsCount(ratingsCount)}`,
+    `RMP rating for ${professorName}: ${formatRatingSummary(rating)}, ${ratingsCountLabel}`,
   );
   card.innerHTML = `
     <div class="nyu-rmp-card-head">
@@ -1042,7 +1043,7 @@ function updateRatingCard(card, result, { requestedName = "Professor", lookupPro
         <dt class="nyu-rmp-metric-label">Rating</dt>
         <dd class="nyu-rmp-score nyu-rmp-metric-value" aria-label="${escapeHtml(formatRatingLabel(rating))}">${formatScore(rating)}</dd>
         <dd class="nyu-rmp-verdict">${escapeHtml(ratingVerdict.label)}</dd>
-        <dd class="nyu-rmp-rating-count">${escapeHtml(formatRatingsCount(ratingsCount))}</dd>
+        <dd class="nyu-rmp-rating-count">${escapeHtml(ratingsCountLabel)}</dd>
       </div>
       <div class="nyu-rmp-metric">
         <dt class="nyu-rmp-metric-label">Difficulty</dt>
@@ -1561,6 +1562,15 @@ function formatRatingSummary(value) {
 
 function formatRatingsCount(value) {
   return `${value} ${value === 1 ? "rating" : "ratings"}`;
+}
+
+function formatOptionalRatingsCount(value) {
+  const count = isMissingValue(value) ? null : nonNegativeCount(value);
+  return count == null ? "N/A ratings" : formatRatingsCount(count);
+}
+
+function isMissingValue(value) {
+  return value == null || String(value).trim() === "";
 }
 
 function nonNegativeCount(value) {

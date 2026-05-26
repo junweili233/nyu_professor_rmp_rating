@@ -258,6 +258,27 @@ describe("Albert content DOM injection", () => {
     expect(card.getAttribute("aria-label")).toBe("RMP rating for Ada Lovelace: 4.7 out of 5, 38 ratings");
   });
 
+  it("does not present missing RMP rating counts as zero ratings", async () => {
+    document.body.innerHTML = `<div>Instructor: Ada Lovelace</div>`;
+    const lookupProfessor = vi.fn(async (name) => ({
+      name,
+      department: "Computer Science",
+      rating: 4.7,
+      difficulty: 2.4,
+      tags: [],
+      topComments: [],
+      url: "https://www.ratemyprofessors.com/professor/123",
+    }));
+
+    await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
+
+    const card = document.querySelector(".nyu-rmp-card");
+    expect(card.getAttribute("aria-label")).toBe("RMP rating for Ada Lovelace: 4.7 out of 5, N/A ratings");
+    expect(document.querySelector(".nyu-rmp-rating-count").textContent).toBe("N/A ratings");
+    expect(document.querySelector(".nyu-rmp-radar").getAttribute("aria-label")).toContain("N/A ratings");
+    expect(document.body.textContent).not.toContain("0 ratings");
+  });
+
   it("renders rating cards with a dedicated metrics grid and comment panel", async () => {
     document.body.innerHTML = `<div>Instructor: Ada Lovelace</div>`;
     const lookupProfessor = vi.fn(async (name) => ({
@@ -992,7 +1013,7 @@ describe("Albert content DOM injection", () => {
     expect(document.querySelector(".nyu-rmp-score").textContent).toBe("N/A");
     expect(document.querySelector(".nyu-rmp-score").getAttribute("aria-label")).toBe("RMP rating unavailable");
     expect(document.body.textContent).toContain("No rating");
-    expect(document.body.textContent).toContain("0 ratings");
+    expect(document.body.textContent).toContain("N/A ratings");
     expect(document.body.textContent).toContain("Difficulty N/A");
     expect(document.querySelector(".nyu-rmp-card a").href).toBe("https://www.ratemyprofessors.com/");
   });
