@@ -1,4 +1,5 @@
 import { pathToFileURL } from "node:url";
+import { homedir } from "node:os";
 import { resolve } from "node:path";
 import { verifyChromeUserDataExtension } from "./verify-chrome-profile-extension.js";
 import { verifyExtensionPackage } from "./verify-extension-package.js";
@@ -9,11 +10,12 @@ export async function verifyLiveReadiness({
   distDir = "dist",
   userDataDir,
   extensionPath = distDir,
+  expectedAccountName,
 } = {}) {
   await verifyExtensionPackage(distDir);
 
   try {
-    const chromeProfile = await verifyChromeUserDataExtension({ userDataDir, extensionPath });
+    const chromeProfile = await verifyChromeUserDataExtension({ userDataDir, extensionPath, expectedAccountName });
     return {
       packageReady: true,
       chromeProfileReady: true,
@@ -21,21 +23,34 @@ export async function verifyLiveReadiness({
       chromeProfile,
     };
   } catch (error) {
-    const expectedPath = resolve(extensionPath);
+    const expectedPath = redactPath(resolve(extensionPath));
     throw new Error([
       error.message,
       "Load the generated dist folder as an unpacked Chrome extension in the Chrome profile used for Albert.",
       "Use the same Chrome profile where Albert is already logged in, then reload the Albert tab.",
       `Expected extension folder: ${expectedPath}`,
-      ...(userDataDir ? [`Scanned Chrome user-data folder: ${resolve(userDataDir)}`] : []),
+      ...(expectedAccountName ? [`Expected Chrome account: ${redactAccountName(expectedAccountName)}`] : []),
+      ...(userDataDir ? [`Scanned Chrome user-data folder: ${redactPath(resolve(userDataDir))}`] : []),
       "Then refresh Albert and run this command again before live UI verification.",
     ].join("\n"));
   }
 }
 
 export function liveReadinessArgs(argv = process.argv.slice(2)) {
-  const [distDir = "dist", userDataDir, extensionPath = distDir] = argv;
-  return { distDir, userDataDir, extensionPath };
+  const [distDir = "dist", userDataDir, extensionPath = distDir, expectedAccountName] = argv;
+  return { distDir, userDataDir, extensionPath, expectedAccountName };
+}
+
+function redactAccountName(value) {
+  return String(value ?? "").trim().replace(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi, "<account>");
+}
+
+function redactPath(path) {
+  const value = String(path ?? "");
+  const home = homedir();
+  return home && value.toLowerCase().startsWith(home.toLowerCase())
+    ? `%USERPROFILE%${value.slice(home.length)}`
+    : value;
 }
 
 if (import.meta.url === pathToFileURL(process.argv[1]).href) {

@@ -10,11 +10,13 @@ describe("live Albert readiness verifier", () => {
       distDir: "dist",
       userDataDir: undefined,
       extensionPath: "dist",
+      expectedAccountName: undefined,
     });
-    expect(liveReadinessArgs(["build-output", "C:\\Chrome\\User Data", "D:\\NYU-Professor-RMP-Rating\\dist"])).toEqual({
+    expect(liveReadinessArgs(["build-output", "C:\\Chrome\\User Data", "D:\\NYU-Professor-RMP-Rating\\dist", "student-account@nyu.example"])).toEqual({
       distDir: "build-output",
       userDataDir: "C:\\Chrome\\User Data",
       extensionPath: "D:\\NYU-Professor-RMP-Rating\\dist",
+      expectedAccountName: "student-account@nyu.example",
     });
   });
 
@@ -51,24 +53,52 @@ describe("live Albert readiness verifier", () => {
       distDir: workspace.dist,
       userDataDir: workspace.userData,
       extensionPath: workspace.dist,
-    })).rejects.toThrow(`Expected extension folder: ${resolve(workspace.dist)}`);
+    })).rejects.toThrow("Expected extension folder: %USERPROFILE%");
     await expect(verifyLiveReadiness({
       distDir: workspace.dist,
       userDataDir: workspace.userData,
       extensionPath: workspace.dist,
-    })).rejects.toThrow(`Scanned Chrome user-data folder: ${resolve(workspace.userData)}`);
+    })).rejects.toThrow("Scanned Chrome user-data folder: %USERPROFILE%");
+
+    await rm(workspace.root, { recursive: true, force: true });
+  });
+
+  it("adds the expected Chrome account to live readiness failure output", async () => {
+    const workspace = await createWorkspace({ installedFromDist: false, profileInfo: { name: "nyu.edu", user_name: "student-account@nyu.example" } });
+
+    await expect(verifyLiveReadiness({
+      distDir: workspace.dist,
+      userDataDir: workspace.userData,
+      extensionPath: workspace.dist,
+      expectedAccountName: "student-account@nyu.example",
+    })).rejects.toThrow("Expected Chrome account: <account>");
+    await expect(verifyLiveReadiness({
+      distDir: workspace.dist,
+      userDataDir: workspace.userData,
+      extensionPath: workspace.dist,
+      expectedAccountName: "student-account@nyu.example",
+    })).rejects.toThrow("for Chrome account <account>");
 
     await rm(workspace.root, { recursive: true, force: true });
   });
 });
 
-async function createWorkspace({ installedFromDist }) {
+async function createWorkspace({ installedFromDist, profileInfo = null }) {
   const root = await mkdtemp(join(tmpdir(), "nyu-rmp-live-ready-"));
   const dist = join(root, "dist");
   const userData = join(root, "User Data");
   const profile = join(userData, "Default");
   await mkdir(dist, { recursive: true });
   await mkdir(profile, { recursive: true });
+  if (profileInfo) {
+    await writeFile(join(userData, "Local State"), JSON.stringify({
+      profile: {
+        info_cache: {
+          Default: profileInfo,
+        },
+      },
+    }), "utf8");
+  }
   await writeFile(join(dist, "manifest.json"), JSON.stringify({
     manifest_version: 3,
     name: "NYU Albert RMP Ratings",

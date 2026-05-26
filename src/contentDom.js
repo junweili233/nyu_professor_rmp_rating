@@ -1375,6 +1375,13 @@ function updateRatingCard(card, result, { requestedName = "Professor", lookupPro
   const recommendationEvidence = renderRecommendationEvidence({ rating, difficulty, ratingsCount: result.ratingsCount, wouldTakeAgain, commentSignal, courseCode, courseMatchedCommentCount });
   const collapsedCardLabel = formatCardSummaryLabel({ professorName, department, rating, ratingVerdict: ratingVerdict.label, recommendation, radarFit, ratingsCountLabel, difficulty, ease, wouldTakeAgain, commentSignal, commentCount, courseMatchedCommentCount, courseCode, tagNames, updatedAt, matchNote, cacheNotice });
   const expandedCardLabel = formatCardSummaryLabel({ professorName, department, rating, ratingVerdict: ratingVerdict.label, recommendation, radarFit, ratingsCountLabel, difficulty, ease, wouldTakeAgain, commentSignal, commentCount: usefulTopComments.length, courseMatchedCommentCount, courseCode, tagNames, updatedAt, matchNote, cacheNotice });
+  const cardId = card.dataset.nyuRmpCardId || "0";
+  const commentsPanelId = `nyu-rmp-comments-panel-${cardId}`;
+  const radarPanelId = `nyu-rmp-radar-panel-${cardId}`;
+  const hiddenCommentsPanel = addPanelAttributes(commentsPanel, commentsPanelId);
+  const detailActions = [`
+    <button class="nyu-rmp-refresh" type="button" aria-label="${escapeHtml(refreshLabel(requestedName))}">Refresh</button>
+  `, profileAction, searchAction].filter(Boolean).join("");
   card.dataset.nyuRmpCollapsedLabel = collapsedCardLabel;
   card.dataset.nyuRmpExpandedLabel = expandedCardLabel;
 
@@ -1384,48 +1391,63 @@ function updateRatingCard(card, result, { requestedName = "Professor", lookupPro
     collapsedCardLabel,
   );
   card.innerHTML = `
-    <div class="nyu-rmp-card-head">
-      <strong>${escapeHtml(professorName)}</strong>
-      <div class="nyu-rmp-actions" aria-label="${escapeHtml(`RMP actions for ${professorName}`)}">
-        <button class="nyu-rmp-refresh" type="button" aria-label="${escapeHtml(refreshLabel(requestedName))}">Refresh</button>
-        ${profileAction}
-        ${searchAction}
-      </div>
+    <div class="nyu-rmp-score-strip" aria-label="${escapeHtml(`RMP score for ${professorName}: ${formatRatingLabel(rating)}`)}">
+      <span>RMP</span>
+      <strong class="nyu-rmp-score-compact" aria-label="${escapeHtml(formatRatingLabel(rating))}">${formatScore(rating)}</strong>
+      <em>${escapeHtml(ratingVerdict.label)}</em>
+      <small>${escapeHtml(ratingsCountLabel)}</small>
     </div>
-    ${department ? `<div class="nyu-rmp-department">${escapeHtml(department)}</div>` : ""}
-    ${courseContext}
-    ${matchNote ? `<div class="nyu-rmp-match-note">${escapeHtml(matchNote)}</div>` : ""}
-    ${updatedAt ? `<div class="nyu-rmp-updated">${escapeHtml(updatedAt)}</div>` : ""}
-    ${cacheNotice ? `<div class="nyu-rmp-cache-note" role="note">${escapeHtml(cacheNotice)}.</div>` : ""}
-    <div class="nyu-rmp-recommendation is-${escapeHtml(recommendation.className)}" role="note" aria-label="${escapeHtml(`RMP pick recommendation: ${recommendation.label}`)}">
-      <strong>${escapeHtml(recommendation.label)}</strong>
-      <span>${escapeHtml(recommendation.detail)}</span>
+    <div class="nyu-rmp-feature-actions" aria-label="${escapeHtml(`Optional RMP details for ${professorName}`)}">
+      <button class="nyu-rmp-feature-toggle" type="button" aria-expanded="false" aria-controls="${escapeHtml(commentsPanelId)}">Recent comments</button>
+      <button class="nyu-rmp-feature-toggle" type="button" aria-expanded="false" aria-controls="${escapeHtml(radarPanelId)}">Radar map</button>
     </div>
-    ${recommendationEvidence}
-    <dl class="nyu-rmp-score-row nyu-rmp-metrics" aria-label="${escapeHtml(`RMP metrics for ${professorName}`)}">
-      <div class="nyu-rmp-metric nyu-rmp-rating-metric">
-        <dt class="nyu-rmp-metric-label">Rating</dt>
-        <dd class="nyu-rmp-score nyu-rmp-metric-value" aria-label="${escapeHtml(formatRatingLabel(rating))}">${formatScore(rating)}</dd>
-        <dd class="nyu-rmp-verdict">${escapeHtml(ratingVerdict.label)}</dd>
-        <dd class="nyu-rmp-rating-count">${escapeHtml(ratingsCountLabel)}</dd>
+    ${hiddenCommentsPanel}
+    <div class="nyu-rmp-radar-panel" id="${escapeHtml(radarPanelId)}" hidden>
+      <div class="nyu-rmp-detail-meta" aria-label="${escapeHtml(`RMP details for ${professorName}`)}">
+        <strong>${escapeHtml(professorName)}</strong>
+        ${department ? `<span>${escapeHtml(department)}</span>` : ""}
+        ${courseContext}
+        ${matchNote ? `<div class="nyu-rmp-match-note">${escapeHtml(matchNote)}</div>` : ""}
+        ${updatedAt ? `<div class="nyu-rmp-updated">${escapeHtml(updatedAt)}</div>` : ""}
+        ${cacheNotice ? `<div class="nyu-rmp-cache-note" role="note">${escapeHtml(cacheNotice)}.</div>` : ""}
+        <div class="nyu-rmp-actions" aria-label="${escapeHtml(`RMP actions for ${professorName}`)}">
+          ${detailActions}
+        </div>
       </div>
-      <div class="nyu-rmp-metric">
-        <dt class="nyu-rmp-metric-label">Difficulty</dt>
-        <dd class="nyu-rmp-metric-value">Difficulty ${formatScore(difficulty)}</dd>
-        <dd class="nyu-rmp-metric-secondary">Ease ${formatScore(ease)}/5</dd>
+      <div class="nyu-rmp-recommendation is-${escapeHtml(recommendation.className)}" role="note" aria-label="${escapeHtml(`RMP pick recommendation: ${recommendation.label}`)}">
+        <strong>${escapeHtml(recommendation.label)}</strong>
+        <span>${escapeHtml(recommendation.detail)}</span>
       </div>
-      <div class="nyu-rmp-metric">
-        <dt class="nyu-rmp-metric-label">Take again</dt>
-        <dd class="nyu-rmp-metric-value">${wouldTakeAgain == null ? "Take again N/A" : `${Math.round(wouldTakeAgain)}% take again`}</dd>
-      </div>
-    </dl>
-    ${radar}
-    ${tags ? `<div class="nyu-rmp-tags" role="list" aria-label="${escapeHtml(tagListLabel)}">${tags}</div>` : ""}
-    ${commentsPanel}
+      ${recommendationEvidence}
+      <dl class="nyu-rmp-score-row nyu-rmp-metrics" aria-label="${escapeHtml(`RMP metrics for ${professorName}`)}">
+        <div class="nyu-rmp-metric nyu-rmp-rating-metric">
+          <dt class="nyu-rmp-metric-label">Rating</dt>
+          <dd class="nyu-rmp-score nyu-rmp-metric-value" aria-label="${escapeHtml(formatRatingLabel(rating))}">${formatScore(rating)}</dd>
+          <dd class="nyu-rmp-verdict">${escapeHtml(ratingVerdict.label)}</dd>
+          <dd class="nyu-rmp-rating-count">${escapeHtml(ratingsCountLabel)}</dd>
+        </div>
+        <div class="nyu-rmp-metric">
+          <dt class="nyu-rmp-metric-label">Difficulty</dt>
+          <dd class="nyu-rmp-metric-value">Difficulty ${formatScore(difficulty)}</dd>
+          <dd class="nyu-rmp-metric-secondary">Ease ${formatScore(ease)}/5</dd>
+        </div>
+        <div class="nyu-rmp-metric">
+          <dt class="nyu-rmp-metric-label">Take again</dt>
+          <dd class="nyu-rmp-metric-value">${wouldTakeAgain == null ? "Take again N/A" : `${Math.round(wouldTakeAgain)}% take again`}</dd>
+        </div>
+      </dl>
+      ${radar}
+      ${tags ? `<div class="nyu-rmp-tags" role="list" aria-label="${escapeHtml(tagListLabel)}">${tags}</div>` : ""}
+    </div>
   `;
   wireRefreshAction(card, requestedName, lookupProfessor);
+  wireFeaturePanelActions(card);
   wireCommentToggleActions(card);
   wireCommentsExpandActions(card);
+}
+
+function addPanelAttributes(markup, id) {
+  return String(markup ?? "").replace(/<div class="([^"]+)"/, `<div class="$1" id="${escapeHtml(id)}" hidden`);
 }
 
 function renderCourseContext(courseCode) {
@@ -2315,6 +2337,35 @@ export function injectStyles(document = globalThis.document) {
 	    .nyu-rmp-actions a:hover {
 	      text-decoration: underline;
 	    }
+	    .nyu-rmp-feature-actions {
+	      display: grid;
+	      gap: 6px;
+	      grid-template-columns: repeat(2, minmax(0, 1fr));
+	      margin: 6px 0 2px;
+	    }
+	    .nyu-rmp-feature-toggle {
+	      background: #ffffff;
+	      border: 1px solid #d6deea;
+	      border-radius: 7px;
+	      color: #344054;
+	      cursor: pointer;
+	      font-family: inherit;
+	      font-size: 10.5px;
+	      font-weight: 750;
+	      letter-spacing: 0;
+	      line-height: 1;
+	      padding: 7px 8px;
+	      transition: background 120ms ease, border-color 120ms ease, color 120ms ease, transform 120ms ease;
+	    }
+	    .nyu-rmp-feature-toggle:hover,
+	    .nyu-rmp-feature-toggle[aria-expanded="true"] {
+	      background: #f6f1fa;
+	      border-color: #cdb8dc;
+	      color: #57068c;
+	    }
+	    .nyu-rmp-feature-toggle:active {
+	      transform: translateY(1px);
+	    }
 	    .nyu-rmp-refresh {
 	      background: transparent;
 	      border: 0;
@@ -2335,9 +2386,68 @@ export function injectStyles(document = globalThis.document) {
 	      letter-spacing: 0;
 	      line-height: 1;
 	    }
+	    .nyu-rmp-score-compact {
+	      font-size: 22px;
+	      font-weight: 800;
+	      letter-spacing: 0;
+	      line-height: 1;
+	    }
+	    .nyu-rmp-score-strip {
+	      align-items: center;
+	      background: #f8fafc;
+	      border: 1px solid #e3e8ef;
+	      border-radius: 7px;
+	      display: grid;
+	      gap: 4px 8px;
+	      grid-template-columns: auto auto minmax(0, 1fr);
+	      margin: 7px 0;
+	      min-width: 0;
+	      padding: 8px 9px;
+	    }
+	    .nyu-rmp-score-strip span,
+	    .nyu-rmp-score-strip small {
+	      color: #667085;
+	      font-size: 9.5px;
+	      font-weight: 750;
+	      letter-spacing: 0;
+	      line-height: 1.1;
+	      text-transform: uppercase;
+	    }
+	    .nyu-rmp-score-strip em {
+	      border: 1px solid #d0d5dd;
+	      border-radius: 999px;
+	      color: #344054;
+	      font-size: 10.5px;
+	      font-style: normal;
+	      font-weight: 650;
+	      justify-self: start;
+	      line-height: 1.15;
+	      padding: 2px 7px;
+	    }
+	    .nyu-rmp-score-strip small {
+	      grid-column: 1 / -1;
+	    }
+	    .rating-good .nyu-rmp-score-strip em {
+	      background: #edf7f1;
+	      border-color: #b8dcc8;
+	      color: #1a6a3e;
+	    }
+	    .rating-mixed .nyu-rmp-score-strip em {
+	      background: #fef7ed;
+	      border-color: #e8cf9a;
+	      color: #8a5a14;
+	    }
+	    .rating-weak .nyu-rmp-score-strip em {
+	      background: #fef4f4;
+	      border-color: #e8b8b8;
+	      color: #a82020;
+	    }
 	    .rating-good .nyu-rmp-score { color: #1a7a4c; }
 	    .rating-mixed .nyu-rmp-score { color: #a0620a; }
 	    .rating-weak .nyu-rmp-score { color: #b42318; }
+	    .rating-good .nyu-rmp-score-compact { color: #1a7a4c; }
+	    .rating-mixed .nyu-rmp-score-compact { color: #a0620a; }
+	    .rating-weak .nyu-rmp-score-compact { color: #b42318; }
 	    .is-error .nyu-rmp-score,
 	    .is-loading .nyu-rmp-score,
 	    .is-empty .nyu-rmp-score { color: #1f1a2e; }
@@ -2484,6 +2594,32 @@ export function injectStyles(document = globalThis.document) {
 	      gap: 7px;
 	      grid-template-columns: minmax(104px, 128px) minmax(0, 1fr);
 	      margin: 5px 0 8px;
+	    }
+	    .nyu-rmp-radar-panel {
+	      margin-top: 7px;
+	    }
+	    .nyu-rmp-detail-meta {
+	      border-top: 1px solid #e3e8ef;
+	      color: #526173;
+	      display: grid;
+	      gap: 5px;
+	      margin-bottom: 8px;
+	      min-width: 0;
+	      padding-top: 8px;
+	    }
+	    .nyu-rmp-detail-meta > strong {
+	      color: #253044;
+	    }
+	    .nyu-rmp-detail-meta > span {
+	      color: #5f6b7a;
+	      font-size: 10.5px;
+	      font-weight: 650;
+	      text-transform: uppercase;
+	    }
+	    .nyu-rmp-comments-panel[hidden],
+	    .nyu-rmp-radar-panel[hidden],
+	    .nyu-rmp-radar-wrap[hidden] {
+	      display: none !important;
 	    }
 	    .nyu-rmp-radar {
 	      display: block;
@@ -3241,6 +3377,25 @@ function wireCommentToggleActions(card) {
       commentText.textContent = isExpanded ? button.dataset.previewText : button.dataset.fullText;
     });
   }
+}
+
+function wireFeaturePanelActions(card) {
+  for (const button of card.querySelectorAll(".nyu-rmp-feature-toggle")) {
+    button.addEventListener("click", () => {
+      const panelId = button.getAttribute("aria-controls");
+      const panel = panelId ? card.querySelector(`#${cssEscape(panelId)}`) : null;
+      if (!panel) {
+        return;
+      }
+      const nextExpanded = button.getAttribute("aria-expanded") !== "true";
+      button.setAttribute("aria-expanded", String(nextExpanded));
+      panel.hidden = !nextExpanded;
+    });
+  }
+}
+
+function cssEscape(value) {
+  return String(value).replace(/[^a-zA-Z0-9_-]/g, "\\$&");
 }
 
 function wireCommentsExpandActions(card) {

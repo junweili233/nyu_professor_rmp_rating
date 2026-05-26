@@ -858,6 +858,72 @@ describe("Albert content DOM injection", () => {
     expect(tags.textContent.replace(/\s+/g, " ").trim()).toBe("Clear grading Respected");
   });
 
+  it("shows only the RMP score and feature buttons before optional panels are opened", async () => {
+    document.body.innerHTML = `<div>Instructor: Ada Lovelace</div>`;
+    const lookupProfessor = vi.fn(async (name) => ({
+      name,
+      department: "Computer Science",
+      rating: 4.7,
+      difficulty: 2.4,
+      ratingsCount: 38,
+      wouldTakeAgain: 92,
+      tags: ["Helpful"],
+      topComments: ["Explains low-level systems clearly."],
+      url: "https://www.ratemyprofessors.com/professor/123",
+    }));
+
+    await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
+
+    const card = document.querySelector(".nyu-rmp-card");
+    const scoreStrip = card.querySelector(".nyu-rmp-score-strip");
+    const toggles = Array.from(card.querySelectorAll(".nyu-rmp-feature-toggle"));
+    const visibleChildClasses = Array.from(card.children)
+      .filter((node) => !node.hidden)
+      .map((node) => node.className);
+    expect(scoreStrip.textContent.replace(/\s+/g, " ").trim()).toBe("RMP 4.7 Strong rating 38 ratings");
+    expect(toggles.map((button) => button.textContent)).toEqual(["Recent comments", "Radar map"]);
+    expect(toggles.map((button) => button.getAttribute("aria-expanded"))).toEqual(["false", "false"]);
+    expect(visibleChildClasses).toEqual(["nyu-rmp-score-strip", "nyu-rmp-feature-actions"]);
+    expect(card.querySelector(":scope > .nyu-rmp-card-head")).toBeNull();
+    expect(card.querySelector(":scope > .nyu-rmp-department")).toBeNull();
+    expect(card.querySelector(":scope > .nyu-rmp-course-context")).toBeNull();
+    expect(card.querySelector(":scope > .nyu-rmp-actions")).toBeNull();
+    expect(card.querySelector(".nyu-rmp-comments-panel").hidden).toBe(true);
+    expect(card.querySelector(".nyu-rmp-radar-panel").hidden).toBe(true);
+    expect(card.querySelector(".nyu-rmp-recommendation").closest(".nyu-rmp-radar-panel").hidden).toBe(true);
+    expect(card.querySelector(".nyu-rmp-tags").closest(".nyu-rmp-radar-panel").hidden).toBe(true);
+  });
+
+  it("reveals recent comments and radar map only when their buttons are clicked", async () => {
+    document.body.innerHTML = `<div>Instructor: Ada Lovelace</div>`;
+    const lookupProfessor = vi.fn(async (name) => ({
+      name,
+      department: "Computer Science",
+      rating: 4.7,
+      difficulty: 2.4,
+      ratingsCount: 38,
+      wouldTakeAgain: 92,
+      tags: ["Helpful"],
+      topComments: ["Explains low-level systems clearly."],
+      url: "https://www.ratemyprofessors.com/professor/123",
+    }));
+
+    await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
+
+    const [commentsButton, radarButton] = document.querySelectorAll(".nyu-rmp-feature-toggle");
+    const commentsPanel = document.querySelector(".nyu-rmp-comments-panel");
+    const radarPanel = document.querySelector(".nyu-rmp-radar-panel");
+    commentsButton.click();
+    expect(commentsButton.getAttribute("aria-expanded")).toBe("true");
+    expect(commentsPanel.hidden).toBe(false);
+    expect(radarPanel.hidden).toBe(true);
+
+    radarButton.click();
+    expect(radarButton.getAttribute("aria-expanded")).toBe("true");
+    expect(radarPanel.hidden).toBe(false);
+    expect(commentsPanel.hidden).toBe(false);
+  });
+
   it("labels useful comment lists with the exact rendered comment count", async () => {
     document.body.innerHTML = `<div>Instructor: Ada Lovelace</div>`;
     const lookupProfessor = vi.fn(async (name) => ({
@@ -4329,7 +4395,7 @@ describe("Albert content DOM injection", () => {
 
     await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
 
-    expect(document.querySelector(".nyu-rmp-card strong").textContent).toBe("Chee Yap");
+    expect(document.querySelector(".nyu-rmp-detail-meta > strong").textContent).toBe("Chee Yap");
     expect(document.querySelector(".nyu-rmp-match-note").textContent).toBe(
       "Fuzzy RMP match - Albert: Chee Keng Yap",
     );

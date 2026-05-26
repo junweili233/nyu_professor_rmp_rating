@@ -24,9 +24,9 @@ describe("README", () => {
     expect(readme).toContain("counts every CS201-matched useful comment");
     expect(readme).toContain("samples 20 recent RMP ratings");
     expect(readme).toContain("Live Albert Verification Troubleshooting");
-    expect(readme).toContain('node scripts/verify-live-readiness.js dist "%LOCALAPPDATA%\\Google\\Chrome\\User Data" "D:\\NYU-Professor-RMP-Rating\\dist"');
+    expect(readme).toContain('node scripts/verify-live-readiness.js dist "%LOCALAPPDATA%\\Google\\Chrome\\User Data" "%CD%\\dist" "student-account@nyu.example"');
     expect(readme).toContain("not installed from `dist`");
-    expect(readme).toContain("D:\\NYU-Professor-RMP-Rating\\dist");
+    expect(readme).toContain("your local repository `dist` folder");
     expect(readme).toContain("Do not click enrollment, cart, or class-selection controls");
   });
 });

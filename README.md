@@ -55,7 +55,7 @@ npm run verify:live
 To check a specific Chrome user-data folder, pass it after `dist`:
 
 ```powershell
-node scripts/verify-live-readiness.js dist "%LOCALAPPDATA%\Google\Chrome\User Data" "D:\NYU-Professor-RMP-Rating\dist"
+node scripts/verify-live-readiness.js dist "%LOCALAPPDATA%\Google\Chrome\User Data" "%CD%\dist" "student-account@nyu.example"
 ```
 
 ## Live Albert Verification Troubleshooting
@@ -67,7 +67,7 @@ If `npm run verify:live` reports that NYU Albert RMP Ratings is not installed fr
 3. Remove or disable older copies of NYU Albert RMP Ratings.
 4. Enable Developer mode.
 5. Choose Load unpacked and select this repository's `dist` folder.
-6. Confirm the extension details show the path ending in `D:\NYU-Professor-RMP-Rating\dist`.
+6. Confirm the extension details show the path ending in your local repository `dist` folder.
 7. Run `npm run verify:chrome-profile`.
 8. Run `npm run verify:live`.
 9. Refresh Albert after both verifiers pass. Do not click enrollment, cart, or class-selection controls while testing the overlay.

@@ -1,4 +1,5 @@
 import { access, readFile, readdir } from "node:fs/promises";
+import { homedir } from "node:os";
 import { basename, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 
@@ -32,7 +33,7 @@ export async function verifyChromeProfileExtension({
 
   const installedPath = normalizePath(installed.path);
   if (installedPath !== expectedPath) {
-    throw new Error(`${EXTENSION_NAME} is installed from a different path: ${installed.path}; expected ${resolve(extensionPath)}`);
+    throw new Error(`${EXTENSION_NAME} is installed from a different path: ${redactPath(installed.path)}; expected ${redactPath(resolve(extensionPath))}`);
   }
 
   if (!installed.enabled) {
@@ -53,16 +54,29 @@ export async function verifyChromeProfileExtension({
 export async function verifyChromeUserDataExtension({
   userDataDir = defaultUserDataDir(),
   extensionPath = "dist",
+  expectedAccountName = "",
 } = {}) {
   const resolvedUserDataDir = resolve(userDataDir);
   const resolvedExtensionPath = resolve(extensionPath);
+  const normalizedExpectedAccount = normalizeAccountName(expectedAccountName);
   const profileLabels = await chromeProfileLabels(userDataDir);
-  const profiles = await chromeProfileDirs(userDataDir);
+  const allProfiles = await chromeProfileDirs(userDataDir);
+  const profiles = normalizedExpectedAccount
+    ? allProfiles.filter((profileDir) => chromeProfileMatchesAccount(basename(profileDir), profileLabels, normalizedExpectedAccount))
+    : allProfiles;
   const scanned = [];
   const misses = [];
+  if (normalizedExpectedAccount && profiles.length === 0) {
+    const allScanned = allProfiles
+      .map((profileDir) => redactedChromeProfileLabel(basename(profileDir), profileLabels))
+      .join(", ") || "none";
+    throw new Error(
+      `Expected Chrome profile account ${redactAccountName(expectedAccountName)} was not found in scanned Chrome profiles: ${allScanned}\nScanned Chrome user-data folder: ${redactPath(resolvedUserDataDir)}`,
+    );
+  }
   for (const profileDir of profiles) {
     const profileName = basename(profileDir);
-    const profileLabel = chromeProfileLabel(profileName, profileLabels);
+    const profileLabel = redactedChromeProfileLabel(profileName, profileLabels);
     scanned.push(profileLabel);
     try {
       const result = await verifyChromeProfileExtension({ profileDir, extensionPath });
@@ -82,8 +96,11 @@ export async function verifyChromeUserDataExtension({
   }
 
   const details = misses.length > 0 ? `\nProfile details: ${misses.join("; ")}` : "";
+  const expectedAccountPrefix = normalizedExpectedAccount
+    ? ` for Chrome account ${redactAccountName(expectedAccountName)}`
+    : "";
   throw new Error(
-    `${EXTENSION_NAME} is not installed from ${resolvedExtensionPath} in any scanned Chrome profile: ${scanned.join(", ") || "none"}\nScanned Chrome user-data folder: ${resolvedUserDataDir}${details}`,
+    `${EXTENSION_NAME} is not installed from ${redactPath(resolvedExtensionPath)}${expectedAccountPrefix} in scanned Chrome profile${scanned.length === 1 ? "" : "s"}: ${scanned.join(", ") || "none"}\nScanned Chrome user-data folder: ${redactPath(resolvedUserDataDir)}${details}`,
   );
 }
 
@@ -114,6 +131,34 @@ function chromeProfileLabel(profileName, profileLabels) {
   const label = profileLabels.get(profileName);
   const details = uniqueLabelDetails([label?.displayName, label?.accountName]);
   return details.length > 0 ? `${profileName} (${details.join(", ")})` : profileName;
+}
+
+function redactedChromeProfileLabel(profileName, profileLabels) {
+  const label = profileLabels.get(profileName);
+  const details = uniqueLabelDetails([label?.displayName, redactAccountName(label?.accountName)]);
+  return details.length > 0 ? `${profileName} (${details.join(", ")})` : profileName;
+}
+
+function chromeProfileMatchesAccount(profileName, profileLabels, normalizedExpectedAccount) {
+  const label = profileLabels.get(profileName);
+  return uniqueLabelDetails([label?.displayName, label?.accountName])
+    .some((value) => normalizeAccountName(value) === normalizedExpectedAccount);
+}
+
+function normalizeAccountName(value) {
+  return String(value ?? "").trim().toLowerCase();
+}
+
+function redactAccountName(value) {
+  return String(value ?? "").trim().replace(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi, "<account>");
+}
+
+function redactPath(path) {
+  const value = String(path ?? "");
+  const home = homedir();
+  return home && value.toLowerCase().startsWith(home.toLowerCase())
+    ? `%USERPROFILE%${value.slice(home.length)}`
+    : value;
 }
 
 function uniqueLabelDetails(values) {
@@ -192,6 +237,6 @@ if (import.meta.url === pathToFileURL(process.argv[1]).href) {
     ? await verifyChromeProfileExtension({ profileDir, extensionPath })
     : await verifyChromeUserDataExtension({ extensionPath });
   console.log(
-    `${EXTENSION_NAME} ${result.version} is enabled in ${result.profileDir ?? profileDir} from ${result.path} (${result.id})`,
+    `${EXTENSION_NAME} ${result.version} is enabled in ${redactPath(result.profileDir ?? profileDir)} from ${redactPath(result.path)} (${result.id})`,
   );
 }
