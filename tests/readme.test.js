@@ -11,6 +11,9 @@ describe("README", () => {
     expect(readme).toContain("refresh Albert");
     expect(readme).toContain("Show ratings on Albert");
     expect(readme).toContain("Clear cached ratings");
+    expect(readme).toContain("old squeezed card layout");
+    expect(readme).toContain("segmented score/tools quick view");
+    expect(readme).toContain("stale card layouts were cleaned up");
     expect(readme).toContain("Refresh");
     expect(readme).toContain("Search RMP");
     expect(readme).toContain("Fuzzy RMP match");
@@ -27,6 +30,7 @@ describe("README", () => {
     expect(readme).toContain('node scripts/verify-live-readiness.js dist "%LOCALAPPDATA%\\Google\\Chrome\\User Data" "%CD%\\dist" "student-account@nyu.example"');
     expect(readme).toContain("not installed from `dist`");
     expect(readme).toContain("your local repository `dist` folder");
+    expect(readme).toContain("A current build should report segmented quick views");
     expect(readme).toContain("Do not click enrollment, cart, or class-selection controls");
   });
 });
