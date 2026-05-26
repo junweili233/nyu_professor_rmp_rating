@@ -1087,7 +1087,11 @@ function removeProcessedCellLayoutSafeguards(element) {
     return;
   }
 
-  for (const [property] of PROCESSED_CELL_LAYOUT_PROPERTIES) {
+  const ariaCell = isAriaCell(element);
+  for (const [property, , options = {}] of PROCESSED_CELL_LAYOUT_PROPERTIES) {
+    if (options.ariaOnly && !ariaCell) {
+      continue;
+    }
     element.style.removeProperty(property);
   }
 }

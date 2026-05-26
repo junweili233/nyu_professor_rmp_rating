@@ -9714,6 +9714,25 @@ describe("Albert content DOM injection", () => {
     expect(instructorCell.style.getPropertyPriority("min-width")).toBe("important");
   });
 
+  it("does not remove table display when cleaning up a processed table cell without a style snapshot", () => {
+    document.body.innerHTML = `
+      <table>
+        <tbody>
+          <tr>
+            <td id="instructor-cell" data-nyu-rmp-processed="true" style="display: table-cell; flex-wrap: wrap;">Ada Lovelace</td>
+          </tr>
+        </tbody>
+      </table>
+    `;
+
+    removeAlbertRmpEnhancements(document);
+
+    const instructorCell = document.getElementById("instructor-cell");
+    expect(instructorCell.dataset.nyuRmpProcessed).toBeUndefined();
+    expect(instructorCell.style.display).toBe("table-cell");
+    expect(instructorCell.style.flexWrap).toBe("");
+  });
+
   it("preserves original Albert instructor links when wrapping processed cell content", async () => {
     document.body.innerHTML = `
       <div role="row">
