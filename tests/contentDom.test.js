@@ -255,7 +255,7 @@ describe("Albert content DOM injection", () => {
     await Promise.all(mounted.pendingLookups);
 
     expect(card.hasAttribute("aria-busy")).toBe(false);
-    expect(card.getAttribute("aria-label")).toBe("RMP rating for Ada Lovelace: 4.7 out of 5, Strong rating, 38 ratings, difficulty 2.4 out of 5, ease 2.6 out of 5, take again N/A");
+    expect(card.getAttribute("aria-label")).toBe("RMP rating for Ada Lovelace: 4.7 out of 5, Strong rating, 38 ratings, difficulty 2.4 out of 5, ease 2.6 out of 5, take again N/A, 0 useful comments shown");
   });
 
   it("does not present missing RMP rating counts as zero ratings", async () => {
@@ -273,7 +273,7 @@ describe("Albert content DOM injection", () => {
     await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
 
     const card = document.querySelector(".nyu-rmp-card");
-    expect(card.getAttribute("aria-label")).toBe("RMP rating for Ada Lovelace: 4.7 out of 5, Strong rating, N/A ratings, difficulty 2.4 out of 5, ease 2.6 out of 5, take again N/A");
+    expect(card.getAttribute("aria-label")).toBe("RMP rating for Ada Lovelace: 4.7 out of 5, Strong rating, N/A ratings, difficulty 2.4 out of 5, ease 2.6 out of 5, take again N/A, 0 useful comments shown");
     expect(document.querySelector(".nyu-rmp-rating-count").textContent).toBe("N/A ratings");
     expect(document.querySelector(".nyu-rmp-radar").getAttribute("aria-label")).toContain("N/A ratings");
     expect(document.body.textContent).not.toContain("0 ratings");
@@ -296,7 +296,7 @@ describe("Albert content DOM injection", () => {
     await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
 
     expect(document.querySelector(".nyu-rmp-card").getAttribute("aria-label")).toBe(
-      "RMP rating for Ada Lovelace: 4.7 out of 5, Strong rating, 38 ratings, difficulty 2.4 out of 5, ease 2.6 out of 5, take again 92%",
+      "RMP rating for Ada Lovelace: 4.7 out of 5, Strong rating, 38 ratings, difficulty 2.4 out of 5, ease 2.6 out of 5, take again 92%, 0 useful comments shown",
     );
   });
 
@@ -609,6 +609,27 @@ describe("Albert content DOM injection", () => {
     await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
 
     expect(document.querySelector(".nyu-rmp-comments-heading").textContent).toBe("Most useful comments (2)");
+  });
+
+  it("summarizes displayed useful-comment count in the rating card accessible label", async () => {
+    document.body.innerHTML = `<div>Instructor: Ada Lovelace</div>`;
+    const lookupProfessor = vi.fn(async (name) => ({
+      name,
+      department: "Computer Science",
+      rating: 4.7,
+      difficulty: 2.4,
+      ratingsCount: 38,
+      tags: [],
+      topComments: [
+        "Explains low-level systems clearly and gives practical labs.",
+        "Office hours make the systems projects easier to reason about.",
+      ],
+      url: "https://www.ratemyprofessors.com/professor/123",
+    }));
+
+    await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
+
+    expect(document.querySelector(".nyu-rmp-card").getAttribute("aria-label")).toContain("2 useful comments shown");
   });
 
   it("shows an explicit empty state when RMP has no useful comments", async () => {
