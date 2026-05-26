@@ -113,14 +113,20 @@ describe("Albert content DOM injection", () => {
     const styles = document.getElementById("nyu-rmp-rating-styles").textContent;
     const processedCellStart = styles.indexOf('[role="gridcell"][data-nyu-rmp-processed="true"]');
     const originalStart = styles.indexOf('td[data-nyu-rmp-processed="true"] > .nyu-rmp-albert-original');
+    const ariaDisplayStart = styles.indexOf('[role="cell"][data-nyu-rmp-processed="true"]', processedCellStart + 1);
     const nextRuleStart = styles.indexOf("display: block", originalStart);
     const processedCellStyles = styles.slice(processedCellStart, originalStart);
+    const ariaDisplayStyles = styles.slice(ariaDisplayStart, originalStart);
     const processedChildStyles = styles.slice(originalStart, nextRuleStart);
 
     expect(processedCellStyles).toContain("align-items: flex-start !important");
     expect(processedCellStyles).toContain("flex-wrap: wrap !important");
     expect(processedCellStyles).toContain("grid-template-columns: minmax(0, 1fr) !important");
     expect(processedCellStyles).toContain("min-width: 0 !important");
+    expect(ariaDisplayStyles).toContain('[role="gridcell"][data-nyu-rmp-processed="true"]');
+    expect(ariaDisplayStyles).toContain("display: block !important");
+    expect(ariaDisplayStyles).not.toContain("td[data-nyu-rmp-processed");
+    expect(ariaDisplayStyles).not.toContain("th[data-nyu-rmp-processed");
     expect(processedChildStyles).toContain("flex: 0 0 100% !important");
     expect(processedChildStyles).toContain("width: 100% !important");
     expect(processedChildStyles).toContain('[role="gridcell"][data-nyu-rmp-processed="true"] > .nyu-rmp-rating-root.is-cell-mounted');

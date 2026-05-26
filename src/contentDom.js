@@ -1993,6 +1993,10 @@ export function injectStyles(document = globalThis.document) {
 	      grid-template-columns: minmax(0, 1fr) !important;
 	      min-width: 0 !important;
 	    }
+	    [role="cell"][data-nyu-rmp-processed="true"],
+	    [role="gridcell"][data-nyu-rmp-processed="true"] {
+	      display: block !important;
+	    }
 	    td[data-nyu-rmp-processed="true"] > .nyu-rmp-albert-original,
 	    th[data-nyu-rmp-processed="true"] > .nyu-rmp-albert-original,
 	    [role="cell"][data-nyu-rmp-processed="true"] > .nyu-rmp-albert-original,
