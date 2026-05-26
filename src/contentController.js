@@ -47,6 +47,7 @@ export async function initContentScript({
       overlayState: document?.documentElement?.dataset.nyuRmpOverlayState ?? "unknown",
       cardCount: document?.querySelectorAll?.(".nyu-rmp-card").length ?? 0,
       radarCount: document?.querySelectorAll?.(".nyu-rmp-radar").length ?? 0,
+      processedCellCount: document?.querySelectorAll?.("[data-nyu-rmp-processed='true']").length ?? 0,
     });
     return false;
   });

@@ -25,6 +25,8 @@ describe("content script controller", () => {
       <div class="nyu-rmp-card"></div>
       <div class="nyu-rmp-card"></div>
       <svg class="nyu-rmp-radar"></svg>
+      <div data-nyu-rmp-processed="true"></div>
+      <div data-nyu-rmp-processed="true"></div>
     `;
     const chrome = createChromeMock({ "settings:overlayEnabled": true });
 
@@ -46,6 +48,7 @@ describe("content script controller", () => {
       overlayState: "enabled",
       cardCount: 2,
       radarCount: 1,
+      processedCellCount: 2,
     });
   });
 
