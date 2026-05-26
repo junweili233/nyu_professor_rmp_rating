@@ -242,6 +242,7 @@ function isAlbertUrl(url) {
 function formatAlbertConnectedStatus(response) {
   const ratingRootCount = nonNegativeInteger(response.ratingRootCount);
   const cardCount = nonNegativeInteger(response.cardCount);
+  const quickGridCount = nonNegativeInteger(response.quickGridCount);
   const radarCount = nonNegativeInteger(response.radarCount);
   const processedCellCount = nonNegativeInteger(response.processedCellCount);
   const processedCellLayoutWarningCount = nonNegativeInteger(response.processedCellLayoutWarningCount);
@@ -252,10 +253,14 @@ function formatAlbertConnectedStatus(response) {
     ? "1 Albert cell checked"
     : `${processedCellCount} Albert cells checked`;
   const layoutWarningLabel = formatLayoutWarningLabel(response, processedCellLayoutWarningCount);
-  const renderedSummary = `${ratingRootLabel}, ${cardLabel}, ${radarLabel}, ${processedCellLabel}, ${layoutWarningLabel}`;
+  const quickGridLabel = formatQuickGridLabel(cardCount, quickGridCount);
+  const renderedSummary = [ratingRootLabel, cardLabel, quickGridLabel, radarLabel, processedCellLabel, layoutWarningLabel].filter(Boolean).join(", ");
   const versionLabel = formatVersionLabel(response.version);
   if (isStaleContentVersion(response.version)) {
     return `Albert connected${versionLabel}; popup v${EXTENSION_VERSION}. Reload the extension, then refresh Albert. ${renderedSummary}`;
+  }
+  if (hasStaleQuickGridShape(response)) {
+    return `Albert connected${versionLabel}; old squeezed card layout detected. Reload the extension, then refresh Albert. ${renderedSummary}`;
   }
   if (response.overlayState === "disabled") {
     return `Albert connected${versionLabel}; overlay disabled. ${renderedSummary}`;
@@ -264,7 +269,20 @@ function formatAlbertConnectedStatus(response) {
 }
 
 function albertPageStatusState(response) {
-  return isStaleContentVersion(response.version) || hasProcessedCellLayoutWarnings(response) ? "warning" : "connected";
+  return isStaleContentVersion(response.version)
+    || hasStaleQuickGridShape(response)
+    || hasProcessedCellLayoutWarnings(response)
+    ? "warning"
+    : "connected";
+}
+
+function formatQuickGridLabel(cardCount, quickGridCount) {
+  if (cardCount === 0) {
+    return "";
+  }
+  return quickGridCount === 1
+    ? "1 segmented quick view"
+    : `${quickGridCount} segmented quick views`;
 }
 
 function formatLayoutWarningLabel(response, processedCellLayoutWarningCount) {
@@ -302,6 +320,14 @@ function isStaleContentVersion(version) {
 
 function hasProcessedCellLayoutWarnings(response) {
   return nonNegativeInteger(response?.processedCellLayoutWarningCount) > 0;
+}
+
+function hasStaleQuickGridShape(response) {
+  const cardCount = nonNegativeInteger(response?.cardCount);
+  if (cardCount === 0 || response?.overlayState === "disabled") {
+    return false;
+  }
+  return nonNegativeInteger(response?.quickGridCount) < cardCount;
 }
 
 function formatVersionLabel(version) {

@@ -24,6 +24,8 @@ describe("content script controller", () => {
     document.body.innerHTML = `
       <div class="nyu-rmp-card"></div>
       <div class="nyu-rmp-card"></div>
+      <div class="nyu-rmp-quick-grid"></div>
+      <div class="nyu-rmp-quick-grid"></div>
       <div class="nyu-rmp-rating-root"></div>
       <div class="nyu-rmp-rating-root"></div>
       <div class="nyu-rmp-rating-root"></div>
@@ -51,6 +53,7 @@ describe("content script controller", () => {
       overlayState: "enabled",
       ratingRootCount: 3,
       cardCount: 2,
+      quickGridCount: 2,
       radarCount: 1,
       processedCellCount: 2,
       processedCellLayoutWarningCount: 0,

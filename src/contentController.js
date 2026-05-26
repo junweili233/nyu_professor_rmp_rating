@@ -101,6 +101,7 @@ function contentStatusResponse(document) {
     overlayState: document?.documentElement?.dataset.nyuRmpOverlayState ?? "unknown",
     ratingRootCount: document?.querySelectorAll?.(".nyu-rmp-rating-root").length ?? 0,
     cardCount: document?.querySelectorAll?.(".nyu-rmp-card").length ?? 0,
+    quickGridCount: document?.querySelectorAll?.(".nyu-rmp-quick-grid").length ?? 0,
     radarCount: document?.querySelectorAll?.(".nyu-rmp-radar").length ?? 0,
     processedCellCount: document?.querySelectorAll?.("[data-nyu-rmp-processed='true']").length ?? 0,
     processedCellLayoutWarningCount: countProcessedCellLayoutWarnings(document),
