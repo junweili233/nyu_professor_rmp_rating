@@ -1395,7 +1395,7 @@ function renderRecommendationEvidence({ rating, difficulty, ratingsCount, wouldT
 
   return `
     <div class="nyu-rmp-evidence" role="list" aria-label="RMP recommendation evidence">
-      ${chips.map((chip) => `<span class="nyu-rmp-evidence-chip is-${escapeHtml(chip.state)}" role="listitem">${escapeHtml(chip.label)}</span>`).join("")}
+      ${chips.map((chip) => `<span class="nyu-rmp-evidence-chip is-${escapeHtml(chip.state)}" role="listitem" aria-label="${escapeHtml(evidenceChipAriaLabel(chip))}">${escapeHtml(chip.label)}</span>`).join("")}
     </div>
   `;
 }
@@ -1405,6 +1405,23 @@ function evidenceChip(label, state) {
     label,
     state: state || "limited",
   };
+}
+
+function evidenceChipAriaLabel({ label, state }) {
+  return `${evidenceChipStatePrefix(state)}: ${label}`;
+}
+
+function evidenceChipStatePrefix(state) {
+  if (state === "strong") {
+    return "Support signal";
+  }
+  if (state === "weak") {
+    return "Risk signal";
+  }
+  if (state === "mixed") {
+    return "Mixed signal";
+  }
+  return "Limited data signal";
 }
 
 function commentSignalEvidenceLabel(commentSignal, { courseCode = "", courseMatchedCommentCount = 0 } = {}) {
