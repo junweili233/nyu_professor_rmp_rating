@@ -3,6 +3,7 @@ import { extractInstructorNamesFromText, isLikelyInstructorName, normalizeInstru
 const ROOT_CLASS = "nyu-rmp-rating-root";
 const STYLE_ID = "nyu-rmp-rating-styles";
 const COMMENT_PREVIEW_LENGTH = 150;
+const MAX_RENDERED_COMMENTS = 3;
 const DEFAULT_RMP_URL = "https://www.ratemyprofessors.com/";
 const PLACEHOLDER_COMMENT_TEXT = new Set(["n/a", "na", "none", "no comment", "no comments", "no comments yet"]);
 const COURSE_CODE_PATTERN = /\b([A-Z]{2,5}-[A-Z]{2}\s*\d{3,4})\b/i;
@@ -1050,9 +1051,12 @@ function updateRatingCard(card, result, { requestedName = "Professor", lookupPro
     ? `<a class="nyu-rmp-search" href="${escapeHtml(rmpSearchUrl(requestedName))}" target="_blank" rel="noreferrer noopener" aria-label="${escapeHtml(searchLabel(requestedName))}">Search RMP</a>`
     : "";
   const sortedTopComments = prioritizeCourseMatchedComments(result.topComments, courseCode);
-  const courseMatchedCommentCount = countCourseMatchedComments(sortedTopComments, courseCode);
+  const displayedTopComments = sortedTopComments
+    .filter((comment) => isUsefulCommentText(normalizeComment(comment).text))
+    .slice(0, MAX_RENDERED_COMMENTS);
+  const courseMatchedCommentCount = countCourseMatchedComments(displayedTopComments, courseCode);
   const courseContext = renderCourseContext(courseCode);
-  const comments = sortedTopComments
+  const comments = displayedTopComments
     .map((comment, index) => formatComment(comment, commentTextId(card, index), courseCode))
     .join("");
   const commentCount = countRenderedComments(comments);

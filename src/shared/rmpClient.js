@@ -133,8 +133,7 @@ function toProfessorRating(teacher, requestedName) {
         difficultyRating: rmpScaleNumberOrNull(rating.difficultyRating),
       };
     })
-    .filter(Boolean)
-    .slice(0, 3) ?? [];
+    .filter(Boolean) ?? [];
 
   return {
     id: teacher.id,

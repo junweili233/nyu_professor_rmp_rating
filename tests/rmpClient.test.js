@@ -143,7 +143,7 @@ describe("Rate My Professors client", () => {
     expect(result.topComments.map((comment) => comment.helpfulRating)).toEqual([19, 7, 1]);
   });
 
-  it("keeps three useful comments so Albert can still promote course-specific context", async () => {
+  it("keeps fetched useful comments so Albert can still promote course-specific context", async () => {
     const fetchImpl = vi.fn(async () => ({
       ok: true,
       json: async () => ({
@@ -186,8 +186,59 @@ describe("Rate My Professors client", () => {
       "Generic but very useful overview.",
       "Another broadly useful comment.",
       "CS201-specific workload context.",
+      "Less useful extra comment.",
     ]);
     expect(result.topComments[2].course).toBe("CSCI-UA 201");
+  });
+
+  it("keeps later fetched useful comments so Albert can promote course-specific context", async () => {
+    const fetchImpl = vi.fn(async () => ({
+      ok: true,
+      json: async () => ({
+        data: {
+          newSearch: {
+            teachers: {
+              edges: [
+                {
+                  node: {
+                    id: "later-course-comment",
+                    legacyId: 456,
+                    firstName: "Grace",
+                    lastName: "Hopper",
+                    department: "Computer Science",
+                    avgRating: 4.8,
+                    avgDifficulty: 3.1,
+                    numRatings: 44,
+                    wouldTakeAgainPercent: 96,
+                    teacherRatingTags: [],
+                    ratings: {
+                      edges: [
+                        { node: { comment: "Most useful generic comment.", helpfulRating: 50 } },
+                        { node: { comment: "Second generic comment.", helpfulRating: 40 } },
+                        { node: { comment: "Third generic comment.", helpfulRating: 30 } },
+                        { node: { comment: "Fourth generic comment.", helpfulRating: 20 } },
+                        { node: { comment: "Later CS201-specific workload context.", class: "CSCI-UA 201", helpfulRating: 4 } },
+                      ],
+                    },
+                  },
+                },
+              ],
+            },
+          },
+        },
+      }),
+    }));
+
+    const result = await findProfessorRating("Grace Hopper", { fetchImpl });
+
+    expect(result.topComments.map((comment) => comment.text)).toEqual([
+      "Most useful generic comment.",
+      "Second generic comment.",
+      "Third generic comment.",
+      "Fourth generic comment.",
+      "Later CS201-specific workload context.",
+    ]);
+    expect(result.topComments[4].course).toBe("CSCI-UA 201");
   });
 
   it("decodes HTML entities in useful comments before returning them to Albert", async () => {

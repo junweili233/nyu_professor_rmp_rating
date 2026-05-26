@@ -1067,6 +1067,55 @@ describe("Albert content DOM injection", () => {
     ]);
   });
 
+  it("renders only three useful comments after promoting Albert course matches", async () => {
+    document.body.innerHTML = `
+      <table>
+        <thead>
+          <tr>
+            <th>Course</th>
+            <th>Instructor</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>CSCI-UA 201 Computer Systems Organization</td>
+            <td>YAP, CHEE KENG</td>
+          </tr>
+        </tbody>
+      </table>
+    `;
+    const lookupProfessor = vi.fn(async (name) => ({
+      name,
+      department: "Computer Science",
+      rating: 3.9,
+      difficulty: 3.1,
+      ratingsCount: 92,
+      tags: [],
+      topComments: [
+        { text: "Most useful generic comment.", course: "CSCI-UA 102", helpfulRating: 50 },
+        { text: "Second generic comment.", helpfulRating: 40 },
+        { text: "Third generic comment.", helpfulRating: 30 },
+        { text: "Fourth generic comment should stay hidden.", helpfulRating: 20 },
+        { text: "Later CS201-specific context should be promoted.", course: "CSCI-UA 201", helpfulRating: 4 },
+      ],
+      url: "https://www.ratemyprofessors.com/professor/419998",
+    }));
+
+    await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
+
+    const comments = Array.from(document.querySelectorAll(".nyu-rmp-comment-text")).map((comment) => comment.textContent);
+    expect(comments).toEqual([
+      "Later CS201-specific context should be promoted.",
+      "Most useful generic comment.",
+      "Second generic comment.",
+    ]);
+    expect(document.body.textContent).not.toContain("Fourth generic comment should stay hidden.");
+    expect(document.querySelector(".nyu-rmp-comments-heading").childNodes[0].textContent).toBe("Most useful comments (3)");
+    expect(document.querySelector(".nyu-rmp-card").getAttribute("aria-label")).toContain(
+      "3 useful comments shown, 1 matches Albert course CSCI-UA 201",
+    );
+  });
+
   it("summarizes Albert course-matched useful comments in the rating card label", async () => {
     document.body.innerHTML = `
       <table>
