@@ -90,7 +90,7 @@ describe("Chrome profile extension verifier", () => {
   it("finds the enabled unpacked extension across Chrome user-data profiles", async () => {
     const userData = await mkdtemp(join(tmpdir(), "nyu-rmp-user-data-"));
     await createLocalState(userData, {
-      "Profile 1": "Albert Chrome",
+      "Profile 1": { name: "Albert Chrome", user_name: "student-account@nyu.example" },
     });
     await createProfile({
       profile: join(userData, "Default"),
@@ -111,6 +111,7 @@ describe("Chrome profile extension verifier", () => {
     await expect(verifyChromeUserDataExtension({ userDataDir: userData, extensionPath: "dist" })).resolves.toMatchObject({
       profileName: "Profile 1",
       profileDisplayName: "Albert Chrome",
+      profileAccountName: "student-account@nyu.example",
       id: "abcdefghijklmnopabcdefghijklmnop",
       installedFromExpectedPath: true,
     });
@@ -122,7 +123,7 @@ describe("Chrome profile extension verifier", () => {
     const userData = await mkdtemp(join(tmpdir(), "nyu-rmp-user-data-"));
     await createLocalState(userData, {
       Default: "Your Chrome",
-      "Profile 2": "NYU Login",
+      "Profile 2": { name: "NYU Login", user_name: "student-account@nyu.example" },
     });
     await createProfile({
       profile: join(userData, "Default"),
@@ -134,7 +135,7 @@ describe("Chrome profile extension verifier", () => {
     });
 
     await expect(verifyChromeUserDataExtension({ userDataDir: userData, extensionPath: "dist" })).rejects.toThrow(
-      `NYU Albert RMP Ratings is not installed from ${resolve("dist")} in any scanned Chrome profile: Default (Your Chrome), Profile 2 (NYU Login)`,
+      `NYU Albert RMP Ratings is not installed from ${resolve("dist")} in any scanned Chrome profile: Default (Your Chrome), Profile 2 (NYU Login, student-account@nyu.example)`,
     );
     await expect(verifyChromeUserDataExtension({ userDataDir: userData, extensionPath: "dist" })).rejects.toThrow(
       `Scanned Chrome user-data folder: ${userData}`,
@@ -147,7 +148,7 @@ describe("Chrome profile extension verifier", () => {
     const userData = await mkdtemp(join(tmpdir(), "nyu-rmp-user-data-"));
     const oldDist = resolve("old-dist");
     await createLocalState(userData, {
-      Default: "Old Install",
+      Default: { name: "Old Install", email: "old-account@example.test" },
       "Profile 2": "Disabled Install",
     });
     await createProfile({
@@ -174,7 +175,7 @@ describe("Chrome profile extension verifier", () => {
     });
 
     await expect(verifyChromeUserDataExtension({ userDataDir: userData, extensionPath: "dist" })).rejects.toThrow(
-      `Profile details: Default (Old Install): NYU Albert RMP Ratings is installed from a different path: ${oldDist}; expected ${resolve("dist")}; Profile 2 (Disabled Install): NYU Albert RMP Ratings is installed but disabled`,
+      `Profile details: Default (Old Install, old-account@example.test): NYU Albert RMP Ratings is installed from a different path: ${oldDist}; expected ${resolve("dist")}; Profile 2 (Disabled Install): NYU Albert RMP Ratings is installed but disabled`,
     );
 
     await rm(userData, { recursive: true, force: true });
@@ -187,7 +188,7 @@ async function createLocalState(userData, profileNames) {
     JSON.stringify({
       profile: {
         info_cache: Object.fromEntries(Object.entries(profileNames)
-          .map(([profile, name]) => [profile, { name }])),
+          .map(([profile, info]) => [profile, typeof info === "string" ? { name: info } : info])),
       },
     }),
     "utf8",

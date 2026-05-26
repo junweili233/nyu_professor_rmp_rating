@@ -56,13 +56,13 @@ export async function verifyChromeUserDataExtension({
 } = {}) {
   const resolvedUserDataDir = resolve(userDataDir);
   const resolvedExtensionPath = resolve(extensionPath);
-  const profileDisplayNames = await chromeProfileDisplayNames(userDataDir);
+  const profileLabels = await chromeProfileLabels(userDataDir);
   const profiles = await chromeProfileDirs(userDataDir);
   const scanned = [];
   const misses = [];
   for (const profileDir of profiles) {
     const profileName = basename(profileDir);
-    const profileLabel = chromeProfileLabel(profileName, profileDisplayNames);
+    const profileLabel = chromeProfileLabel(profileName, profileLabels);
     scanned.push(profileLabel);
     try {
       const result = await verifyChromeProfileExtension({ profileDir, extensionPath });
@@ -70,7 +70,8 @@ export async function verifyChromeUserDataExtension({
         ...result,
         profileDir,
         profileName,
-        profileDisplayName: profileDisplayNames.get(profileName) ?? "",
+        profileDisplayName: profileLabels.get(profileName)?.displayName ?? "",
+        profileAccountName: profileLabels.get(profileName)?.accountName ?? "",
       };
     } catch (error) {
       if (!isExpectedProfileMiss(error)) {
@@ -86,20 +87,47 @@ export async function verifyChromeUserDataExtension({
   );
 }
 
-async function chromeProfileDisplayNames(userDataDir) {
+async function chromeProfileLabels(userDataDir) {
   try {
     const localState = JSON.parse(await readFile(resolve(userDataDir, "Local State"), "utf8"));
     return new Map(Object.entries(localState.profile?.info_cache ?? {})
-      .map(([profileName, profileInfo]) => [profileName, String(profileInfo?.name ?? "").trim()])
-      .filter(([, displayName]) => displayName));
+      .map(([profileName, profileInfo]) => [profileName, {
+        accountName: chromeProfileAccountName(profileInfo),
+        displayName: String(profileInfo?.name ?? "").trim(),
+      }])
+      .filter(([, label]) => label.displayName || label.accountName));
   } catch {
     return new Map();
   }
 }
 
-function chromeProfileLabel(profileName, profileDisplayNames) {
-  const displayName = profileDisplayNames.get(profileName);
-  return displayName ? `${profileName} (${displayName})` : profileName;
+function chromeProfileAccountName(profileInfo) {
+  return [
+    profileInfo?.user_name,
+    profileInfo?.email,
+    profileInfo?.gaia_name,
+    profileInfo?.account_name,
+  ].map((value) => String(value ?? "").trim()).find(Boolean) ?? "";
+}
+
+function chromeProfileLabel(profileName, profileLabels) {
+  const label = profileLabels.get(profileName);
+  const details = uniqueLabelDetails([label?.displayName, label?.accountName]);
+  return details.length > 0 ? `${profileName} (${details.join(", ")})` : profileName;
+}
+
+function uniqueLabelDetails(values) {
+  const seen = new Set();
+  return values
+    .map((value) => String(value ?? "").trim())
+    .filter((value) => {
+      const key = value.toLowerCase();
+      if (!value || seen.has(key)) {
+        return false;
+      }
+      seen.add(key);
+      return true;
+    });
 }
 
 async function chromeProfileDirs(userDataDir) {
