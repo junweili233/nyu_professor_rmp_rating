@@ -23,7 +23,13 @@ describe("extension popup markup", () => {
     expect(popup).toContain("Rating, difficulty, and take-again metrics");
     expect(popup).toContain("Radar fit score and pick recommendation");
     expect(popup).toContain("Most useful RMP comments from a 20-rating sample");
-    expect(popup).toContain("CS201 course-match counts across hidden comments");
+    expect(popup).toContain("CS201 comment risk/support highlighting");
+  });
+
+  it("tells students that CS201 matched comments are marked by risk or support", async () => {
+    const popup = await readFile(new URL("../src/popup.html", import.meta.url), "utf8");
+
+    expect(popup).toContain("CS201 comment risk/support highlighting");
   });
 
   it("marks the overlay toggle as an accessible switch with visible keyboard focus", async () => {
