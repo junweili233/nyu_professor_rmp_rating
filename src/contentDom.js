@@ -1110,7 +1110,8 @@ function renderRadarChart({ chartId, rating, difficulty, ratingsCount, wouldTake
     .map(({ x, y }) => `${x},${y}`)
     .join(" ");
   const radarSummary = `${fitSummary}, rating ${formatScore(rating)} out of 5, ease ${formatScore(ease)} out of 5, take again ${wouldTakeAgain == null ? "N/A" : `${Math.round(wouldTakeAgain)}%`}, ${ratingsCountLabel}`;
-  const radarDescription = `${capitalizeSentence(fitSummary)}. Rating ${formatScore(rating)} out of 5, ease ${formatScore(ease)} out of 5, take again ${wouldTakeAgain == null ? "N/A" : `${Math.round(wouldTakeAgain)}%`}, ${ratingsCountLabel}.`;
+  const limitedDataDescription = isLimitedData ? ` Limited data: ${metricCountLabel} available.` : "";
+  const radarDescription = `${capitalizeSentence(fitSummary)}.${limitedDataDescription} Rating ${formatScore(rating)} out of 5, ease ${formatScore(ease)} out of 5, take again ${wouldTakeAgain == null ? "N/A" : `${Math.round(wouldTakeAgain)}%`}, ${ratingsCountLabel}.`;
   const ariaLabel = `Professor radar: ${radarSummary}`;
 
   return `
