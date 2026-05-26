@@ -1484,6 +1484,7 @@ export function injectStyles(document = globalThis.document) {
 	      border-radius: 8px;
 	      background: #ffffff;
 	      color: #182033;
+	      container-type: inline-size;
 	      padding: 12px 13px;
 	      box-shadow: 0 1px 2px rgba(16,24,40,0.06), 0 8px 20px rgba(16,24,40,0.07);
 	      transition: transform 160ms ease, box-shadow 160ms ease, border-color 160ms ease;
@@ -1743,7 +1744,7 @@ export function injectStyles(document = globalThis.document) {
 	      display: block;
 	      height: 112px;
 	      overflow: visible;
-	      width: 112px;
+	      width: min(112px, 100%);
 	    }
 	    .nyu-rmp-radar-grid {
 	      fill: #f8fafc;
@@ -2075,6 +2076,41 @@ export function injectStyles(document = globalThis.document) {
 	    .nyu-rmp-card.is-error { border-left-color: #c42020; }
 	    @keyframes nyu-rmp-shimmer {
 	      to { background-position: -280% 0; }
+	    }
+	    @container (max-width: 360px) {
+	      .nyu-rmp-card-head,
+	      .nyu-rmp-actions {
+	        align-items: flex-start;
+	        flex-direction: column;
+	      }
+	      .nyu-rmp-actions {
+	        gap: 5px;
+	      }
+	      .nyu-rmp-metrics,
+	      .nyu-rmp-radar-wrap,
+	      .nyu-rmp-radar-legend {
+	        grid-template-columns: 1fr;
+	      }
+	      .nyu-rmp-radar-wrap {
+	        justify-items: start;
+	      }
+	      .nyu-rmp-radar-summary {
+	        width: 100%;
+	      }
+	      .nyu-rmp-rating-metric {
+	        grid-template-columns: 1fr;
+	      }
+	      .nyu-rmp-score-row .nyu-rmp-verdict {
+	        justify-self: start;
+	      }
+	    }
+	    @container (max-width: 180px) {
+	      .nyu-rmp-radar {
+	        overflow: hidden;
+	      }
+	      .nyu-rmp-radar-axis {
+	        display: none;
+	      }
 	    }
 	    @media (prefers-reduced-motion: reduce) {
 	      .nyu-rmp-card,

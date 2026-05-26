@@ -38,6 +38,28 @@ describe("Albert content DOM injection", () => {
     expect(styles).toContain("transform: none");
   });
 
+  it("includes narrow Albert cell layout safeguards for the radar and metrics", () => {
+    injectStyles(document);
+
+    const styles = document.getElementById("nyu-rmp-rating-styles").textContent;
+    expect(styles).toContain("container-type: inline-size");
+    expect(styles).toContain("@container (max-width: 360px)");
+    expect(styles).toContain(".nyu-rmp-metrics");
+    expect(styles).toContain("grid-template-columns: 1fr");
+    expect(styles).toContain(".nyu-rmp-radar-wrap");
+    expect(styles).toContain("justify-items: start");
+  });
+
+  it("hides decorative radar axis labels in extremely narrow Albert cells", () => {
+    injectStyles(document);
+
+    const styles = document.getElementById("nyu-rmp-rating-styles").textContent;
+    expect(styles).toContain("width: min(112px, 100%)");
+    expect(styles).toContain("@container (max-width: 180px)");
+    expect(styles).toContain(".nyu-rmp-radar-axis");
+    expect(styles).toContain("display: none");
+  });
+
   it("does not scan Albert pages when the overlay is disabled", () => {
     document.body.innerHTML = `<div>Instructor: Ada Lovelace</div>`;
     const lookupProfessor = vi.fn();
