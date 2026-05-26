@@ -10,6 +10,7 @@ npm test
 npm run build
 npm run verify:package
 npm run verify:release
+npm run verify:albert-smoke
 npm run package:release -- v0.1.2
 ```
 
@@ -54,6 +55,7 @@ npm test
 npm run build
 npm run verify:package
 npm run verify:release
+npm run verify:albert-smoke
 npm run package:release -- v0.1.2
 npm run verify:chrome-profile
 npm run verify:diagnostics -- .\popup-diagnostics.txt
@@ -65,6 +67,14 @@ To verify an exported or saved Albert page snapshot is running the current segme
 ```powershell
 npm run verify:albert-shape -- .\albert-snapshot.html
 ```
+
+To run a local Albert-row smoke test without touching Albert, use:
+
+```powershell
+npm run verify:albert-smoke
+```
+
+It renders a representative Albert shopping-cart row and checks that the RMP card lands in the trailing rating column instead of inside the processed instructor cell.
 
 To verify copied popup diagnostics without exposing Albert account details, paste the popup's Copy diagnostics output into a text file and run:
 

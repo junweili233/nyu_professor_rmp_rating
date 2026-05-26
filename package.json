@@ -10,6 +10,7 @@
     "verify:package": "node scripts/verify-extension-package.js dist",
     "verify:release": "node scripts/verify-release-version.js dist",
     "verify:chrome-profile": "node scripts/verify-chrome-profile-extension.js",
+    "verify:albert-smoke": "node scripts/verify-albert-layout-smoke.js",
     "verify:albert-shape": "node scripts/verify-albert-rendered-shape.js",
     "verify:diagnostics": "node scripts/verify-popup-diagnostics.js",
     "verify:live": "node scripts/verify-live-readiness.js dist",

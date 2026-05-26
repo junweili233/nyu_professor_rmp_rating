@@ -7,6 +7,7 @@ describe("README", () => {
 
     expect(readme).toContain("Load `dist` as an unpacked Chrome extension");
     expect(readme).toContain("npm run verify:chrome-profile");
+    expect(readme).toContain("npm run verify:albert-smoke");
     expect(readme).toContain("npm run verify:albert-shape");
     expect(readme).toContain("npm run verify:diagnostics");
     expect(readme).toContain("npm run verify:release");
@@ -39,6 +40,7 @@ describe("README", () => {
     expect(readme).toContain("A current build should report segmented quick views");
     expect(readme).toContain("confirm it reports segmented quick views");
     expect(readme).toContain("save an Albert page snapshot");
+    expect(readme).toContain("trailing rating column");
     expect(readme).toContain("Albert page snapshot");
     expect(readme).toContain("popup-diagnostics.txt");
     expect(readme).toContain("Do not click enrollment, cart, or class-selection controls");
