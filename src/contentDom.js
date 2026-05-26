@@ -1929,6 +1929,11 @@ export function injectStyles(document = globalThis.document) {
 	      white-space: normal;
 	      word-break: normal;
 	    }
+	    .nyu-rmp-albert-original > * {
+	      max-width: 100%;
+	      min-width: 0;
+	      white-space: normal;
+	    }
 	    td > .nyu-rmp-rating-root,
 	    th > .nyu-rmp-rating-root,
 	    [role="cell"] > .nyu-rmp-rating-root,

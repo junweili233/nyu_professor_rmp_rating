@@ -103,6 +103,7 @@ describe("Albert content DOM injection", () => {
     expect(cellMountedStyles).toContain("grid-column: 1 / -1");
     expect(cellMountedStyles).toContain("margin-top: 6px");
     expect(styles).toContain(".nyu-rmp-albert-original");
+    expect(styles).toContain(".nyu-rmp-albert-original > *");
     expect(styles).toContain("white-space: normal");
   });
 
@@ -9471,6 +9472,33 @@ describe("Albert content DOM injection", () => {
     expect(instructorCell.querySelector(".nyu-rmp-rating-root")).toBeNull();
     expect(instructorCell.textContent.trim()).toBe("YAP, CHEE KENG");
     expect(instructorCell.dataset.nyuRmpProcessed).toBeUndefined();
+  });
+
+  it("preserves original Albert instructor links when wrapping processed cell content", async () => {
+    document.body.innerHTML = `
+      <div role="row">
+        <div role="gridcell" id="grid-instructor" aria-label="Instructor">
+          <a id="instructor-link" href="/instructor/details" data-action="open-profile">Ada Lovelace</a>
+        </div>
+      </div>
+    `;
+    const lookupProfessor = vi.fn(async () => null);
+
+    await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
+
+    const instructorCell = document.getElementById("grid-instructor");
+    const originalContent = instructorCell.querySelector(":scope > .nyu-rmp-albert-original");
+    const link = originalContent.querySelector("#instructor-link");
+    expect(link).not.toBeNull();
+    expect(link.getAttribute("href")).toBe("/instructor/details");
+    expect(link.dataset.action).toBe("open-profile");
+    expect(link.textContent.trim()).toBe("Ada Lovelace");
+
+    removeAlbertRmpEnhancements(document);
+
+    expect(instructorCell.querySelector(":scope > #instructor-link")).toBe(link);
+    expect(instructorCell.querySelector(".nyu-rmp-albert-original")).toBeNull();
+    expect(instructorCell.querySelector(".nyu-rmp-rating-root")).toBeNull();
   });
 
   it("wraps processed cell content without relying on the global Node constructor", async () => {
