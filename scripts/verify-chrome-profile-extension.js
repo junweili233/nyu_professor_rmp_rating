@@ -31,7 +31,7 @@ export async function verifyChromeProfileExtension({
 
   const installedPath = normalizePath(installed.path);
   if (installedPath !== expectedPath) {
-    throw new Error(`${EXTENSION_NAME} is installed from a different path: ${installed.path}`);
+    throw new Error(`${EXTENSION_NAME} is installed from a different path: ${installed.path}; expected ${resolve(extensionPath)}`);
   }
 
   if (!installed.enabled) {
@@ -48,6 +48,8 @@ export async function verifyChromeUserDataExtension({
   userDataDir = defaultUserDataDir(),
   extensionPath = "dist",
 } = {}) {
+  const resolvedUserDataDir = resolve(userDataDir);
+  const resolvedExtensionPath = resolve(extensionPath);
   const profiles = await chromeProfileDirs(userDataDir);
   const scanned = [];
   const misses = [];
@@ -71,7 +73,7 @@ export async function verifyChromeUserDataExtension({
 
   const details = misses.length > 0 ? `\nProfile details: ${misses.join("; ")}` : "";
   throw new Error(
-    `${EXTENSION_NAME} is not installed from ${extensionPath} in any scanned Chrome profile: ${scanned.join(", ") || "none"}${details}`,
+    `${EXTENSION_NAME} is not installed from ${resolvedExtensionPath} in any scanned Chrome profile: ${scanned.join(", ") || "none"}\nScanned Chrome user-data folder: ${resolvedUserDataDir}${details}`,
   );
 }
 

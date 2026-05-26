@@ -1,4 +1,5 @@
 import { pathToFileURL } from "node:url";
+import { resolve } from "node:path";
 import { verifyChromeUserDataExtension } from "./verify-chrome-profile-extension.js";
 import { verifyExtensionPackage } from "./verify-extension-package.js";
 
@@ -20,10 +21,12 @@ export async function verifyLiveReadiness({
       chromeProfile,
     };
   } catch (error) {
+    const expectedPath = resolve(extensionPath);
     throw new Error([
       error.message,
       "Load the generated dist folder as an unpacked Chrome extension in the Chrome profile used for Albert.",
-      `Expected extension folder: ${extensionPath}`,
+      `Expected extension folder: ${expectedPath}`,
+      ...(userDataDir ? [`Scanned Chrome user-data folder: ${resolve(userDataDir)}`] : []),
       "Then refresh Albert and run this command again before live UI verification.",
     ].join("\n"));
   }

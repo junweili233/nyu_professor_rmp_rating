@@ -106,7 +106,10 @@ describe("Chrome profile extension verifier", () => {
     });
 
     await expect(verifyChromeUserDataExtension({ userDataDir: userData, extensionPath: "dist" })).rejects.toThrow(
-      "NYU Albert RMP Ratings is not installed from dist in any scanned Chrome profile: Default, Profile 2",
+      `NYU Albert RMP Ratings is not installed from ${resolve("dist")} in any scanned Chrome profile: Default, Profile 2`,
+    );
+    await expect(verifyChromeUserDataExtension({ userDataDir: userData, extensionPath: "dist" })).rejects.toThrow(
+      `Scanned Chrome user-data folder: ${userData}`,
     );
 
     await rm(userData, { recursive: true, force: true });
@@ -139,7 +142,7 @@ describe("Chrome profile extension verifier", () => {
     });
 
     await expect(verifyChromeUserDataExtension({ userDataDir: userData, extensionPath: "dist" })).rejects.toThrow(
-      `Profile details: Default: NYU Albert RMP Ratings is installed from a different path: ${oldDist}; Profile 2: NYU Albert RMP Ratings is installed but disabled`,
+      `Profile details: Default: NYU Albert RMP Ratings is installed from a different path: ${oldDist}; expected ${resolve("dist")}; Profile 2: NYU Albert RMP Ratings is installed but disabled`,
     );
 
     await rm(userData, { recursive: true, force: true });

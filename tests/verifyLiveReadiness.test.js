@@ -29,6 +29,16 @@ describe("live Albert readiness verifier", () => {
       userDataDir: workspace.userData,
       extensionPath: workspace.dist,
     })).rejects.toThrow("Load the generated dist folder as an unpacked Chrome extension");
+    await expect(verifyLiveReadiness({
+      distDir: workspace.dist,
+      userDataDir: workspace.userData,
+      extensionPath: workspace.dist,
+    })).rejects.toThrow(`Expected extension folder: ${resolve(workspace.dist)}`);
+    await expect(verifyLiveReadiness({
+      distDir: workspace.dist,
+      userDataDir: workspace.userData,
+      extensionPath: workspace.dist,
+    })).rejects.toThrow(`Scanned Chrome user-data folder: ${resolve(workspace.userData)}`);
 
     await rm(workspace.root, { recursive: true, force: true });
   });
