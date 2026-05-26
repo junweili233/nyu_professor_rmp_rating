@@ -1010,6 +1010,7 @@ function updateRatingCard(card, result, { requestedName = "Professor", lookupPro
   const comments = asArray(result.topComments)
     .map((comment, index) => formatComment(comment, commentTextId(card, index)))
     .join("");
+  const commentsPanel = renderCommentsPanel(comments);
   const tags = asArray(result.tags)
     .map(normalizeTagName)
     .filter(Boolean)
@@ -1058,12 +1059,7 @@ function updateRatingCard(card, result, { requestedName = "Professor", lookupPro
     </dl>
     ${radar}
     ${tags ? `<div class="nyu-rmp-tags">${tags}</div>` : ""}
-    ${comments ? `
-      <div class="nyu-rmp-comments-panel">
-        <div class="nyu-rmp-comments-heading">Most useful comments</div>
-        <ul class="nyu-rmp-comments" aria-label="Most useful RMP comments">${comments}</ul>
-      </div>
-    ` : ""}
+    ${commentsPanel}
   `;
   wireRefreshAction(card, requestedName, lookupProfessor);
   wireCommentToggleActions(card);
@@ -1497,6 +1493,13 @@ export function injectStyles(document = globalThis.document) {
 	      margin: 0;
 	      padding-left: 13px;
 	    }
+	    .nyu-rmp-comments-empty {
+	      color: #667085;
+	      font-size: 10.5px;
+	      font-weight: 550;
+	      line-height: 1.35;
+	      margin: 0 0 4px;
+	    }
 	    .nyu-rmp-comments li {
 	      margin-bottom: 6px;
 	    }
@@ -1667,6 +1670,18 @@ function formatComment(comment, textId) {
       ` : ""}
       ${metadata.length > 0 ? `<span class="nyu-rmp-comment-meta">${metadata.map(escapeHtml).join(" | ")}</span>` : ""}
     </li>
+  `;
+}
+
+function renderCommentsPanel(comments) {
+  const body = comments
+    ? `<ul class="nyu-rmp-comments" aria-label="Most useful RMP comments">${comments}</ul>`
+    : `<p class="nyu-rmp-comments-empty">No useful comments found on RMP.</p>`;
+  return `
+    <div class="nyu-rmp-comments-panel">
+      <div class="nyu-rmp-comments-heading">Most useful comments</div>
+      ${body}
+    </div>
   `;
 }
 
