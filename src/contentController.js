@@ -1,4 +1,4 @@
-const EXTENSION_VERSION = "0.1.1";
+import { EXTENSION_VERSION } from "./shared/version.js";
 
 export async function initContentScript({
   chrome = globalThis.chrome,

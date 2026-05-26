@@ -1,8 +1,8 @@
 import { extractInstructorNamesFromText, isLikelyInstructorName, normalizeInstructorName, splitInstructorList } from "./shared/albertParser.js";
+import { EXTENSION_VERSION } from "./shared/version.js";
 
 const ROOT_CLASS = "nyu-rmp-rating-root";
 const STYLE_ID = "nyu-rmp-rating-styles";
-const EXTENSION_VERSION = "0.1.1";
 const COMMENT_PREVIEW_LENGTH = 150;
 const MAX_RENDERED_COMMENTS = 3;
 const RMP_COMMENT_SAMPLE_SIZE = 20;
