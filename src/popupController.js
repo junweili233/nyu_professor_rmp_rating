@@ -244,12 +244,16 @@ function formatAlbertConnectedStatus(response) {
 }
 
 function albertPageStatusState(response) {
-  return isStaleContentVersion(response.version) ? "warning" : "connected";
+  return isStaleContentVersion(response.version) || hasProcessedCellLayoutWarnings(response) ? "warning" : "connected";
 }
 
 function isStaleContentVersion(version) {
   const normalized = String(version ?? "").trim();
   return Boolean(normalized) && normalized !== EXTENSION_VERSION;
+}
+
+function hasProcessedCellLayoutWarnings(response) {
+  return nonNegativeInteger(response?.processedCellLayoutWarningCount) > 0;
 }
 
 function formatVersionLabel(version) {

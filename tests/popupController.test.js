@@ -171,7 +171,7 @@ describe("extension popup controller", () => {
     await initPopup({ document, storage: createStorageMock(), tabs });
 
     expect(document.getElementById("page-status").textContent).toBe("Albert connected v0.1.1: 4 rating roots, 4 cards, 3 radar maps, 4 Albert cells checked, 1 layout warning");
-    expect(document.getElementById("page-status").dataset.state).toBe("connected");
+    expect(document.getElementById("page-status").dataset.state).toBe("warning");
   });
 
   it("wakes an active Albert page by injecting the content script when the first ping fails", async () => {
