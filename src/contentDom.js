@@ -1034,7 +1034,9 @@ function updateRatingCard(card, result, { requestedName = "Professor", lookupPro
   const department = String(result.department ?? "").trim();
   const updatedAt = formatUpdatedAt(result.cacheUpdatedAt);
   const matchNote = formatMatchNote(professorName, requestedName, result.matchConfidence);
-  const comments = prioritizeCourseMatchedComments(result.topComments, courseCode)
+  const sortedTopComments = prioritizeCourseMatchedComments(result.topComments, courseCode);
+  const courseMatchedCommentCount = countCourseMatchedComments(sortedTopComments, courseCode);
+  const comments = sortedTopComments
     .map((comment, index) => formatComment(comment, commentTextId(card, index), courseCode))
     .join("");
   const commentCount = countRenderedComments(comments);
@@ -1058,7 +1060,7 @@ function updateRatingCard(card, result, { requestedName = "Professor", lookupPro
   card.classList.add(`rating-${ratingClass}`);
   card.setAttribute(
     "aria-label",
-    formatCardSummaryLabel({ professorName, department, rating, ratingVerdict: ratingVerdict.label, radarFit, ratingsCountLabel, difficulty, ease, wouldTakeAgain, commentCount, tagNames, updatedAt, matchNote }),
+    formatCardSummaryLabel({ professorName, department, rating, ratingVerdict: ratingVerdict.label, radarFit, ratingsCountLabel, difficulty, ease, wouldTakeAgain, commentCount, courseMatchedCommentCount, courseCode, tagNames, updatedAt, matchNote }),
   );
   card.innerHTML = `
     <div class="nyu-rmp-card-head">
@@ -1704,7 +1706,7 @@ function formatRatingSummary(value) {
   return value == null ? "rating unavailable" : `${formatScore(value)} out of 5`;
 }
 
-function formatCardSummaryLabel({ professorName, department, rating, ratingVerdict, radarFit, ratingsCountLabel, difficulty, ease, wouldTakeAgain, commentCount, tagNames = [], updatedAt, matchNote }) {
+function formatCardSummaryLabel({ professorName, department, rating, ratingVerdict, radarFit, ratingsCountLabel, difficulty, ease, wouldTakeAgain, commentCount, courseMatchedCommentCount = 0, courseCode = "", tagNames = [], updatedAt, matchNote }) {
   const takeAgainLabel = wouldTakeAgain == null ? "N/A" : `${Math.round(wouldTakeAgain)}%`;
   return [
     `RMP rating for ${professorName}: ${formatRatingSummary(rating)}`,
@@ -1715,7 +1717,7 @@ function formatCardSummaryLabel({ professorName, department, rating, ratingVerdi
     `difficulty ${formatScore(difficulty)} out of 5`,
     `ease ${formatScore(ease)} out of 5`,
     `take again ${takeAgainLabel}`,
-    formatUsefulCommentSummary(commentCount),
+    formatUsefulCommentSummary(commentCount, courseMatchedCommentCount, courseCode),
     formatTagSummary(tagNames),
     updatedAt,
     matchNote,
@@ -1734,11 +1736,18 @@ function formatTagSummary(tagNames) {
   return tagNames.length > 0 ? `tags ${tagNames.join(", ")}` : "";
 }
 
-function formatUsefulCommentSummary(commentCount) {
+function formatUsefulCommentSummary(commentCount, courseMatchedCommentCount = 0, courseCode = "") {
   if (commentCount == null) {
     return "";
   }
-  return commentCount === 1 ? "1 useful comment shown" : `${commentCount} useful comments shown`;
+  const commentSummary = commentCount === 1 ? "1 useful comment shown" : `${commentCount} useful comments shown`;
+  if (courseMatchedCommentCount <= 0 || !courseCode) {
+    return commentSummary;
+  }
+  const matchSummary = courseMatchedCommentCount === 1
+    ? `1 matches Albert course ${courseCode}`
+    : `${courseMatchedCommentCount} match Albert course ${courseCode}`;
+  return `${commentSummary}, ${matchSummary}`;
 }
 
 function formatRatingsCount(value) {
@@ -1826,6 +1835,10 @@ function prioritizeCourseMatchedComments(comments, albertCourseCode = "") {
     .map((comment, index) => ({ comment, index, isCourseMatch: commentMatchesCourse(comment, albertCourseCode) }))
     .sort((left, right) => Number(right.isCourseMatch) - Number(left.isCourseMatch) || left.index - right.index)
     .map(({ comment }) => comment);
+}
+
+function countCourseMatchedComments(comments, albertCourseCode = "") {
+  return asArray(comments).filter((comment) => commentMatchesCourse(comment, albertCourseCode)).length;
 }
 
 function commentMatchesCourse(comment, albertCourseCode = "") {
