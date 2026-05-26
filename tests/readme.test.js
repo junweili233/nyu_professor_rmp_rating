@@ -23,5 +23,9 @@ describe("README", () => {
     expect(readme).toContain("Show more comments");
     expect(readme).toContain("counts every CS201-matched useful comment");
     expect(readme).toContain("samples 20 recent RMP ratings");
+    expect(readme).toContain("Live Albert Verification Troubleshooting");
+    expect(readme).toContain("not installed from `dist`");
+    expect(readme).toContain("D:\\NYU-Professor-RMP-Rating\\dist");
+    expect(readme).toContain("Do not click enrollment, cart, or class-selection controls");
   });
 });

@@ -51,3 +51,17 @@ npm run verify:package
 npm run verify:chrome-profile
 npm run verify:live
 ```
+
+## Live Albert Verification Troubleshooting
+
+If `npm run verify:live` reports that NYU Albert RMP Ratings is not installed from `dist`, Chrome is not running the built extension from this checkout yet.
+
+1. Run `npm run build`.
+2. Open the same Chrome profile you use for Albert and go to `chrome://extensions`.
+3. Remove or disable older copies of NYU Albert RMP Ratings.
+4. Enable Developer mode.
+5. Choose Load unpacked and select this repository's `dist` folder.
+6. Confirm the extension details show the path ending in `D:\NYU-Professor-RMP-Rating\dist`.
+7. Run `npm run verify:chrome-profile`.
+8. Run `npm run verify:live`.
+9. Refresh Albert after both verifiers pass. Do not click enrollment, cart, or class-selection controls while testing the overlay.
