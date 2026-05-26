@@ -1098,18 +1098,21 @@ function renderRadarChart({ chartId, rating, difficulty, ratingsCount, wouldTake
     { label: "Volume", value: scaleRatingVolume(normalizedRatingsCount) },
     { label: "Again", value: scalePercent(wouldTakeAgain) },
   ];
+  const fitScore = radarFitScore(axes);
+  const fitSummary = `professor fit ${fitScore} out of 100`;
   const points = axes
     .map(({ value }, index) => radarPoint(value, index, axes.length))
     .map(({ x, y }) => `${x},${y}`)
     .join(" ");
-  const radarSummary = `rating ${formatScore(rating)} out of 5, ease ${formatScore(ease)} out of 5, take again ${wouldTakeAgain == null ? "N/A" : `${Math.round(wouldTakeAgain)}%`}, ${ratingsCountLabel}`;
+  const radarSummary = `${fitSummary}, rating ${formatScore(rating)} out of 5, ease ${formatScore(ease)} out of 5, take again ${wouldTakeAgain == null ? "N/A" : `${Math.round(wouldTakeAgain)}%`}, ${ratingsCountLabel}`;
+  const radarDescription = `${capitalizeSentence(fitSummary)}. Rating ${formatScore(rating)} out of 5, ease ${formatScore(ease)} out of 5, take again ${wouldTakeAgain == null ? "N/A" : `${Math.round(wouldTakeAgain)}%`}, ${ratingsCountLabel}.`;
   const ariaLabel = `Professor radar: ${radarSummary}`;
 
   return `
     <div class="nyu-rmp-radar-wrap">
       <svg class="nyu-rmp-radar" viewBox="0 0 120 120" role="img" aria-label="${escapeHtml(ariaLabel)}" aria-labelledby="${titleId}" aria-describedby="${descId}" focusable="false">
         <title id="${titleId}">Professor rating radar</title>
-        <desc id="${descId}">${escapeHtml(capitalizeSentence(radarSummary))}.</desc>
+        <desc id="${descId}">${escapeHtml(radarDescription)}</desc>
         <polygon class="nyu-rmp-radar-grid" points="60,12 108,60 60,108 12,60"></polygon>
         <polygon class="nyu-rmp-radar-grid inner" points="60,36 84,60 60,84 36,60"></polygon>
         <line class="nyu-rmp-radar-spoke" x1="60" y1="60" x2="60" y2="12"></line>
@@ -1119,14 +1122,29 @@ function renderRadarChart({ chartId, rating, difficulty, ratingsCount, wouldTake
         <polygon class="nyu-rmp-radar-shape" points="${escapeHtml(points)}"></polygon>
         ${axes.map(({ label }, index) => radarAxisLabel(label, index, axes.length)).join("")}
       </svg>
-      <ul class="nyu-rmp-radar-legend" aria-label="Radar chart values">
-        <li>Rating ${formatScore(rating)}/5</li>
-        <li>Ease ${formatScore(ease)}/5</li>
-        <li>Volume ${ratingsVolumeLabel}</li>
-        <li>Again ${wouldTakeAgain == null ? "N/A" : `${Math.round(wouldTakeAgain)}%`}</li>
-      </ul>
+      <div class="nyu-rmp-radar-summary">
+        <div class="nyu-rmp-radar-fit" aria-label="Professor fit score ${fitScore} out of 100"><span>Fit</span> <strong>${fitScore}</strong></div>
+        <ul class="nyu-rmp-radar-legend" aria-label="Radar chart values">
+          <li>Rating ${formatScore(rating)}/5</li>
+          <li>Ease ${formatScore(ease)}/5</li>
+          <li>Volume ${ratingsVolumeLabel}</li>
+          <li>Again ${wouldTakeAgain == null ? "N/A" : `${Math.round(wouldTakeAgain)}%`}</li>
+        </ul>
+      </div>
     </div>
   `;
+}
+
+function radarFitScore(axes) {
+  const weights = {
+    Rating: 0.5,
+    Ease: 0.2,
+    Volume: 0.1,
+    Again: 0.2,
+  };
+  const weighted = axes.reduce((total, axis) => total + axis.value * (weights[axis.label] ?? 0), 0);
+  const availableWeight = axes.reduce((total, axis) => total + (axis.value > 0 ? weights[axis.label] ?? 0 : 0), 0);
+  return Math.round((weighted / (availableWeight || 1)) * 100);
 }
 
 function optionalNonNegativeCount(value) {
@@ -1425,6 +1443,36 @@ export function injectStyles(document = globalThis.document) {
 	      list-style: none;
 	      margin: 0;
 	      padding: 0;
+	    }
+	    .nyu-rmp-radar-summary {
+	      display: grid;
+	      gap: 5px;
+	      min-width: 0;
+	    }
+	    .nyu-rmp-radar-fit {
+	      align-items: baseline;
+	      background: #1f1a2e;
+	      border: 1px solid #1f1a2e;
+	      border-radius: 7px;
+	      color: #ffffff;
+	      display: flex;
+	      gap: 6px;
+	      justify-content: space-between;
+	      line-height: 1;
+	      padding: 6px 7px;
+	    }
+	    .nyu-rmp-radar-fit span {
+	      color: #d8d1e6;
+	      font-size: 9.5px;
+	      font-weight: 750;
+	      letter-spacing: 0;
+	      text-transform: uppercase;
+	    }
+	    .nyu-rmp-radar-fit strong {
+	      color: #ffffff;
+	      font-size: 18px;
+	      font-weight: 800;
+	      letter-spacing: 0;
 	    }
 	    .nyu-rmp-radar-legend li {
 	      background: #f8fafc;

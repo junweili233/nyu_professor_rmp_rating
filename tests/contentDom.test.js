@@ -449,7 +449,7 @@ describe("Albert content DOM injection", () => {
     const radar = document.querySelector(".nyu-rmp-radar");
     expect(radar).not.toBeNull();
     expect(radar.getAttribute("role")).toBe("img");
-    expect(radar.getAttribute("aria-label")).toBe("Professor radar: rating 4.5 out of 5, ease 3.0 out of 5, take again 80%, 64 ratings");
+    expect(radar.getAttribute("aria-label")).toBe("Professor radar: professor fit 82 out of 100, rating 4.5 out of 5, ease 3.0 out of 5, take again 80%, 64 ratings");
     expect(radar.querySelector(".nyu-rmp-radar-shape")).not.toBeNull();
     expect(Array.from(radar.querySelectorAll(".nyu-rmp-radar-axis")).map((node) => node.textContent)).toEqual([
       "Rating",
@@ -457,6 +457,31 @@ describe("Albert content DOM injection", () => {
       "Volume",
       "Again",
     ]);
+  });
+
+  it("summarizes the professor radar as a rating-weighted fit score", async () => {
+    document.body.innerHTML = `<div>Instructor: Ada Lovelace</div>`;
+    const lookupProfessor = vi.fn(async (name) => ({
+      name,
+      department: "Computer Science",
+      rating: 4.5,
+      difficulty: 2.0,
+      ratingsCount: 64,
+      wouldTakeAgain: 80,
+      tags: [],
+      topComments: [],
+      url: "https://www.ratemyprofessors.com/professor/123",
+    }));
+
+    await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
+
+    const radar = document.querySelector(".nyu-rmp-radar");
+    const fit = document.querySelector(".nyu-rmp-radar-fit");
+    expect(fit).not.toBeNull();
+    expect(fit.getAttribute("aria-label")).toBe("Professor fit score 82 out of 100");
+    expect(fit.textContent).toContain("Fit 82");
+    expect(radar.getAttribute("aria-label")).toContain("professor fit 82 out of 100");
+    expect(radar.querySelector("desc")?.textContent).toContain("Professor fit 82 out of 100.");
   });
 
   it("describes radar charts with native SVG title and description", async () => {
@@ -477,7 +502,7 @@ describe("Albert content DOM injection", () => {
 
     const radar = document.querySelector(".nyu-rmp-radar");
     expect(radar.querySelector("title")?.textContent).toBe("Professor rating radar");
-    expect(radar.querySelector("desc")?.textContent).toBe("Rating 4.5 out of 5, ease 3.0 out of 5, take again 80%, 64 ratings.");
+    expect(radar.querySelector("desc")?.textContent).toBe("Professor fit 82 out of 100. Rating 4.5 out of 5, ease 3.0 out of 5, take again 80%, 64 ratings.");
   });
 
   it("wires radar SVG title and description with stable ARIA references", async () => {
@@ -548,8 +573,8 @@ describe("Albert content DOM injection", () => {
 
     const radar = document.querySelector(".nyu-rmp-radar");
     const shapePoints = radar.querySelector(".nyu-rmp-radar-shape").getAttribute("points");
-    expect(radar.getAttribute("aria-label")).toBe("Professor radar: rating 4.5 out of 5, ease 3.0 out of 5, take again N/A, N/A ratings");
-    expect(radar.querySelector("desc")?.textContent).toBe("Rating 4.5 out of 5, ease 3.0 out of 5, take again N/A, N/A ratings.");
+    expect(radar.getAttribute("aria-label")).toBe("Professor radar: professor fit 81 out of 100, rating 4.5 out of 5, ease 3.0 out of 5, take again N/A, N/A ratings");
+    expect(radar.querySelector("desc")?.textContent).toBe("Professor fit 81 out of 100. Rating 4.5 out of 5, ease 3.0 out of 5, take again N/A, N/A ratings.");
     expect(shapePoints).not.toMatch(/NaN|Infinity/);
     expect(Array.from(document.querySelectorAll(".nyu-rmp-radar-legend li")).map((node) => node.textContent)).toEqual([
       "Rating 4.5/5",
