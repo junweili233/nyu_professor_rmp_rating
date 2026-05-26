@@ -4,7 +4,7 @@ import { verifyAlbertRenderedShape } from "../scripts/verify-albert-rendered-sha
 describe("Albert rendered shape verifier", () => {
   it("passes when Albert renders current RMP cards in the trailing rating column", () => {
     expect(verifyAlbertRenderedShape(`
-      <html data-nyu-rmp-content-script="loaded" data-nyu-rmp-version="0.1.3">
+      <html data-nyu-rmp-content-script="loaded" data-nyu-rmp-version="0.1.4">
         <body>
           <div role="row">
             <div role="gridcell" data-nyu-rmp-processed="true">
@@ -26,7 +26,7 @@ describe("Albert rendered shape verifier", () => {
     `)).toMatchObject({
       ok: true,
       contentScript: "loaded",
-      contentVersion: "0.1.3",
+      contentVersion: "0.1.4",
       cardCount: 1,
       quickGridCount: 1,
       processedCellCount: 1,
@@ -66,7 +66,7 @@ describe("Albert rendered shape verifier", () => {
         cardCount: 1,
         quickGridCount: 0,
         failures: [
-          "content script version missing does not match expected 0.1.3",
+          "content script version missing does not match expected 0.1.4",
           "1 rendered RMP card still lacks segmented quick views",
         ],
       });
@@ -75,7 +75,7 @@ describe("Albert rendered shape verifier", () => {
 
   it("fails when Albert still mounts current cards inside processed instructor cells", () => {
     expect(() => verifyAlbertRenderedShape(`
-      <html data-nyu-rmp-content-script="loaded" data-nyu-rmp-version="0.1.3">
+      <html data-nyu-rmp-content-script="loaded" data-nyu-rmp-version="0.1.4">
         <body>
           <div role="row">
             <div role="gridcell" data-nyu-rmp-processed="true">
@@ -95,7 +95,7 @@ describe("Albert rendered shape verifier", () => {
   it("fails when a trailing Albert rating column has no rating root", () => {
     try {
       verifyAlbertRenderedShape(`
-        <html data-nyu-rmp-content-script="loaded" data-nyu-rmp-version="0.1.3">
+        <html data-nyu-rmp-content-script="loaded" data-nyu-rmp-version="0.1.4">
           <body>
             <div role="row">
               <div role="gridcell" data-nyu-rmp-processed="true">

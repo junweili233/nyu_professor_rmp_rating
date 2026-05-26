@@ -237,6 +237,7 @@ async function refreshAlbertContentScriptIfStale({ tabs, scripting, tabId, respo
       version: response.version,
       cardCount: response.cardCount,
       quickGridCount: response.quickGridCount,
+      staleCardLayoutCount: response.staleCardLayoutCount,
     },
   };
 }
@@ -449,6 +450,9 @@ function hasStaleQuickGridShape(response) {
   const cardCount = nonNegativeInteger(response?.cardCount);
   if (cardCount === 0 || response?.overlayState === "disabled") {
     return false;
+  }
+  if (Object.hasOwn(response ?? {}, "staleCardLayoutCount")) {
+    return nonNegativeInteger(response.staleCardLayoutCount) > 0;
   }
   return nonNegativeInteger(response?.quickGridCount) < cardCount;
 }

@@ -22,10 +22,12 @@ describe("content script controller", () => {
   it("responds to popup status pings with overlay state and rendered card counts", async () => {
     const document = globalThis.document;
     document.body.innerHTML = `
-      <div class="nyu-rmp-card"></div>
-      <div class="nyu-rmp-card"></div>
-      <div class="nyu-rmp-quick-grid"></div>
-      <div class="nyu-rmp-quick-grid"></div>
+      <div class="nyu-rmp-card" data-nyu-rmp-version="0.1.4">
+        <div class="nyu-rmp-quick-grid"></div>
+      </div>
+      <div class="nyu-rmp-card" data-nyu-rmp-version="0.1.4">
+        <div class="nyu-rmp-quick-grid"></div>
+      </div>
       <div class="nyu-rmp-rating-root"></div>
       <div class="nyu-rmp-rating-root"></div>
       <div class="nyu-rmp-rating-root"></div>
@@ -49,11 +51,12 @@ describe("content script controller", () => {
     expect(sendResponse).toHaveBeenCalledWith({
       ok: true,
       contentScript: "loaded",
-      version: "0.1.3",
+      version: "0.1.4",
       overlayState: "enabled",
       ratingRootCount: 3,
       cardCount: 2,
       quickGridCount: 2,
+      staleCardLayoutCount: 0,
       radarCount: 1,
       processedCellCount: 2,
       ratingCellCount: 0,
@@ -103,6 +106,7 @@ describe("content script controller", () => {
     expect(sendResponse.mock.calls[0][0]).toMatchObject({
       cardCount: 0,
       quickGridCount: 0,
+      staleCardLayoutCount: 0,
       staleCardLayoutMigrationCount: 1,
     });
   });
@@ -110,8 +114,8 @@ describe("content script controller", () => {
   it("keeps current segmented card markup when the content script restarts", async () => {
     const document = globalThis.document;
     document.body.innerHTML = `
-      <div class="nyu-rmp-rating-root">
-        <div class="nyu-rmp-card">
+      <div class="nyu-rmp-rating-root" data-nyu-rmp-version="0.1.4">
+        <div class="nyu-rmp-card" data-nyu-rmp-version="0.1.4">
           <div class="nyu-rmp-quick-grid"></div>
         </div>
       </div>
@@ -129,6 +133,37 @@ describe("content script controller", () => {
 
     expect(removeAlbertRmpEnhancements).not.toHaveBeenCalled();
     expect(document.querySelector(".nyu-rmp-quick-grid")).not.toBeNull();
+  });
+
+  it("keeps current loading, empty, and error cards when the content script restarts", async () => {
+    const document = globalThis.document;
+    document.body.innerHTML = `
+      <div class="nyu-rmp-rating-root" data-nyu-rmp-version="0.1.4">
+        <div class="nyu-rmp-card is-loading" data-nyu-rmp-version="0.1.4"></div>
+        <div class="nyu-rmp-card is-empty" data-nyu-rmp-version="0.1.4"></div>
+        <div class="nyu-rmp-card is-error" data-nyu-rmp-version="0.1.4"></div>
+      </div>
+    `;
+    const chrome = createChromeMock({ "settings:overlayEnabled": true });
+    const removeAlbertRmpEnhancements = vi.fn();
+
+    await initContentScript({
+      chrome,
+      document,
+      startAlbertRmpEnhancer: vi.fn(() => ({ disconnect: vi.fn() })),
+      removeAlbertRmpEnhancements,
+      lookupProfessor: vi.fn(),
+    });
+
+    expect(removeAlbertRmpEnhancements).not.toHaveBeenCalled();
+    const sendResponse = vi.fn();
+    chrome.runtime.onMessage.listener({ type: "NYU_RMP_CONTENT_STATUS" }, {}, sendResponse);
+    expect(sendResponse.mock.calls[0][0]).toMatchObject({
+      cardCount: 3,
+      quickGridCount: 0,
+      staleCardLayoutCount: 0,
+      staleCardLayoutMigrationCount: 0,
+    });
   });
 
   it("reports processed Albert layout warnings when cell safeguards are missing", async () => {
@@ -162,7 +197,7 @@ describe("content script controller", () => {
         <div role="gridcell" data-nyu-rmp-processed="true">Ada Lovelace</div>
         <div role="gridcell" data-nyu-rmp-rating-cell="true">
           <div class="nyu-rmp-rating-root">
-            <div class="nyu-rmp-card">
+            <div class="nyu-rmp-card" data-nyu-rmp-version="0.1.4">
               <div class="nyu-rmp-quick-grid"></div>
             </div>
           </div>
@@ -201,7 +236,7 @@ describe("content script controller", () => {
         <div role="gridcell" data-nyu-rmp-processed="true" data-nyu-rmp-select-button-rating="true">
           <div class="nyu-rmp-albert-original"><button>Select</button></div>
           <div class="nyu-rmp-rating-root">
-            <div class="nyu-rmp-card">
+            <div class="nyu-rmp-card" data-nyu-rmp-version="0.1.4">
               <div class="nyu-rmp-quick-grid"></div>
             </div>
           </div>

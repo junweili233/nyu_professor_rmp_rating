@@ -1173,7 +1173,8 @@ function mountRatings({ element, names, processedElements = [], document, lookup
   }
 
   if (existingContainer) {
-    const originalContent = element.querySelector(`:scope > .${ORIGINAL_CONTENT_CLASS}`);
+    const originalContent = element.querySelector(`:scope > .${ORIGINAL_CONTENT_CLASS}`)
+      ?? (mountInSourceCell ? wrapOriginalAlbertCellContent(element, document) : null);
     if (originalContent) {
       applyCellMountedChildLayoutSafeguards(originalContent);
     }
@@ -1285,6 +1286,11 @@ function existingRatingContainerForCell(sourceElement, mountElement) {
     return mountedContainer;
   }
 
+  const selectButtonContainer = existingSelectButtonRowRatingContainerForCell(sourceElement, mountElement);
+  if (selectButtonContainer) {
+    return selectButtonContainer;
+  }
+
   if (sourceElement === mountElement) {
     return null;
   }
@@ -1297,6 +1303,28 @@ function existingRatingContainerForCell(sourceElement, mountElement) {
   legacyContainer.classList.add("is-cell-mounted");
   mountElement.append(legacyContainer);
   return legacyContainer;
+}
+
+function existingSelectButtonRowRatingContainerForCell(sourceElement, mountElement) {
+  if (sourceElement !== mountElement || mountElement.dataset.nyuRmpSelectButtonRating !== "true") {
+    return null;
+  }
+
+  const row = closestAlbertRow(mountElement);
+  const ratingCell = row?.querySelector?.(`:scope > [data-nyu-rmp-rating-cell='true']`);
+  const ratingContainer = ratingCell?.querySelector?.(`:scope > .${ROOT_CLASS}.is-cell-mounted, :scope > .${ROOT_CLASS}`);
+  if (!ratingContainer) {
+    return null;
+  }
+
+  ratingContainer.classList.add("is-cell-mounted");
+  mountElement.append(ratingContainer);
+  if (!ratingCell.textContent.trim() && ratingCell.children.length === 0) {
+    ratingCell.remove();
+  } else if (ratingCell.querySelectorAll(`:scope > .${ROOT_CLASS}`).length === 0) {
+    ratingCell.remove();
+  }
+  return ratingContainer;
 }
 
 function closestAlbertRow(element) {

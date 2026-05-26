@@ -96,6 +96,7 @@ export async function initContentScript({
 
 function contentStatusResponse(document) {
   const trailingRatingColumnStatus = ratingColumnStatusResponse(document);
+  const staleCardCount = staleCardLayoutCount(document);
   return {
     ok: true,
     contentScript: document?.documentElement?.dataset.nyuRmpContentScript ?? "loaded",
@@ -104,6 +105,7 @@ function contentStatusResponse(document) {
     ratingRootCount: document?.querySelectorAll?.(".nyu-rmp-rating-root").length ?? 0,
     cardCount: document?.querySelectorAll?.(".nyu-rmp-card").length ?? 0,
     quickGridCount: document?.querySelectorAll?.(".nyu-rmp-quick-grid").length ?? 0,
+    staleCardLayoutCount: staleCardCount,
     radarCount: document?.querySelectorAll?.(".nyu-rmp-radar").length ?? 0,
     processedCellCount: document?.querySelectorAll?.("[data-nyu-rmp-processed='true']").length ?? 0,
     ...trailingRatingColumnStatus,
@@ -127,19 +129,35 @@ function ratingColumnStatusResponse(document) {
 }
 
 function migrateStaleCardLayout(document, removeAlbertRmpEnhancements) {
-  const cardCount = document?.querySelectorAll?.(".nyu-rmp-card").length ?? 0;
-  if (cardCount === 0) {
-    return 0;
-  }
-  const quickGridCount = document?.querySelectorAll?.(".nyu-rmp-quick-grid").length ?? 0;
-  if (quickGridCount >= cardCount) {
+  const staleCardCount = staleCardLayoutCount(document);
+  if (staleCardCount === 0) {
+    if (document?.documentElement) {
+      document.documentElement.dataset.nyuRmpStaleCardLayoutMigrationCount = "0";
+    }
     return 0;
   }
   removeAlbertRmpEnhancements(document);
   if (document?.documentElement) {
-    document.documentElement.dataset.nyuRmpStaleCardLayoutMigrationCount = String(cardCount);
+    document.documentElement.dataset.nyuRmpStaleCardLayoutMigrationCount = String(staleCardCount);
   }
-  return cardCount;
+  return staleCardCount;
+}
+
+function staleCardLayoutCount(document) {
+  return Array.from(document?.querySelectorAll?.(".nyu-rmp-card") ?? [])
+    .filter(isStaleCardLayout).length;
+}
+
+function isStaleCardLayout(card) {
+  if (card.dataset.nyuRmpVersion !== EXTENSION_VERSION) {
+    return true;
+  }
+  if (card.classList.contains("is-loading")
+    || card.classList.contains("is-empty")
+    || card.classList.contains("is-error")) {
+    return false;
+  }
+  return !card.querySelector(":scope > .nyu-rmp-quick-grid");
 }
 
 function markContentScriptLoaded(document) {

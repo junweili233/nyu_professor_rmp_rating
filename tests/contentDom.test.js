@@ -42,9 +42,9 @@ describe("Albert content DOM injection", () => {
     injectStyles(document);
 
     const style = document.getElementById("nyu-rmp-rating-styles");
-    expect(style.dataset.nyuRmpVersion).toBe("0.1.3");
-    expect(style.textContent).toContain("NYU Albert RMP Ratings v0.1.3");
-    expect(style.textContent).toContain("--nyu-rmp-extension-version: \"0.1.3\"");
+    expect(style.dataset.nyuRmpVersion).toBe("0.1.4");
+    expect(style.textContent).toContain("NYU Albert RMP Ratings v0.1.4");
+    expect(style.textContent).toContain("--nyu-rmp-extension-version: \"0.1.4\"");
   });
 
   it("includes narrow Albert cell layout safeguards for the radar and metrics", () => {
@@ -4738,8 +4738,8 @@ describe("Albert content DOM injection", () => {
 
     await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
 
-    expect(document.querySelector(".nyu-rmp-rating-root").dataset.nyuRmpVersion).toBe("0.1.3");
-    expect(document.querySelector(".nyu-rmp-card").dataset.nyuRmpVersion).toBe("0.1.3");
+    expect(document.querySelector(".nyu-rmp-rating-root").dataset.nyuRmpVersion).toBe("0.1.4");
+    expect(document.querySelector(".nyu-rmp-card").dataset.nyuRmpVersion).toBe("0.1.4");
   });
 
   it("ignores hidden Albert instructor templates during scans", async () => {
@@ -9697,6 +9697,45 @@ describe("Albert content DOM injection", () => {
     expect(lookupProfessor).toHaveBeenCalledTimes(1);
   });
 
+  it("moves an existing trailing SELECT_BUTTON row rating under the button on rescan", async () => {
+    document.body.innerHTML = `
+      <table>
+        <tbody>
+          <tr id="legacy-select-row">
+            <td><button name="SSR_CLSRCH_WRK_SELECT_BUTTON$0">Select</button></td>
+            <td>CSCI-UA 201 Computer Systems Organization</td>
+            <td>YAP, CHEE KENG</td>
+            <td>Open</td>
+            <td data-nyu-rmp-rating-cell="true">
+              <div class="nyu-rmp-rating-root is-cell-mounted" data-nyu-rmp-version="0.1.4">
+                <article class="nyu-rmp-card rating-poor" data-nyu-rmp-requested-name="Chee Keng Yap" data-nyu-rmp-version="0.1.4">
+                  <div class="nyu-rmp-quick-grid">RMP 2.1 Recent comments Radar map</div>
+                </article>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    `;
+    const lookupProfessor = vi.fn(async () => ({
+      name: "Chee Keng Yap",
+      rating: 2.1,
+      difficulty: 4.5,
+      ratingsCount: 92,
+      topComments: ["Moved below the button."],
+      url: "https://www.ratemyprofessors.com/professor/419998",
+    }));
+
+    await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
+
+    const selectCell = document.querySelector("#legacy-select-row > td");
+    expect(selectCell.dataset.nyuRmpSelectButtonRating).toBe("true");
+    expect(selectCell.querySelector(":scope > .nyu-rmp-albert-original button")).not.toBeNull();
+    expect(selectCell.querySelector(":scope > .nyu-rmp-rating-root .nyu-rmp-card").dataset.nyuRmpRequestedName).toBe("Chee Keng Yap");
+    expect(document.querySelector("#legacy-select-row > [data-nyu-rmp-rating-cell='true']")).toBeNull();
+    expect(lookupProfessor).not.toHaveBeenCalled();
+  });
+
   it("shows a SELECT_BUTTON row rating when Albert puts the button and professor in one gridcell", async () => {
     document.body.innerHTML = `
       <table>
@@ -9753,7 +9792,7 @@ describe("Albert content DOM injection", () => {
     expect(instructorCell.dataset.nyuRmpProcessed).toBe("true");
     expect(originalContent).not.toBeNull();
     expect(originalContent.dataset.nyuRmpOriginal).toBe("true");
-    expect(originalContent.dataset.nyuRmpVersion).toBe("0.1.3");
+    expect(originalContent.dataset.nyuRmpVersion).toBe("0.1.4");
     expect(originalContent.textContent.trim()).toBe("YAP, CHEE KENG");
     expect(instructorCell.style.display).toBe("block");
     expect(instructorCell.style.alignItems).toBe("flex-start");
@@ -9849,7 +9888,7 @@ describe("Albert content DOM injection", () => {
       <div role="row">
         <div role="gridcell" id="grid-instructor" data-nyu-rmp-processed="true">
           <div class="nyu-rmp-albert-original" data-nyu-rmp-original="true">Ada Lovelace</div>
-          <div class="nyu-rmp-rating-root is-cell-mounted" data-nyu-rmp-version="0.1.3"></div>
+          <div class="nyu-rmp-rating-root is-cell-mounted" data-nyu-rmp-version="0.1.4"></div>
         </div>
       </div>
     `;
@@ -9907,8 +9946,8 @@ describe("Albert content DOM injection", () => {
       <div role="row">
         <div role="gridcell" id="grid-instructor" data-nyu-rmp-processed="true">
           <div class="nyu-rmp-albert-original" data-nyu-rmp-original="true">Ada Lovelace</div>
-          <div class="nyu-rmp-rating-root is-cell-mounted" data-nyu-rmp-version="0.1.3">
-            <article class="nyu-rmp-card rating-good" data-nyu-rmp-requested-name="Ada Lovelace" data-nyu-rmp-version="0.1.3">
+          <div class="nyu-rmp-rating-root is-cell-mounted" data-nyu-rmp-version="0.1.4">
+            <article class="nyu-rmp-card rating-good" data-nyu-rmp-requested-name="Ada Lovelace" data-nyu-rmp-version="0.1.4">
               <div class="nyu-rmp-card-head"><strong>Ada Lovelace</strong></div>
               <div class="nyu-rmp-department">Computer Science</div>
               <dl class="nyu-rmp-score-row nyu-rmp-metrics"></dl>
@@ -9936,7 +9975,7 @@ describe("Albert content DOM injection", () => {
     const ratingRoot = document.querySelector("[data-nyu-rmp-rating-cell='true'] > .nyu-rmp-rating-root");
     const card = ratingRoot.querySelector(".nyu-rmp-card");
     const quickGrid = card.querySelector(":scope > .nyu-rmp-quick-grid");
-    expect(ratingRoot.dataset.nyuRmpVersion).toBe("0.1.3");
+    expect(ratingRoot.dataset.nyuRmpVersion).toBe("0.1.4");
     expect(ratingRoot.querySelectorAll(".nyu-rmp-card")).toHaveLength(1);
     expect(quickGrid).not.toBeNull();
     expect(quickGrid.textContent.replace(/\s+/g, " ").trim()).toBe("RMP 4.7 Strong rating 38 ratings Recent comments Radar map");
@@ -9982,7 +10021,7 @@ describe("Albert content DOM injection", () => {
     document.body.innerHTML = `
       <div role="gridcell" id="grid-instructor" data-nyu-rmp-processed="true">
         <div class="nyu-rmp-albert-original" data-nyu-rmp-original="true">Ada Lovelace</div>
-        <div class="nyu-rmp-rating-root is-cell-mounted" data-nyu-rmp-version="0.1.3"></div>
+        <div class="nyu-rmp-rating-root is-cell-mounted" data-nyu-rmp-version="0.1.4"></div>
       </div>
     `;
 

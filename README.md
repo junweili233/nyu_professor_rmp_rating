@@ -7,7 +7,7 @@ Chrome extension that displays Rate My Professors ratings and useful comments be
 ```powershell
 npm install
 npm run verify:local
-npm run package:release -- v0.1.3
+npm run package:release -- v0.1.4
 ```
 
 Load `dist` as an unpacked Chrome extension after `npm run build`.
@@ -60,7 +60,7 @@ npm run build
 npm run verify:package
 npm run verify:release
 npm run verify:albert-smoke
-npm run package:release -- v0.1.3
+npm run package:release -- v0.1.4
 npm run verify:chrome-profile
 npm run verify:diagnostics -- .\popup-diagnostics.txt
 npm run verify:live
