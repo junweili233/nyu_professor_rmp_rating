@@ -1069,6 +1069,50 @@ describe("Albert content DOM injection", () => {
     ]);
   });
 
+  it("marks radar legend axes with risk and support states", async () => {
+    document.body.innerHTML = `
+      <table>
+        <tbody>
+          <tr>
+            <td>CSCI-UA 201 Computer Systems Organization</td>
+            <td>Instructor: Chee Keng Yap</td>
+          </tr>
+        </tbody>
+      </table>
+    `;
+    const lookupProfessor = vi.fn(async (name) => ({
+      name,
+      department: "Computer Science",
+      rating: 2.1,
+      difficulty: 4.5,
+      ratingsCount: 92,
+      wouldTakeAgain: 24,
+      tags: [],
+      topComments: [
+        { text: "CS201 projects are hard, confusing, overwhelming, avoid if behind.", course: "CSCI-UA 201" },
+      ],
+      url: "https://www.ratemyprofessors.com/professor/419998",
+    }));
+
+    await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
+
+    const legendItems = Array.from(document.querySelectorAll(".nyu-rmp-radar-legend li"));
+    expect(legendItems.map((node) => node.textContent)).toEqual([
+      "Rating 2.1/5",
+      "Ease 0.5/5",
+      "Volume 92",
+      "Take again 24%",
+      "Comments 0/100",
+    ]);
+    expect(legendItems.map((node) => node.className)).toEqual([
+      "nyu-rmp-radar-legend-item is-weak",
+      "nyu-rmp-radar-legend-item is-weak",
+      "nyu-rmp-radar-legend-item is-strong",
+      "nyu-rmp-radar-legend-item is-weak",
+      "nyu-rmp-radar-legend-item is-weak",
+    ]);
+  });
+
   it("renders labeled radar nodes for each professor fit metric", async () => {
     document.body.innerHTML = `<div>Instructor: Ada Lovelace</div>`;
     const lookupProfessor = vi.fn(async (name) => ({

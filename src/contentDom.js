@@ -1191,7 +1191,7 @@ function renderRadarChart({ chartId, professorName = "Professor", rating, diffic
   const ratingsCountLabel = normalizedRatingsCount == null ? "N/A ratings" : formatRatingsCount(normalizedRatingsCount);
   const ratingsVolumeLabel = normalizedRatingsCount == null ? "N/A" : normalizedRatingsCount;
   const commentSignalLabel = commentSignal == null ? "" : `, comment signal ${Math.round(commentSignal * 100)} out of 100`;
-  const commentLegendLabel = commentSignal == null ? "" : `<li>Comments ${Math.round(commentSignal * 100)}/100</li>`;
+  const commentLegendLabel = commentSignal == null ? "" : radarLegendItem(`Comments ${Math.round(commentSignal * 100)}/100`, scalePercent(commentSignal), true);
   const safeChartId = String(chartId ?? "0").replace(/\D+/g, "") || "0";
   const titleId = `nyu-rmp-radar-title-${safeChartId}`;
   const descId = `nyu-rmp-radar-desc-${safeChartId}`;
@@ -1246,15 +1246,33 @@ function renderRadarChart({ chartId, professorName = "Professor", rating, diffic
         <div class="${escapeHtml(radarFitClassName)}" aria-label="Professor fit score ${radarFit.score} out of 100, based on ${metricCountLabel}${limitedDataLabel}"><span>Fit</span> <strong>${radarFit.score}</strong> <em>${compactMetricCountLabel}</em>${limitedDataText}</div>
         <div class="nyu-rmp-radar-weight-note" role="note">Rating-led fit: rating counts most.</div>
         <ul class="nyu-rmp-radar-legend" aria-label="${escapeHtml(legendLabel)}">
-          <li>Rating ${formatScore(rating)}/5</li>
-          <li>Ease ${formatScore(ease)}/5</li>
-          <li>Volume ${ratingsVolumeLabel}</li>
-          <li>Take again ${wouldTakeAgain == null ? "N/A" : `${Math.round(wouldTakeAgain)}%`}</li>
+          ${radarLegendItem(`Rating ${formatScore(rating)}/5`, scaleFivePoint(rating), rating != null)}
+          ${radarLegendItem(`Ease ${formatScore(ease)}/5`, scaleFivePoint(ease), ease != null)}
+          ${radarLegendItem(`Volume ${ratingsVolumeLabel}`, scaleRatingVolume(normalizedRatingsCount), normalizedRatingsCount != null)}
+          ${radarLegendItem(`Take again ${wouldTakeAgain == null ? "N/A" : `${Math.round(wouldTakeAgain)}%`}`, scalePercent(wouldTakeAgain), wouldTakeAgain != null)}
           ${commentLegendLabel}
         </ul>
       </div>
     </div>
   `;
+}
+
+function radarLegendItem(label, value, available) {
+  return `<li class="nyu-rmp-radar-legend-item is-${radarLegendState(value, available)}">${escapeHtml(label)}</li>`;
+}
+
+function radarLegendState(value, available) {
+  if (!available) {
+    return "limited";
+  }
+  const normalized = clamp01(value);
+  if (normalized >= 0.7) {
+    return "strong";
+  }
+  if (normalized >= 0.5) {
+    return "mixed";
+  }
+  return "weak";
 }
 
 function radarMetricNode(axis, index, total, metrics) {
@@ -2038,6 +2056,26 @@ export function injectStyles(document = globalThis.document) {
 	      font-weight: 650;
 	      line-height: 1.2;
 	      padding: 5px 6px;
+	    }
+	    .nyu-rmp-radar-legend-item.is-strong {
+	      background: #edf7f1;
+	      border-color: #b8dcc8;
+	      color: #1a6a3e;
+	    }
+	    .nyu-rmp-radar-legend-item.is-mixed {
+	      background: #fef7ed;
+	      border-color: #e8cf9a;
+	      color: #8a5a14;
+	    }
+	    .nyu-rmp-radar-legend-item.is-weak {
+	      background: #fef4f4;
+	      border-color: #e8b8b8;
+	      color: #a82020;
+	    }
+	    .nyu-rmp-radar-legend-item.is-limited {
+	      background: #f6f4f8;
+	      border-color: #ddd6e8;
+	      color: #6b5e7a;
 	    }
 	    .nyu-rmp-score-row .nyu-rmp-verdict {
 	      align-self: center;
