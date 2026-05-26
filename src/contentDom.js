@@ -3,6 +3,7 @@ import { EXTENSION_VERSION } from "./shared/version.js";
 
 const ROOT_CLASS = "nyu-rmp-rating-root";
 const STYLE_ID = "nyu-rmp-rating-styles";
+const ORIGINAL_CONTENT_CLASS = "nyu-rmp-albert-original";
 const COMMENT_PREVIEW_LENGTH = 150;
 const MAX_RENDERED_COMMENTS = 3;
 const RMP_COMMENT_SAMPLE_SIZE = 20;
@@ -273,6 +274,10 @@ export function scanAlbertPageOnce({ document = globalThis.document, lookupProfe
 export function removeAlbertRmpEnhancements(document = globalThis.document) {
   for (const root of document.querySelectorAll(`.${ROOT_CLASS}`)) {
     root.remove();
+  }
+
+  for (const wrapper of document.querySelectorAll(`.${ORIGINAL_CONTENT_CLASS}`)) {
+    unwrapOriginalAlbertContent(wrapper);
   }
 
   for (const element of document.querySelectorAll("[data-nyu-rmp-processed]")) {
@@ -956,11 +961,46 @@ function mountRatings({ element, names, processedElements = [], document, lookup
   }
 
   if (isCellMount) {
+    wrapOriginalAlbertCellContent(element, document);
     element.append(container);
   } else {
     element.insertAdjacentElement("afterend", container);
   }
   return pendingLookups;
+}
+
+function wrapOriginalAlbertCellContent(element, document) {
+  if (element.querySelector?.(`:scope > .${ORIGINAL_CONTENT_CLASS}`)) {
+    return;
+  }
+
+  const originalNodes = Array.from(element.childNodes)
+    .filter((node) => !(node.nodeType === Node.ELEMENT_NODE && node.classList?.contains(ROOT_CLASS)));
+  if (originalNodes.length === 0 || originalNodes.every(isEmptyTextNode)) {
+    return;
+  }
+
+  const wrapper = document.createElement("div");
+  wrapper.className = ORIGINAL_CONTENT_CLASS;
+  element.insertBefore(wrapper, element.firstChild);
+  for (const node of originalNodes) {
+    wrapper.append(node);
+  }
+}
+
+function unwrapOriginalAlbertContent(wrapper) {
+  const parent = wrapper.parentNode;
+  if (!parent) {
+    return;
+  }
+  while (wrapper.firstChild) {
+    parent.insertBefore(wrapper.firstChild, wrapper);
+  }
+  wrapper.remove();
+}
+
+function isEmptyTextNode(node) {
+  return node.nodeType === Node.TEXT_NODE && node.textContent.trim() === "";
 }
 
 function courseCodeForElement(element) {
@@ -1871,6 +1911,17 @@ export function injectStyles(document = globalThis.document) {
 	      grid-column: 1 / -1;
 	      justify-self: start;
 	      margin-top: 6px;
+	    }
+	    .nyu-rmp-albert-original {
+	      display: block;
+	      flex-basis: 100%;
+	      grid-column: 1 / -1;
+	      line-height: 1.35;
+	      max-width: 100%;
+	      min-width: 0;
+	      overflow-wrap: normal;
+	      white-space: normal;
+	      word-break: normal;
 	    }
 	    td > .nyu-rmp-rating-root,
 	    th > .nyu-rmp-rating-root,

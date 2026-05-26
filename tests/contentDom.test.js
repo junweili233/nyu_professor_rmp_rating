@@ -102,6 +102,8 @@ describe("Albert content DOM injection", () => {
     expect(cellMountedStyles).toContain("flex-basis: 100%");
     expect(cellMountedStyles).toContain("grid-column: 1 / -1");
     expect(cellMountedStyles).toContain("margin-top: 6px");
+    expect(styles).toContain(".nyu-rmp-albert-original");
+    expect(styles).toContain("white-space: normal");
   });
 
   it("prevents long RMP text from forcing Albert cells wider", () => {
@@ -9421,12 +9423,36 @@ describe("Albert content DOM injection", () => {
     await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
 
     const instructorCell = document.getElementById("grid-instructor");
+    const originalContent = instructorCell.querySelector(":scope > .nyu-rmp-albert-original");
     const ratingRoot = instructorCell.querySelector(":scope > .nyu-rmp-rating-root");
     expect(instructorCell.dataset.nyuRmpProcessed).toBe("true");
-    expect(Array.from(instructorCell.childNodes)[0].textContent.trim()).toBe("YAP, CHEE KENG");
+    expect(originalContent).not.toBeNull();
+    expect(originalContent.textContent.trim()).toBe("YAP, CHEE KENG");
+    expect(Array.from(instructorCell.children).map((child) => child.className)).toEqual([
+      "nyu-rmp-albert-original",
+      "nyu-rmp-rating-root is-cell-mounted",
+    ]);
     expect(ratingRoot).not.toBeNull();
     expect(ratingRoot.classList.contains("is-cell-mounted")).toBe(true);
     expect(ratingRoot.querySelector(".nyu-rmp-card")).not.toBeNull();
+  });
+
+  it("removes original-content wrappers when the overlay is disabled", async () => {
+    document.body.innerHTML = `
+      <div role="row">
+        <div role="gridcell" id="grid-instructor" aria-label="Instructor">YAP, CHEE KENG</div>
+      </div>
+    `;
+    const lookupProfessor = vi.fn(async () => null);
+
+    await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
+    removeAlbertRmpEnhancements(document);
+
+    const instructorCell = document.getElementById("grid-instructor");
+    expect(instructorCell.querySelector(".nyu-rmp-albert-original")).toBeNull();
+    expect(instructorCell.querySelector(".nyu-rmp-rating-root")).toBeNull();
+    expect(instructorCell.textContent.trim()).toBe("YAP, CHEE KENG");
+    expect(instructorCell.dataset.nyuRmpProcessed).toBeUndefined();
   });
 
   it("injects one rating card for each adjacent-cell co-instructor", async () => {
