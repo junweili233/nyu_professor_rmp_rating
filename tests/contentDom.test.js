@@ -858,6 +858,7 @@ describe("Albert content DOM injection", () => {
     expect(Array.from(document.querySelectorAll(".nyu-rmp-evidence-chip")).map((node) => node.textContent)).toContain("CSCI-UA 201 comment risk 25/100");
     expect(Array.from(document.querySelectorAll(".nyu-rmp-radar-legend li")).map((node) => node.textContent)).toContain("Comments 25/100");
     expect(document.querySelector(".nyu-rmp-radar").getAttribute("aria-label")).toContain("comment signal 25 out of 100");
+    expect(document.querySelector(".nyu-rmp-card").getAttribute("aria-label")).toContain("CSCI-UA 201 comment risk 25 out of 100");
     expect(document.querySelector(".nyu-rmp-comments-course-match").textContent).toBe("1 CSCI-UA 201 match");
   });
 

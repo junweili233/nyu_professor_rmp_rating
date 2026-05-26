@@ -1102,8 +1102,8 @@ function updateRatingCard(card, result, { requestedName = "Professor", lookupPro
     recommendationClassName: recommendation.className,
   });
   const recommendationEvidence = renderRecommendationEvidence({ rating, difficulty, ratingsCount: result.ratingsCount, wouldTakeAgain, commentSignal, courseCode, courseMatchedCommentCount });
-  const collapsedCardLabel = formatCardSummaryLabel({ professorName, department, rating, ratingVerdict: ratingVerdict.label, recommendation, radarFit, ratingsCountLabel, difficulty, ease, wouldTakeAgain, commentCount, courseMatchedCommentCount, courseCode, tagNames, updatedAt, matchNote, cacheNotice });
-  const expandedCardLabel = formatCardSummaryLabel({ professorName, department, rating, ratingVerdict: ratingVerdict.label, recommendation, radarFit, ratingsCountLabel, difficulty, ease, wouldTakeAgain, commentCount: usefulTopComments.length, courseMatchedCommentCount, courseCode, tagNames, updatedAt, matchNote, cacheNotice });
+  const collapsedCardLabel = formatCardSummaryLabel({ professorName, department, rating, ratingVerdict: ratingVerdict.label, recommendation, radarFit, ratingsCountLabel, difficulty, ease, wouldTakeAgain, commentSignal, commentCount, courseMatchedCommentCount, courseCode, tagNames, updatedAt, matchNote, cacheNotice });
+  const expandedCardLabel = formatCardSummaryLabel({ professorName, department, rating, ratingVerdict: ratingVerdict.label, recommendation, radarFit, ratingsCountLabel, difficulty, ease, wouldTakeAgain, commentSignal, commentCount: usefulTopComments.length, courseMatchedCommentCount, courseCode, tagNames, updatedAt, matchNote, cacheNotice });
   card.dataset.nyuRmpCollapsedLabel = collapsedCardLabel;
   card.dataset.nyuRmpExpandedLabel = expandedCardLabel;
 
@@ -2289,7 +2289,7 @@ function formatRatingSummary(value) {
   return value == null ? "rating unavailable" : `${formatScore(value)} out of 5`;
 }
 
-function formatCardSummaryLabel({ professorName, department, rating, ratingVerdict, recommendation, radarFit, ratingsCountLabel, difficulty, ease, wouldTakeAgain, commentCount, courseMatchedCommentCount = 0, courseCode = "", tagNames = [], updatedAt, matchNote, cacheNotice }) {
+function formatCardSummaryLabel({ professorName, department, rating, ratingVerdict, recommendation, radarFit, ratingsCountLabel, difficulty, ease, wouldTakeAgain, commentSignal = null, commentCount, courseMatchedCommentCount = 0, courseCode = "", tagNames = [], updatedAt, matchNote, cacheNotice }) {
   const takeAgainLabel = wouldTakeAgain == null ? "N/A" : `${Math.round(wouldTakeAgain)}%`;
   return [
     `RMP rating for ${professorName}: ${formatRatingSummary(rating)}`,
@@ -2302,12 +2302,27 @@ function formatCardSummaryLabel({ professorName, department, rating, ratingVerdi
     `difficulty ${formatScore(difficulty)} out of 5`,
     `ease ${formatScore(ease)} out of 5`,
     `take again ${takeAgainLabel}`,
+    formatCommentSignalSummary(commentSignal, { courseCode, courseMatchedCommentCount }),
     formatUsefulCommentSummary(commentCount, courseMatchedCommentCount, courseCode),
     formatTagSummary(tagNames),
     updatedAt,
     matchNote,
     cacheNotice,
   ].filter(Boolean).join(", ");
+}
+
+function formatCommentSignalSummary(commentSignal, { courseCode = "", courseMatchedCommentCount = 0 } = {}) {
+  if (commentSignal == null) {
+    return "";
+  }
+  const score = Math.round(commentSignal * 100);
+  if (courseCode && courseMatchedCommentCount > 0 && score <= 40) {
+    return `${courseCode} comment risk ${score} out of 100`;
+  }
+  if (courseCode && courseMatchedCommentCount > 0 && score >= 70) {
+    return `${courseCode} comment support ${score} out of 100`;
+  }
+  return `comment signal ${score} out of 100`;
 }
 
 function formatCacheNotice(cacheStatus) {
