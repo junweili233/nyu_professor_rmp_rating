@@ -48,6 +48,14 @@ describe("extension popup markup", () => {
     expect(popup).toContain("Checking active Albert page");
   });
 
+  it("renders a dedicated popup build version target", async () => {
+    const popup = await readFile(new URL("../src/popup.html", import.meta.url), "utf8");
+
+    expect(popup).toContain('id="build-version"');
+    expect(popup).toContain('class="build-version"');
+    expect(popup).toContain('aria-label="Extension build version"');
+  });
+
   it("marks the overlay toggle as an accessible switch with visible keyboard focus", async () => {
     const popup = await readFile(new URL("../src/popup.html", import.meta.url), "utf8");
 

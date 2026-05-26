@@ -74,6 +74,20 @@ describe("extension popup controller", () => {
     expect(status.getAttribute("aria-atomic")).toBe("true");
   });
 
+  it("shows the installed extension build version in the popup", async () => {
+    document.body.innerHTML = `
+      <p id="status"></p>
+      <p id="build-version"></p>
+      <input id="enable-overlay" type="checkbox" />
+      <button id="clear-cache"></button>
+    `;
+    const storage = createStorageMock();
+
+    await initPopup({ document, storage });
+
+    expect(document.getElementById("build-version").textContent).toBe("Build v0.1.1");
+  });
+
   it("reports when the active Albert page is connected to the content script", async () => {
     document.body.innerHTML = `
       <p id="status"></p>

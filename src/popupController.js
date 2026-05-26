@@ -1,3 +1,5 @@
+import { EXTENSION_VERSION } from "./shared/version.js";
+
 export async function initPopup({
   document = globalThis.document,
   storage = globalThis.chrome?.storage?.local,
@@ -7,6 +9,7 @@ export async function initPopup({
 } = {}) {
   const status = document.getElementById("status");
   const pageStatus = document.getElementById("page-status");
+  const buildVersion = document.getElementById("build-version");
   const clearButton = document.getElementById("clear-cache");
   const enableOverlay = document.getElementById("enable-overlay");
   if (!status || !storage) {
@@ -19,6 +22,9 @@ export async function initPopup({
     pageStatus.setAttribute("role", "status");
     pageStatus.setAttribute("aria-live", "polite");
     pageStatus.setAttribute("aria-atomic", "true");
+  }
+  if (buildVersion) {
+    buildVersion.textContent = `Build v${EXTENSION_VERSION}`;
   }
 
   let settings;
