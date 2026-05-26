@@ -2383,7 +2383,7 @@ function renderCommentsPanel(comments, { courseMatchedCommentCount = 0, courseCo
     : "";
   const body = comments
     ? `<ul class="nyu-rmp-comments" id="${escapeHtml(listId)}" aria-label="${escapeHtml(listLabel)}">${comments}</ul>`
-    : `<p class="nyu-rmp-comments-empty">No useful comments found on RMP.</p>`;
+    : `<p class="nyu-rmp-comments-empty">No useful comments found in the ${RMP_COMMENT_SAMPLE_SIZE}-rating RMP sample.</p>`;
   return `
     <div class="nyu-rmp-comments-panel" role="region" aria-label="${escapeHtml(listLabel)}">
       <div class="nyu-rmp-comments-heading">${heading}<span class="nyu-rmp-comments-sample" aria-label="${escapeHtml(sampleLabel)}">${escapeHtml(sampleText)}</span>${matchBadge}</div>

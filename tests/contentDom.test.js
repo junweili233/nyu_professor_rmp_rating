@@ -682,7 +682,7 @@ describe("Albert content DOM injection", () => {
     const panel = document.querySelector(".nyu-rmp-comments-panel");
     expect(panel.getAttribute("role")).toBe("region");
     expect(panel.getAttribute("aria-label")).toBe("Most useful RMP comments from a 20-rating sample, 0 shown");
-    expect(panel.querySelector(".nyu-rmp-comments-empty").textContent).toBe("No useful comments found on RMP.");
+    expect(panel.querySelector(".nyu-rmp-comments-empty").textContent).toBe("No useful comments found in the 20-rating RMP sample.");
   });
 
   it("keeps the take-again metric visible when RMP omits take-again data", async () => {
@@ -2214,7 +2214,7 @@ describe("Albert content DOM injection", () => {
 
     const panel = document.querySelector(".nyu-rmp-comments-panel");
     expect(panel.querySelector(".nyu-rmp-comments-heading").childNodes[0].textContent).toBe("Most useful comments");
-    expect(panel.querySelector(".nyu-rmp-comments-empty").textContent).toBe("No useful comments found on RMP.");
+    expect(panel.querySelector(".nyu-rmp-comments-empty").textContent).toBe("No useful comments found in the 20-rating RMP sample.");
     expect(document.querySelector(".nyu-rmp-comments")).toBeNull();
   });
 
