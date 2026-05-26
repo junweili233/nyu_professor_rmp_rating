@@ -1069,6 +1069,9 @@ describe("Albert content DOM injection", () => {
     expect(document.querySelector(".nyu-rmp-match-note").textContent).toBe(
       "Fuzzy RMP match - Albert: Chee Keng Yap",
     );
+    expect(document.querySelector(".nyu-rmp-card").getAttribute("aria-label")).toContain(
+      "Fuzzy RMP match - Albert: Chee Keng Yap",
+    );
   });
 
   it("refreshes a professor card with a cache-bypassing lookup", async () => {

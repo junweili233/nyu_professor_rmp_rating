@@ -1027,7 +1027,7 @@ function updateRatingCard(card, result, { requestedName = "Professor", lookupPro
   card.classList.add(`rating-${ratingClass}`);
   card.setAttribute(
     "aria-label",
-    formatCardSummaryLabel({ professorName, rating, ratingsCountLabel, difficulty, ease, wouldTakeAgain }),
+    formatCardSummaryLabel({ professorName, rating, ratingsCountLabel, difficulty, ease, wouldTakeAgain, matchNote }),
   );
   card.innerHTML = `
     <div class="nyu-rmp-card-head">
@@ -1584,7 +1584,7 @@ function formatRatingSummary(value) {
   return value == null ? "rating unavailable" : `${formatScore(value)} out of 5`;
 }
 
-function formatCardSummaryLabel({ professorName, rating, ratingsCountLabel, difficulty, ease, wouldTakeAgain }) {
+function formatCardSummaryLabel({ professorName, rating, ratingsCountLabel, difficulty, ease, wouldTakeAgain, matchNote }) {
   const takeAgainLabel = wouldTakeAgain == null ? "N/A" : `${Math.round(wouldTakeAgain)}%`;
   return [
     `RMP rating for ${professorName}: ${formatRatingSummary(rating)}`,
@@ -1592,7 +1592,8 @@ function formatCardSummaryLabel({ professorName, rating, ratingsCountLabel, diff
     `difficulty ${formatScore(difficulty)} out of 5`,
     `ease ${formatScore(ease)} out of 5`,
     `take again ${takeAgainLabel}`,
-  ].join(", ");
+    matchNote,
+  ].filter(Boolean).join(", ");
 }
 
 function formatRatingsCount(value) {
