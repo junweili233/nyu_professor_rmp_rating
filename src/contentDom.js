@@ -4,6 +4,14 @@ import { EXTENSION_VERSION } from "./shared/version.js";
 const ROOT_CLASS = "nyu-rmp-rating-root";
 const STYLE_ID = "nyu-rmp-rating-styles";
 const ORIGINAL_CONTENT_CLASS = "nyu-rmp-albert-original";
+const PROCESSED_CELL_STYLE_SNAPSHOT_DATA = "nyuRmpProcessedCellStyleSnapshot";
+const PROCESSED_CELL_LAYOUT_PROPERTIES = [
+  ["align-items", "flex-start"],
+  ["flex-wrap", "wrap"],
+  ["grid-template-columns", "minmax(0, 1fr)"],
+  ["min-width", "0"],
+  ["display", "block", { ariaOnly: true }],
+];
 const ELEMENT_NODE_TYPE = 1;
 const TEXT_NODE_TYPE = 3;
 const COMMENT_PREVIEW_LENGTH = 150;
@@ -1056,22 +1064,60 @@ function wrapOriginalAlbertCellContent(element, document) {
 }
 
 function applyProcessedCellLayoutSafeguards(element) {
-  element.style.setProperty("align-items", "flex-start", "important");
-  element.style.setProperty("flex-wrap", "wrap", "important");
-  element.style.setProperty("grid-template-columns", "minmax(0, 1fr)", "important");
-  element.style.setProperty("min-width", "0", "important");
-  if (isAriaCell(element)) {
-    element.style.setProperty("display", "block", "important");
+  captureProcessedCellStyleSnapshot(element);
+  const ariaCell = isAriaCell(element);
+  for (const [property, value, options = {}] of PROCESSED_CELL_LAYOUT_PROPERTIES) {
+    if (options.ariaOnly && !ariaCell) {
+      continue;
+    }
+    element.style.setProperty(property, value, "important");
   }
 }
 
 function removeProcessedCellLayoutSafeguards(element) {
-  element.style.removeProperty("align-items");
-  element.style.removeProperty("flex-wrap");
-  element.style.removeProperty("grid-template-columns");
-  element.style.removeProperty("min-width");
-  if (isAriaCell(element)) {
-    element.style.removeProperty("display");
+  const snapshot = parseProcessedCellStyleSnapshot(element);
+  if (snapshot) {
+    for (const { property, value, priority } of snapshot) {
+      if (value) {
+        element.style.setProperty(property, value, priority);
+      } else {
+        element.style.removeProperty(property);
+      }
+    }
+    delete element.dataset[PROCESSED_CELL_STYLE_SNAPSHOT_DATA];
+    return;
+  }
+
+  for (const [property] of PROCESSED_CELL_LAYOUT_PROPERTIES) {
+    element.style.removeProperty(property);
+  }
+}
+
+function captureProcessedCellStyleSnapshot(element) {
+  if (element.dataset[PROCESSED_CELL_STYLE_SNAPSHOT_DATA]) {
+    return;
+  }
+
+  const snapshot = PROCESSED_CELL_LAYOUT_PROPERTIES.map(([property]) => ({
+    property,
+    value: element.style.getPropertyValue(property),
+    priority: element.style.getPropertyPriority(property),
+  }));
+  element.dataset[PROCESSED_CELL_STYLE_SNAPSHOT_DATA] = JSON.stringify(snapshot);
+}
+
+function parseProcessedCellStyleSnapshot(element) {
+  const value = element.dataset[PROCESSED_CELL_STYLE_SNAPSHOT_DATA];
+  if (!value) {
+    return null;
+  }
+  try {
+    const parsed = JSON.parse(value);
+    return Array.isArray(parsed)
+      ? parsed.filter((entry) => entry && typeof entry.property === "string")
+      : null;
+  } catch {
+    return null;
   }
 }
 

@@ -9659,6 +9659,39 @@ describe("Albert content DOM injection", () => {
     expect(instructorCell.style.minWidth).toBe("");
   });
 
+  it("restores pre-existing Albert inline cell styles when the overlay is disabled", async () => {
+    document.body.innerHTML = `
+      <div role="row">
+        <div role="gridcell" id="grid-instructor" aria-label="Instructor">YAP, CHEE KENG</div>
+      </div>
+    `;
+    const instructorCell = document.getElementById("grid-instructor");
+    instructorCell.style.setProperty("display", "flex", "important");
+    instructorCell.style.setProperty("align-items", "center");
+    instructorCell.style.setProperty("flex-wrap", "nowrap");
+    instructorCell.style.setProperty("grid-template-columns", "72px minmax(0, 1fr)");
+    instructorCell.style.setProperty("min-width", "144px", "important");
+    const lookupProfessor = vi.fn(async () => null);
+
+    await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
+    expect(instructorCell.style.display).toBe("block");
+    expect(instructorCell.style.getPropertyPriority("display")).toBe("important");
+    expect(instructorCell.style.flexWrap).toBe("wrap");
+    expect(instructorCell.style.getPropertyPriority("flex-wrap")).toBe("important");
+
+    removeAlbertRmpEnhancements(document);
+
+    expect(instructorCell.dataset.nyuRmpProcessedCellStyleSnapshot).toBeUndefined();
+    expect(instructorCell.style.display).toBe("flex");
+    expect(instructorCell.style.getPropertyPriority("display")).toBe("important");
+    expect(instructorCell.style.alignItems).toBe("center");
+    expect(instructorCell.style.getPropertyPriority("align-items")).toBe("");
+    expect(instructorCell.style.flexWrap).toBe("nowrap");
+    expect(instructorCell.style.gridTemplateColumns).toBe("72px minmax(0, 1fr)");
+    expect(instructorCell.style.minWidth).toBe("144px");
+    expect(instructorCell.style.getPropertyPriority("min-width")).toBe("important");
+  });
+
   it("preserves original Albert instructor links when wrapping processed cell content", async () => {
     document.body.innerHTML = `
       <div role="row">
