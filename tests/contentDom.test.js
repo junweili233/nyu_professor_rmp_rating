@@ -9428,6 +9428,8 @@ describe("Albert content DOM injection", () => {
     const ratingRoot = instructorCell.querySelector(":scope > .nyu-rmp-rating-root");
     expect(instructorCell.dataset.nyuRmpProcessed).toBe("true");
     expect(originalContent).not.toBeNull();
+    expect(originalContent.dataset.nyuRmpOriginal).toBe("true");
+    expect(originalContent.dataset.nyuRmpVersion).toBe("0.1.1");
     expect(originalContent.textContent.trim()).toBe("YAP, CHEE KENG");
     expect(Array.from(instructorCell.children).map((child) => child.className)).toEqual([
       "nyu-rmp-albert-original",

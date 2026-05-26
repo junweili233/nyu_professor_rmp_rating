@@ -988,6 +988,8 @@ function wrapOriginalAlbertCellContent(element, document) {
 
   const wrapper = document.createElement("div");
   wrapper.className = ORIGINAL_CONTENT_CLASS;
+  wrapper.dataset.nyuRmpOriginal = "true";
+  wrapper.dataset.nyuRmpVersion = EXTENSION_VERSION;
   element.insertBefore(wrapper, element.firstChild);
   for (const node of originalNodes) {
     wrapper.append(node);
