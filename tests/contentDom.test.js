@@ -91,6 +91,20 @@ describe("Albert content DOM injection", () => {
     expect(styles).toContain("max-width: 100%");
   });
 
+  it("bounds useful comments so Albert rows do not stretch vertically", () => {
+    injectStyles(document);
+
+    const styles = document.getElementById("nyu-rmp-rating-styles").textContent;
+    const panelStart = styles.lastIndexOf(".nyu-rmp-comments-panel");
+    const headingStart = styles.indexOf(".nyu-rmp-comments-heading", panelStart);
+    const panelStyles = styles.slice(panelStart, headingStart);
+
+    expect(panelStyles).toContain("max-height: 180px");
+    expect(panelStyles).toContain("overflow-y: auto");
+    expect(panelStyles).toContain("overscroll-behavior: contain");
+    expect(panelStyles).toContain("scrollbar-gutter: stable");
+  });
+
   it("hides decorative radar axis labels in extremely narrow Albert cells", () => {
     injectStyles(document);
 

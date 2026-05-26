@@ -2414,7 +2414,11 @@ export function injectStyles(document = globalThis.document) {
 	      background: #fbfcfe;
 	      border-left: 2px solid #c7d7ef;
 	      margin-top: 8px;
+	      max-height: 180px;
+	      overflow-y: auto;
+	      overscroll-behavior: contain;
 	      padding: 7px 0 2px 9px;
+	      scrollbar-gutter: stable;
 	    }
 	    .nyu-rmp-comments-heading {
 	      align-items: center;
