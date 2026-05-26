@@ -3285,6 +3285,35 @@ describe("Albert content DOM injection", () => {
     expect(document.body.textContent).toContain("Adjacent professor labels should render.");
   });
 
+  it("injects ratings when Albert splits a professor-name label and name into adjacent cells", async () => {
+    document.body.innerHTML = `
+      <table>
+        <tbody>
+          <tr>
+            <th>Professor Name</th>
+            <td>YAP, CHEE KENG</td>
+          </tr>
+        </tbody>
+      </table>
+    `;
+    const lookupProfessor = vi.fn(async (name) => ({
+      name,
+      rating: 4.5,
+      difficulty: 2.4,
+      ratingsCount: 38,
+      tags: [],
+      topComments: ["Adjacent professor-name labels should render."],
+      url: "https://www.ratemyprofessors.com/professor/419998",
+    }));
+
+    await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
+
+    expect(lookupProfessor).toHaveBeenCalledTimes(1);
+    expect(lookupProfessor).toHaveBeenCalledWith("Chee Keng Yap");
+    expect(document.querySelectorAll(".nyu-rmp-card")).toHaveLength(1);
+    expect(document.body.textContent).toContain("Adjacent professor-name labels should render.");
+  });
+
   it("injects ratings when Albert rows use faculty labels", async () => {
     document.body.innerHTML = `<div>Faculty: YAP, CHEE KENG</div>`;
     const lookupProfessor = vi.fn(async (name) => ({
