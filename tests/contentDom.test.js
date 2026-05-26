@@ -9529,6 +9529,34 @@ describe("Albert content DOM injection", () => {
     expect(lookupProfessor).toHaveBeenCalledTimes(1);
   });
 
+  it("repairs inline child safeguards on already processed Albert gridcells", async () => {
+    document.body.innerHTML = `
+      <div role="row">
+        <div role="gridcell" id="grid-instructor" data-nyu-rmp-processed="true">
+          <div class="nyu-rmp-albert-original" data-nyu-rmp-original="true">Ada Lovelace</div>
+          <div class="nyu-rmp-rating-root is-cell-mounted" data-nyu-rmp-version="0.1.1"></div>
+        </div>
+      </div>
+    `;
+    const lookupProfessor = vi.fn(async () => null);
+
+    await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
+
+    const originalContent = document.querySelector("#grid-instructor > .nyu-rmp-albert-original");
+    const ratingRoot = document.querySelector("#grid-instructor > .nyu-rmp-rating-root");
+    for (const mountedChild of [originalContent, ratingRoot]) {
+      expect(mountedChild.style.flex).toBe("0 0 100%");
+      expect(mountedChild.style.gridColumn).toBe("1 / -1");
+      expect(mountedChild.style.minWidth).toBe("0px");
+      expect(mountedChild.style.width).toBe("100%");
+      expect(mountedChild.style.getPropertyPriority("flex")).toBe("important");
+      expect(mountedChild.style.getPropertyPriority("grid-column")).toBe("important");
+      expect(mountedChild.style.getPropertyPriority("min-width")).toBe("important");
+      expect(mountedChild.style.getPropertyPriority("width")).toBe("important");
+    }
+    expect(lookupProfessor).toHaveBeenCalledWith("Ada Lovelace");
+  });
+
   it("still scans a newly added instructor gridcell beside an already processed cell", async () => {
     document.body.innerHTML = `
       <div role="row" id="grid-row">

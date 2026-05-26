@@ -990,6 +990,10 @@ function mountRatings({ element, names, processedElements = [], document, lookup
   }
 
   if (existingContainer) {
+    const originalContent = element.querySelector(`:scope > .${ORIGINAL_CONTENT_CLASS}`);
+    if (originalContent) {
+      applyCellMountedChildLayoutSafeguards(originalContent);
+    }
     return pendingLookups;
   }
 
