@@ -18,7 +18,8 @@ Load `dist` as an unpacked Chrome extension after `npm run build`.
 3. Choose Load unpacked.
 4. Select the generated `dist` folder.
 5. Run `npm run verify:chrome-profile` to confirm Chrome has the unpacked extension enabled from `dist`.
-6. Open or refresh Albert, then use the popup status to confirm the page is connected.
+6. Run `npm run verify:live` to confirm the extension package and Chrome profile are ready for Albert.
+7. Open or refresh Albert, then use the popup status to confirm the page is connected.
 
 ## Albert Workflow
 
@@ -48,4 +49,5 @@ npm test
 npm run build
 npm run verify:package
 npm run verify:chrome-profile
+npm run verify:live
 ```
