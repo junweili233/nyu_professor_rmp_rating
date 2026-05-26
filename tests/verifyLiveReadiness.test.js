@@ -44,7 +44,7 @@ async function createWorkspace({ installedFromDist }) {
   await writeFile(join(dist, "manifest.json"), JSON.stringify({
     manifest_version: 3,
     name: "NYU Albert RMP Ratings",
-    version: "0.1.0",
+    version: "0.1.1",
     action: { default_popup: "popup.html" },
     background: { service_worker: "background.js", type: "module" },
     content_scripts: [
@@ -68,7 +68,7 @@ async function createWorkspace({ installedFromDist }) {
       settings: installedFromDist
         ? {
             abcdefghijklmnopabcdefghijklmnop: {
-              manifest: { name: "NYU Albert RMP Ratings", version: "0.1.0" },
+              manifest: { name: "NYU Albert RMP Ratings", version: "0.1.1" },
               path: resolve(dist),
               state: 1,
               from_webstore: false,

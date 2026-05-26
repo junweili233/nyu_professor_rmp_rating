@@ -21,6 +21,16 @@ describe("extension package verifier", () => {
     await rm(dist, { recursive: true, force: true });
   });
 
+  it("fails when the manifest version drifts from package.json", async () => {
+    const dist = await createPackageDist({
+      manifestOverrides: { version: "0.1.0" },
+    });
+
+    await expect(verifyExtensionPackage(dist)).rejects.toThrow("manifest version must match package.json version");
+
+    await rm(dist, { recursive: true, force: true });
+  });
+
   it("fails when the manifest action omits the popup html entry", async () => {
     const dist = await createPackageDist({
       manifestOverrides: {
@@ -221,7 +231,7 @@ async function createPackageDist({ manifestOverrides = {}, files = {} } = {}) {
   const manifest = {
     manifest_version: 3,
     name: "NYU Albert RMP Ratings",
-    version: "0.1.0",
+    version: "0.1.1",
     action: { default_popup: "popup.html" },
     background: { service_worker: "background.js", type: "module" },
     content_scripts: [

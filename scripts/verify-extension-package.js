@@ -7,8 +7,12 @@ export async function verifyExtensionPackage(distDir = "dist") {
   await assertFileExists(manifestPath, "dist manifest is missing");
 
   const manifest = JSON.parse(await readFile(manifestPath, "utf8"));
+  const packageJson = JSON.parse(await readFile("package.json", "utf8"));
   if (manifest.manifest_version !== 3) {
     throw new Error("manifest_version must be 3");
+  }
+  if (manifest.version !== packageJson.version) {
+    throw new Error("manifest version must match package.json version");
   }
   if (manifest.background?.type !== "module") {
     throw new Error("background service worker must be a module");
