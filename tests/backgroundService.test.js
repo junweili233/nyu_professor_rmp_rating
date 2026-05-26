@@ -266,6 +266,41 @@ describe("background professor lookup service", () => {
     });
   });
 
+  it("falls back to stale persisted cache entries when automatic RMP refresh fails", async () => {
+    const now = new Date("2026-05-24T12:00:00Z").getTime();
+    const staleRating = {
+      name: "Alan Turing",
+      rating: 3.1,
+      topComments: ["Older cached comment shown during RMP outage."],
+    };
+    const cachedAt = now - CACHE_TTL_MS - 1;
+    const storage = createStorageMock({
+      [professorCacheKey("Alan Turing")]: {
+        cachedAt,
+        value: staleRating,
+      },
+    });
+    const findProfessorRating = vi.fn(async () => {
+      throw new Error("Rate My Professors request timed out");
+    });
+    const service = createProfessorLookupService({
+      storage,
+      findProfessorRating,
+      now: () => now,
+    });
+
+    await expect(service.lookup("Alan Turing")).resolves.toEqual({
+      ...staleRating,
+      cacheUpdatedAt: cachedAt,
+    });
+
+    expect(findProfessorRating).toHaveBeenCalledWith("Alan Turing");
+    expect(storage.data[professorCacheKey("Alan Turing")]).toEqual({
+      cachedAt,
+      value: staleRating,
+    });
+  });
+
   it("refreshes future-dated persisted cache entries instead of trusting clock-skewed data", async () => {
     const now = new Date("2026-05-24T12:00:00Z").getTime();
     const futureCachedRating = {

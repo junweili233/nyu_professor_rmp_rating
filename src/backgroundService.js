@@ -24,8 +24,12 @@ export function createProfessorLookupService({
       const key = professorCacheKey(normalizedName);
       const currentTime = now();
       const memoryEntry = memoryCache.get(key);
+      let staleFallback = null;
       if (!forceRefresh && memoryEntry && isFreshCacheEntry(memoryEntry, currentTime)) {
         return withCacheMetadata(memoryEntry.value, memoryEntry.cachedAt);
+      }
+      if (!forceRefresh && memoryEntry && !isFreshCacheEntry(memoryEntry, currentTime)) {
+        staleFallback = memoryEntry;
       }
 
       if (!forceRefresh) {
@@ -45,11 +49,14 @@ export function createProfessorLookupService({
           }
           return withCacheMetadata(cached.value, currentTime);
         }
+        if (cached.status === "stale") {
+          staleFallback = createStoredRating(cached.value, cached.cachedAt);
+        }
       }
 
       const inFlightKey = forceRefresh ? `${key}:force` : key;
       if (!inFlightLookups.has(inFlightKey)) {
-        inFlightLookups.set(inFlightKey, fetchAndCacheRating({ key, name: normalizedName, currentTime, findProfessorRating, memoryCache, storage }));
+        inFlightLookups.set(inFlightKey, fetchAndCacheRating({ key, name: normalizedName, currentTime, findProfessorRating, memoryCache, storage, staleFallback }));
       }
 
       return inFlightLookups.get(inFlightKey).finally(() => {
@@ -106,7 +113,7 @@ async function readStoredRating(storage, key, currentTime) {
   if (isTimestampedCacheEntry(stored)) {
     return isFreshCacheEntry(stored, currentTime)
       ? { status: "fresh", value: stored.value, cachedAt: stored.cachedAt }
-      : { status: "stale" };
+      : { status: "stale", value: stored.value, cachedAt: stored.cachedAt };
   }
 
   return { status: "legacy", value: stored };
@@ -124,8 +131,17 @@ function isFreshCacheEntry(entry, currentTime) {
   return entry.cachedAt <= currentTime && currentTime - entry.cachedAt <= CACHE_TTL_MS;
 }
 
-async function fetchAndCacheRating({ key, name, currentTime, findProfessorRating, memoryCache, storage }) {
-  const result = await findProfessorRating(name);
+async function fetchAndCacheRating({ key, name, currentTime, findProfessorRating, memoryCache, storage, staleFallback = null }) {
+  let result;
+  try {
+    result = await findProfessorRating(name);
+  } catch (error) {
+    if (staleFallback) {
+      memoryCache.set(key, staleFallback);
+      return withCacheMetadata(staleFallback.value, staleFallback.cachedAt);
+    }
+    throw error;
+  }
   const storedResult = createStoredRating(result, currentTime);
   const existingMemoryEntry = memoryCache.get(key);
   if (existingMemoryEntry && existingMemoryEntry.cachedAt > currentTime) {
