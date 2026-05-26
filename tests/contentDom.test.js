@@ -9436,6 +9436,8 @@ describe("Albert content DOM injection", () => {
     expect(row.querySelector("td .nyu-rmp-rating-root")).not.toBeNull();
     expect(row.querySelector("td").style.display).toBe("");
     expect(row.querySelector("td").style.flexWrap).toBe("wrap");
+    expect(row.querySelector("td").style.getPropertyPriority("display")).toBe("");
+    expect(row.querySelector("td").style.getPropertyPriority("flex-wrap")).toBe("important");
   });
 
   it("keeps Albert gridcell instructor text readable when marking it processed", async () => {
@@ -9463,6 +9465,11 @@ describe("Albert content DOM injection", () => {
     expect(instructorCell.style.flexWrap).toBe("wrap");
     expect(instructorCell.style.gridTemplateColumns).toBe("minmax(0, 1fr)");
     expect(instructorCell.style.minWidth).toBe("0px");
+    expect(instructorCell.style.getPropertyPriority("display")).toBe("important");
+    expect(instructorCell.style.getPropertyPriority("align-items")).toBe("important");
+    expect(instructorCell.style.getPropertyPriority("flex-wrap")).toBe("important");
+    expect(instructorCell.style.getPropertyPriority("grid-template-columns")).toBe("important");
+    expect(instructorCell.style.getPropertyPriority("min-width")).toBe("important");
     expect(Array.from(instructorCell.children).map((child) => child.className)).toEqual([
       "nyu-rmp-albert-original",
       "nyu-rmp-rating-root is-cell-mounted",

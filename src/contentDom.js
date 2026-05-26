@@ -1056,12 +1056,12 @@ function wrapOriginalAlbertCellContent(element, document) {
 }
 
 function applyProcessedCellLayoutSafeguards(element) {
-  element.style.alignItems = "flex-start";
-  element.style.flexWrap = "wrap";
-  element.style.gridTemplateColumns = "minmax(0, 1fr)";
-  element.style.minWidth = "0";
+  element.style.setProperty("align-items", "flex-start", "important");
+  element.style.setProperty("flex-wrap", "wrap", "important");
+  element.style.setProperty("grid-template-columns", "minmax(0, 1fr)", "important");
+  element.style.setProperty("min-width", "0", "important");
   if (isAriaCell(element)) {
-    element.style.display = "block";
+    element.style.setProperty("display", "block", "important");
   }
 }
 
