@@ -4,6 +4,8 @@ import { EXTENSION_VERSION } from "./shared/version.js";
 const ROOT_CLASS = "nyu-rmp-rating-root";
 const STYLE_ID = "nyu-rmp-rating-styles";
 const ORIGINAL_CONTENT_CLASS = "nyu-rmp-albert-original";
+const ELEMENT_NODE_TYPE = 1;
+const TEXT_NODE_TYPE = 3;
 const COMMENT_PREVIEW_LENGTH = 150;
 const MAX_RENDERED_COMMENTS = 3;
 const RMP_COMMENT_SAMPLE_SIZE = 20;
@@ -901,10 +903,10 @@ function firstNameLikeAttribute(element) {
 }
 
 function textForParsing(node) {
-  if (node.nodeType === Node.TEXT_NODE) {
+  if (node.nodeType === TEXT_NODE_TYPE) {
     return node.textContent ?? "";
   }
-  if (node.nodeType !== Node.ELEMENT_NODE) {
+  if (node.nodeType !== ELEMENT_NODE_TYPE) {
     return "";
   }
   if (!isElementVisible(node)) {
@@ -975,7 +977,7 @@ function wrapOriginalAlbertCellContent(element, document) {
   }
 
   const originalNodes = Array.from(element.childNodes)
-    .filter((node) => !(node.nodeType === Node.ELEMENT_NODE && node.classList?.contains(ROOT_CLASS)));
+    .filter((node) => !(node.nodeType === ELEMENT_NODE_TYPE && node.classList?.contains(ROOT_CLASS)));
   if (originalNodes.length === 0 || originalNodes.every(isEmptyTextNode)) {
     return;
   }
@@ -1000,7 +1002,7 @@ function unwrapOriginalAlbertContent(wrapper) {
 }
 
 function isEmptyTextNode(node) {
-  return node.nodeType === Node.TEXT_NODE && node.textContent.trim() === "";
+  return node.nodeType === TEXT_NODE_TYPE && node.textContent.trim() === "";
 }
 
 function courseCodeForElement(element) {

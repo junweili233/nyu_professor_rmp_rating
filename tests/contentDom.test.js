@@ -9455,6 +9455,28 @@ describe("Albert content DOM injection", () => {
     expect(instructorCell.dataset.nyuRmpProcessed).toBeUndefined();
   });
 
+  it("wraps processed cell content without relying on the global Node constructor", async () => {
+    document.body.innerHTML = `
+      <div role="row">
+        <div role="gridcell" id="grid-instructor" aria-label="Instructor">YAP, CHEE KENG</div>
+      </div>
+    `;
+    const lookupProfessor = vi.fn(async () => null);
+    const originalNode = globalThis.Node;
+
+    try {
+      globalThis.Node = undefined;
+
+      await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
+    } finally {
+      globalThis.Node = originalNode;
+    }
+
+    const instructorCell = document.getElementById("grid-instructor");
+    expect(instructorCell.querySelector(":scope > .nyu-rmp-albert-original").textContent.trim()).toBe("YAP, CHEE KENG");
+    expect(instructorCell.querySelector(":scope > .nyu-rmp-rating-root.is-cell-mounted")).not.toBeNull();
+  });
+
   it("injects one rating card for each adjacent-cell co-instructor", async () => {
     document.body.innerHTML = `
       <table>
