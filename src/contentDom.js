@@ -1048,7 +1048,7 @@ function updateRatingCard(card, result, { requestedName = "Professor", lookupPro
     ${department ? `<div class="nyu-rmp-department">${escapeHtml(department)}</div>` : ""}
     ${matchNote ? `<div class="nyu-rmp-match-note">${escapeHtml(matchNote)}</div>` : ""}
     ${updatedAt ? `<div class="nyu-rmp-updated">${escapeHtml(updatedAt)}</div>` : ""}
-    <dl class="nyu-rmp-score-row nyu-rmp-metrics">
+    <dl class="nyu-rmp-score-row nyu-rmp-metrics" aria-label="${escapeHtml(`RMP metrics for ${professorName}`)}">
       <div class="nyu-rmp-metric nyu-rmp-rating-metric">
         <dt class="nyu-rmp-metric-label">Rating</dt>
         <dd class="nyu-rmp-score nyu-rmp-metric-value" aria-label="${escapeHtml(formatRatingLabel(rating))}">${formatScore(rating)}</dd>

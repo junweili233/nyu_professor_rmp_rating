@@ -494,6 +494,7 @@ describe("Albert content DOM injection", () => {
 
     const metrics = document.querySelector(".nyu-rmp-metrics");
     expect(metrics.tagName).toBe("DL");
+    expect(metrics.getAttribute("aria-label")).toBe("RMP metrics for Ada Lovelace");
     expect(Array.from(metrics.querySelectorAll(".nyu-rmp-metric-label")).map((node) => node.tagName)).toEqual(["DT", "DT", "DT"]);
     expect(Array.from(metrics.querySelectorAll(".nyu-rmp-metric-value")).map((node) => node.tagName)).toEqual(["DD", "DD", "DD"]);
     expect(document.querySelector(".nyu-rmp-score").tagName).toBe("DD");
