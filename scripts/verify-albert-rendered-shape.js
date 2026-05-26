@@ -12,6 +12,9 @@ export function verifyAlbertRenderedShape(html, { expectedVersion = EXTENSION_VE
   const cardCount = document?.querySelectorAll?.(".nyu-rmp-card").length ?? 0;
   const quickGridCount = document?.querySelectorAll?.(".nyu-rmp-quick-grid").length ?? 0;
   const processedCellCount = document?.querySelectorAll?.("[data-nyu-rmp-processed='true']").length ?? 0;
+  const ratingCellCount = document?.querySelectorAll?.("[data-nyu-rmp-rating-cell='true']").length ?? 0;
+  const trailingRatingRootCount = document?.querySelectorAll?.("[data-nyu-rmp-rating-cell='true'] > .nyu-rmp-rating-root").length ?? 0;
+  const inlineProcessedRatingRootCount = document?.querySelectorAll?.("[data-nyu-rmp-processed='true'] > .nyu-rmp-rating-root").length ?? 0;
   const migrationCount = nonNegativeInteger(document?.documentElement?.dataset?.nyuRmpStaleCardLayoutMigrationCount);
   const staleVisibleChildClasses = firstVisibleCardChildClasses(document);
   const result = {
@@ -22,6 +25,9 @@ export function verifyAlbertRenderedShape(html, { expectedVersion = EXTENSION_VE
     cardCount,
     quickGridCount,
     processedCellCount,
+    ratingCellCount,
+    trailingRatingRootCount,
+    inlineProcessedRatingRootCount,
     staleCardLayoutMigrationCount: migrationCount,
     firstCardVisibleChildClasses: staleVisibleChildClasses,
   };
@@ -36,6 +42,15 @@ export function verifyAlbertRenderedShape(html, { expectedVersion = EXTENSION_VE
   if (cardCount > 0 && quickGridCount < cardCount) {
     const staleCardCount = cardCount - quickGridCount;
     failures.push(`${staleCardCount} rendered RMP card${staleCardCount === 1 ? " still lacks" : "s still lack"} segmented quick views`);
+  }
+  if (cardCount > 0 && processedCellCount > 0 && ratingCellCount === 0) {
+    failures.push("rendered Albert RMP cards are missing the trailing rating column");
+  }
+  if (cardCount > 0 && ratingCellCount > 0 && trailingRatingRootCount < ratingCellCount) {
+    failures.push("one or more trailing rating columns do not contain an RMP rating root");
+  }
+  if (inlineProcessedRatingRootCount > 0) {
+    failures.push(`${inlineProcessedRatingRootCount} RMP rating root${inlineProcessedRatingRootCount === 1 ? " is" : "s are"} still mounted inside processed Albert cells`);
   }
   if (failures.length > 0) {
     const error = new Error([
