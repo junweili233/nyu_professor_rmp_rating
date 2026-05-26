@@ -9479,6 +9479,28 @@ describe("Albert content DOM injection", () => {
     expect(ratingRoot.querySelector(".nyu-rmp-card")).not.toBeNull();
   });
 
+  it("applies inline safeguards to adjacent label cells that are marked processed", async () => {
+    document.body.innerHTML = `
+      <div role="row">
+        <div role="gridcell" id="instructor-label">Instructor</div>
+        <div role="gridcell" id="grid-instructor">Ada Lovelace</div>
+      </div>
+    `;
+    const lookupProfessor = vi.fn(async () => null);
+
+    await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
+
+    const labelCell = document.getElementById("instructor-label");
+    const instructorCell = document.getElementById("grid-instructor");
+    expect(labelCell.dataset.nyuRmpProcessed).toBe("true");
+    expect(instructorCell.dataset.nyuRmpProcessed).toBe("true");
+    expect(labelCell.style.display).toBe("block");
+    expect(labelCell.style.getPropertyPriority("display")).toBe("important");
+    expect(labelCell.style.flexWrap).toBe("wrap");
+    expect(labelCell.style.getPropertyPriority("flex-wrap")).toBe("important");
+    expect(instructorCell.querySelector(".nyu-rmp-rating-root")).not.toBeNull();
+  });
+
   it("does not rescan wrapped original content inside processed Albert gridcells", async () => {
     document.body.innerHTML = `
       <div role="row">

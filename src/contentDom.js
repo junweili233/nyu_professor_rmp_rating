@@ -963,6 +963,9 @@ function preferMostSpecificTargets(targets) {
 function mountRatings({ element, names, processedElements = [], document, lookupProfessor }) {
   for (const processedElement of new Set([element, ...processedElements])) {
     processedElement.dataset.nyuRmpProcessed = "true";
+    if (isTableCell(processedElement)) {
+      applyProcessedCellLayoutSafeguards(processedElement);
+    }
   }
   const isCellMount = isTableCell(element);
   const existingContainer = isCellMount ? element.querySelector(`:scope > .${ROOT_CLASS}.is-cell-mounted`) : null;
@@ -981,10 +984,6 @@ function mountRatings({ element, names, processedElements = [], document, lookup
     container.append(card);
     const pendingLookup = loadRatingCard({ card, name, lookupProfessor, courseCode });
     pendingLookups.push(pendingLookup);
-  }
-
-  if (isCellMount) {
-    applyProcessedCellLayoutSafeguards(element);
   }
 
   if (existingContainer) {
