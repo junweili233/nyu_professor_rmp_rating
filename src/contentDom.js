@@ -327,8 +327,8 @@ function findInstructorTargetsForElement(element) {
 }
 
 function hasInstructorText(text) {
-  return /\b(?:(?:primary\s+)?(?:instructor(?:\(s\)|s)?(?:\s+name(?:\(s\)|s)?)?|instr\.?(?:\(s\)|s)?)|professor|prof\.?|faculty|teacher(?:s)?|taught\s+by)(?:\s*(?::|\.|-|\u2013|\u2014)|\s+\S)/i.test(text)
-    || /(?:^|\n)\s*(?:(?:primary\s+)?(?:instructor(?:\(s\)|s)?(?:\s+name(?:\(s\)|s)?)?|instr\.?(?:\(s\)|s)?)|professor|prof\.?|faculty|teacher(?:s)?|taught\s+by)\s*(?:\n|$)/i.test(text);
+  return /\b(?:(?:primary\s+)?(?:instructor(?:\(s\)|s)?(?:\s+name(?:\(s\)|s)?)?|instr\.?(?:\(s\)|s)?(?:\s+name(?:\(s\)|s)?)?)|professor|prof\.?|faculty|teacher(?:s)?|taught\s+by)(?:\s*(?::|\.|-|\u2013|\u2014)|\s+\S)/i.test(text)
+    || /(?:^|\n)\s*(?:(?:primary\s+)?(?:instructor(?:\(s\)|s)?(?:\s+name(?:\(s\)|s)?)?|instr\.?(?:\(s\)|s)?(?:\s+name(?:\(s\)|s)?)?)|professor|prof\.?|faculty|teacher(?:s)?|taught\s+by)\s*(?:\n|$)/i.test(text);
 }
 
 function isUnprocessedVisibleCandidate(element) {
