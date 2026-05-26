@@ -88,6 +88,66 @@ describe("extension popup controller", () => {
     expect(document.getElementById("build-version").textContent).toBe("Build v0.1.2");
   });
 
+  it("shows a privacy-safe diagnostic summary for the active Albert page", async () => {
+    document.body.innerHTML = `
+      <p id="status"></p>
+      <p id="page-status"></p>
+      <p id="diagnostic-summary"></p>
+      <input id="enable-overlay" type="checkbox" />
+      <button id="clear-cache"></button>
+    `;
+    const tabs = createTabsMock({
+      activeTab: { id: 12, url: "https://sis.portal.nyu.edu/psp/ihprod/EMPLOYEE/EMPL/h/" },
+      contentStatus: {
+        ok: true,
+        contentScript: "loaded",
+        version: "0.1.2",
+        overlayState: "enabled",
+        ratingRootCount: 4,
+        cardCount: 4,
+        quickGridCount: 4,
+        radarCount: 3,
+        processedCellCount: 4,
+      },
+    });
+
+    await initPopup({ document, storage: createStorageMock(), tabs });
+
+    expect(document.getElementById("diagnostic-summary").textContent).toBe(
+      "Build v0.1.2 | Albert 0.1.2 | 4 cards | 4 quick views | 4 cells",
+    );
+  });
+
+  it("reports missing Albert content version in the diagnostic summary", async () => {
+    document.body.innerHTML = `
+      <p id="status"></p>
+      <p id="page-status"></p>
+      <p id="diagnostic-summary"></p>
+      <input id="enable-overlay" type="checkbox" />
+      <button id="clear-cache"></button>
+    `;
+    const tabs = createTabsMock({
+      activeTab: { id: 12, url: "https://sis.portal.nyu.edu/psp/ihprod/EMPLOYEE/EMPL/h/" },
+      contentStatus: {
+        ok: true,
+        contentScript: "loaded",
+        version: "",
+        overlayState: "enabled",
+        ratingRootCount: 4,
+        cardCount: 4,
+        quickGridCount: 0,
+        radarCount: 3,
+        processedCellCount: 4,
+      },
+    });
+
+    await initPopup({ document, storage: createStorageMock(), tabs });
+
+    expect(document.getElementById("diagnostic-summary").textContent).toBe(
+      "Build v0.1.2 | Albert missing | 4 cards | 0 quick views | 4 cells",
+    );
+  });
+
   it("reports when the active Albert page is connected to the content script", async () => {
     document.body.innerHTML = `
       <p id="status"></p>

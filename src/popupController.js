@@ -10,6 +10,7 @@ export async function initPopup({
   const status = document.getElementById("status");
   const pageStatus = document.getElementById("page-status");
   const buildVersion = document.getElementById("build-version");
+  const diagnosticSummary = document.getElementById("diagnostic-summary");
   const clearButton = document.getElementById("clear-cache");
   const enableOverlay = document.getElementById("enable-overlay");
   if (!status || !storage) {
@@ -26,6 +27,7 @@ export async function initPopup({
   if (buildVersion) {
     buildVersion.textContent = `Build v${EXTENSION_VERSION}`;
   }
+  setDiagnosticSummary(diagnosticSummary, formatDiagnosticSummary());
 
   let settings;
   try {
@@ -114,7 +116,7 @@ export async function initPopup({
   }
 
   await refreshStatus();
-  await refreshAlbertPageStatus({ pageStatus, tabs, scripting });
+  await refreshAlbertPageStatus({ pageStatus, diagnosticSummary, tabs, scripting });
 }
 
 async function getProfessorCacheKeys(storage) {
@@ -145,12 +147,13 @@ function nonNegativeInteger(value) {
   return Number.isFinite(number) && number > 0 ? Math.floor(number) : 0;
 }
 
-async function refreshAlbertPageStatus({ pageStatus, tabs, scripting }) {
+async function refreshAlbertPageStatus({ pageStatus, diagnosticSummary, tabs, scripting }) {
   if (!pageStatus) {
     return;
   }
   if (!tabs?.query || !tabs?.sendMessage) {
     setPageStatus(pageStatus, "Open Albert to check page connection.", "idle");
+    setDiagnosticSummary(diagnosticSummary, formatDiagnosticSummary());
     return;
   }
 
@@ -158,6 +161,7 @@ async function refreshAlbertPageStatus({ pageStatus, tabs, scripting }) {
     const [activeTab] = await tabs.query({ active: true, currentWindow: true });
     if (!activeTab?.id || !isAlbertUrl(activeTab.url)) {
       setPageStatus(pageStatus, "Open an Albert tab to check page connection.", "idle");
+      setDiagnosticSummary(diagnosticSummary, formatDiagnosticSummary());
       return;
     }
 
@@ -171,19 +175,23 @@ async function refreshAlbertPageStatus({ pageStatus, tabs, scripting }) {
       });
       const repairedResponse = await repairAlbertLayoutWarningsIfNeeded(tabs, activeTab.id, refreshedResponse);
       setPageStatus(pageStatus, formatAlbertConnectedStatus(repairedResponse), albertPageStatusState(repairedResponse));
+      setDiagnosticSummary(diagnosticSummary, formatDiagnosticSummary(repairedResponse));
       return;
     }
 
     const wakeResponse = await wakeAlbertContentScript({ tabs, scripting, tabId: activeTab.id });
     if (!isLoadedContentResponse(wakeResponse)) {
       setPageStatus(pageStatus, "Albert not connected. Reload the extension, then refresh Albert.", "warning");
+      setDiagnosticSummary(diagnosticSummary, formatDiagnosticSummary());
       return;
     }
 
     const repairedWakeResponse = await repairAlbertLayoutWarningsIfNeeded(tabs, activeTab.id, wakeResponse);
     setPageStatus(pageStatus, formatAlbertConnectedStatus(repairedWakeResponse), albertPageStatusState(repairedWakeResponse));
+    setDiagnosticSummary(diagnosticSummary, formatDiagnosticSummary(repairedWakeResponse));
   } catch {
     setPageStatus(pageStatus, "Albert not connected. Reload the extension, then refresh Albert.", "warning");
+    setDiagnosticSummary(diagnosticSummary, formatDiagnosticSummary());
   }
 }
 
@@ -258,6 +266,12 @@ function isLoadedContentResponse(response) {
 function setPageStatus(pageStatus, message, state) {
   pageStatus.textContent = message;
   pageStatus.dataset.state = state;
+}
+
+function setDiagnosticSummary(diagnosticSummary, message) {
+  if (diagnosticSummary) {
+    diagnosticSummary.textContent = message;
+  }
 }
 
 function isAlbertUrl(url) {
@@ -380,4 +394,15 @@ function shouldRefreshAlbertContentScript(response) {
 function formatVersionLabel(version) {
   const normalized = String(version ?? "").trim();
   return normalized ? ` v${normalized}` : "";
+}
+
+function formatDiagnosticSummary(response = null) {
+  if (!response) {
+    return `Build v${EXTENSION_VERSION} | Albert not verified`;
+  }
+  const version = String(response.version ?? "").trim() || "missing";
+  const cardCount = nonNegativeInteger(response.cardCount);
+  const quickGridCount = nonNegativeInteger(response.quickGridCount);
+  const processedCellCount = nonNegativeInteger(response.processedCellCount);
+  return `Build v${EXTENSION_VERSION} | Albert ${version} | ${cardCount} cards | ${quickGridCount} quick views | ${processedCellCount} cells`;
 }

@@ -56,6 +56,14 @@ describe("extension popup markup", () => {
     expect(popup).toContain('aria-label="Extension build version"');
   });
 
+  it("renders a privacy-safe Albert diagnostic summary target", async () => {
+    const popup = await readFile(new URL("../src/popup.html", import.meta.url), "utf8");
+
+    expect(popup).toContain('id="diagnostic-summary"');
+    expect(popup).toContain('class="diagnostic-summary"');
+    expect(popup).toContain('aria-label="Privacy-safe Albert diagnostic summary"');
+  });
+
   it("marks the overlay toggle as an accessible switch with visible keyboard focus", async () => {
     const popup = await readFile(new URL("../src/popup.html", import.meta.url), "utf8");
 
