@@ -1001,8 +1001,13 @@ function updateRatingCard(card, result, { requestedName = "Professor", lookupPro
   const ratingVerdict = getRatingVerdict(rating);
   const ratingClass = ratingVerdict.className;
   const professorName = result.name || requestedName;
-  const ratingsCount = nonNegativeCount(result.ratingsCount);
   const ratingsCountLabel = formatOptionalRatingsCount(result.ratingsCount);
+  const radarFit = radarFitDetails({
+    rating,
+    ease,
+    normalizedRatingsCount: optionalNonNegativeCount(result.ratingsCount),
+    wouldTakeAgain,
+  });
   const rmpUrl = safeRmpUrl(result.url);
   const department = String(result.department ?? "").trim();
   const updatedAt = formatUpdatedAt(result.cacheUpdatedAt);
@@ -1029,7 +1034,7 @@ function updateRatingCard(card, result, { requestedName = "Professor", lookupPro
   card.classList.add(`rating-${ratingClass}`);
   card.setAttribute(
     "aria-label",
-    formatCardSummaryLabel({ professorName, department, rating, ratingVerdict: ratingVerdict.label, ratingsCountLabel, difficulty, ease, wouldTakeAgain, commentCount, tagNames, updatedAt, matchNote }),
+    formatCardSummaryLabel({ professorName, department, rating, ratingVerdict: ratingVerdict.label, radarFit, ratingsCountLabel, difficulty, ease, wouldTakeAgain, commentCount, tagNames, updatedAt, matchNote }),
   );
   card.innerHTML = `
     <div class="nyu-rmp-card-head">
@@ -1092,17 +1097,11 @@ function renderRadarChart({ chartId, rating, difficulty, ratingsCount, wouldTake
   const safeChartId = String(chartId ?? "0").replace(/\D+/g, "") || "0";
   const titleId = `nyu-rmp-radar-title-${safeChartId}`;
   const descId = `nyu-rmp-radar-desc-${safeChartId}`;
-  const axes = [
-    { label: "Rating", value: scaleFivePoint(rating), available: rating != null },
-    { label: "Ease", value: scaleFivePoint(ease), available: ease != null },
-    { label: "Volume", value: scaleRatingVolume(normalizedRatingsCount), available: normalizedRatingsCount != null },
-    { label: "Again", value: scalePercent(wouldTakeAgain), available: wouldTakeAgain != null },
-  ];
-  const fitScore = radarFitScore(axes);
-  const availableMetricCount = axes.filter((axis) => axis.available).length;
-  const metricCountLabel = `${availableMetricCount} of ${axes.length} radar metrics`;
-  const compactMetricCountLabel = `${availableMetricCount}/${axes.length} metrics`;
-  const fitSummary = `professor fit ${fitScore} out of 100`;
+  const radarFit = radarFitDetails({ rating, ease, normalizedRatingsCount, wouldTakeAgain });
+  const axes = radarFit.axes;
+  const metricCountLabel = `${radarFit.availableMetricCount} of ${radarFit.totalMetricCount} radar metrics`;
+  const compactMetricCountLabel = `${radarFit.availableMetricCount}/${radarFit.totalMetricCount} metrics`;
+  const fitSummary = `professor fit ${radarFit.score} out of 100`;
   const points = axes
     .map(({ value }, index) => radarPoint(value, index, axes.length))
     .map(({ x, y }) => `${x},${y}`)
@@ -1126,7 +1125,7 @@ function renderRadarChart({ chartId, rating, difficulty, ratingsCount, wouldTake
         ${axes.map(({ label }, index) => radarAxisLabel(label, index, axes.length)).join("")}
       </svg>
       <div class="nyu-rmp-radar-summary">
-        <div class="nyu-rmp-radar-fit" aria-label="Professor fit score ${fitScore} out of 100, based on ${metricCountLabel}"><span>Fit</span> <strong>${fitScore}</strong> <em>${compactMetricCountLabel}</em></div>
+        <div class="nyu-rmp-radar-fit" aria-label="Professor fit score ${radarFit.score} out of 100, based on ${metricCountLabel}"><span>Fit</span> <strong>${radarFit.score}</strong> <em>${compactMetricCountLabel}</em></div>
         <ul class="nyu-rmp-radar-legend" aria-label="Radar chart values">
           <li>Rating ${formatScore(rating)}/5</li>
           <li>Ease ${formatScore(ease)}/5</li>
@@ -1136,6 +1135,21 @@ function renderRadarChart({ chartId, rating, difficulty, ratingsCount, wouldTake
       </div>
     </div>
   `;
+}
+
+function radarFitDetails({ rating, ease, normalizedRatingsCount, wouldTakeAgain }) {
+  const axes = [
+    { label: "Rating", value: scaleFivePoint(rating), available: rating != null },
+    { label: "Ease", value: scaleFivePoint(ease), available: ease != null },
+    { label: "Volume", value: scaleRatingVolume(normalizedRatingsCount), available: normalizedRatingsCount != null },
+    { label: "Again", value: scalePercent(wouldTakeAgain), available: wouldTakeAgain != null },
+  ];
+  return {
+    axes,
+    score: radarFitScore(axes),
+    availableMetricCount: axes.filter((axis) => axis.available).length,
+    totalMetricCount: axes.length,
+  };
 }
 
 function radarFitScore(axes) {
@@ -1646,12 +1660,13 @@ function formatRatingSummary(value) {
   return value == null ? "rating unavailable" : `${formatScore(value)} out of 5`;
 }
 
-function formatCardSummaryLabel({ professorName, department, rating, ratingVerdict, ratingsCountLabel, difficulty, ease, wouldTakeAgain, commentCount, tagNames = [], updatedAt, matchNote }) {
+function formatCardSummaryLabel({ professorName, department, rating, ratingVerdict, radarFit, ratingsCountLabel, difficulty, ease, wouldTakeAgain, commentCount, tagNames = [], updatedAt, matchNote }) {
   const takeAgainLabel = wouldTakeAgain == null ? "N/A" : `${Math.round(wouldTakeAgain)}%`;
   return [
     `RMP rating for ${professorName}: ${formatRatingSummary(rating)}`,
     department ? `department ${department}` : "",
     ratingVerdict,
+    formatRadarFitSummary(radarFit),
     ratingsCountLabel,
     `difficulty ${formatScore(difficulty)} out of 5`,
     `ease ${formatScore(ease)} out of 5`,
@@ -1661,6 +1676,13 @@ function formatCardSummaryLabel({ professorName, department, rating, ratingVerdi
     updatedAt,
     matchNote,
   ].filter(Boolean).join(", ");
+}
+
+function formatRadarFitSummary(radarFit) {
+  if (!radarFit) {
+    return "";
+  }
+  return `professor fit ${radarFit.score} out of 100 based on ${radarFit.availableMetricCount} of ${radarFit.totalMetricCount} radar metrics`;
 }
 
 function formatTagSummary(tagNames) {
