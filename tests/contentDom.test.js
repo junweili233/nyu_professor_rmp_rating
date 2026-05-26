@@ -77,6 +77,20 @@ describe("Albert content DOM injection", () => {
     expect(cellRootStyles).toContain("width: min(100%, 320px)");
   });
 
+  it("prevents long RMP text from forcing Albert cells wider", () => {
+    injectStyles(document);
+
+    const styles = document.getElementById("nyu-rmp-rating-styles").textContent;
+
+    expect(styles).toContain("overflow-wrap: anywhere");
+    expect(styles).toContain("word-break: normal");
+    expect(styles).toContain(".nyu-rmp-comments-panel");
+    expect(styles).toContain(".nyu-rmp-comment-text");
+    expect(styles).toContain(".nyu-rmp-actions");
+    expect(styles).toContain("min-width: 0");
+    expect(styles).toContain("max-width: 100%");
+  });
+
   it("hides decorative radar axis labels in extremely narrow Albert cells", () => {
     injectStyles(document);
 

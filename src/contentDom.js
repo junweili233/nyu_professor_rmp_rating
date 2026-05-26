@@ -1901,6 +1901,16 @@ export function injectStyles(document = globalThis.document) {
 	      box-shadow: 0 2px 4px rgba(16,24,40,0.08), 0 10px 26px rgba(16,24,40,0.1);
 	      transform: translateY(-1px);
 	    }
+	    .nyu-rmp-card,
+	    .nyu-rmp-card *,
+	    .nyu-rmp-comments-panel,
+	    .nyu-rmp-comment-text,
+	    .nyu-rmp-actions {
+	      max-width: 100%;
+	      min-width: 0;
+	      overflow-wrap: anywhere;
+	      word-break: normal;
+	    }
 	    .nyu-rmp-card-head,
 	    .nyu-rmp-tags {
 	      align-items: center;
