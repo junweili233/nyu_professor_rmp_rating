@@ -7340,6 +7340,36 @@ describe("Albert content DOM injection", () => {
     expect(document.body.textContent).toContain("Alan Turing comment");
   });
 
+  it("injects one rating card for each plus-separated adjacent-cell co-instructor", async () => {
+    document.body.innerHTML = `
+      <table>
+        <tbody>
+          <tr>
+            <th>Instructor(s)</th>
+            <td>Ada Lovelace + Grace B. Hopper</td>
+          </tr>
+        </tbody>
+      </table>
+    `;
+    const lookupProfessor = vi.fn(async (name) => ({
+      name,
+      rating: 4.3,
+      difficulty: 2.2,
+      ratingsCount: 18,
+      topComments: [`${name} plus-separated comment`],
+      url: "https://www.ratemyprofessors.com/",
+    }));
+
+    await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
+
+    expect(lookupProfessor).toHaveBeenCalledWith("Ada Lovelace");
+    expect(lookupProfessor).toHaveBeenCalledWith("Grace B. Hopper");
+    expect(lookupProfessor).not.toHaveBeenCalledWith("Ada Lovelace + Grace B. Hopper");
+    expect(document.querySelectorAll(".nyu-rmp-card")).toHaveLength(2);
+    expect(document.body.textContent).toContain("Ada Lovelace plus-separated comment");
+    expect(document.body.textContent).toContain("Grace B. Hopper plus-separated comment");
+  });
+
   it("parses adjacent-cell co-instructors split across Albert child rows", async () => {
     document.body.innerHTML = `
       <table>

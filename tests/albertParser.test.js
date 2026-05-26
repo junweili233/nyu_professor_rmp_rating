@@ -172,6 +172,18 @@ describe("Albert instructor parsing", () => {
     ]);
   });
 
+  it("understands plus-separated Albert co-instructors", () => {
+    const text = `
+      CSCI-UA 201 Computer Systems Organization
+      Instructor(s): Ada Lovelace + Grace B. Hopper
+    `;
+
+    expect(extractInstructorNamesFromText(text)).toEqual([
+      "Ada Lovelace",
+      "Grace B. Hopper",
+    ]);
+  });
+
   it("extracts instructor names from whitespace-separated Albert labels", () => {
     const text = `
       CSCI-UA 201 Computer Systems Organization

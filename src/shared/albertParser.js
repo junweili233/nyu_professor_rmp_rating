@@ -166,7 +166,7 @@ export function splitInstructorList(value) {
   }
 
   const semicolonParts = cleaned
-    .split(/\s*(?:;|\/|&|\band\b)\s*/i)
+    .split(/\s*(?:;|\/|&|\+|\band\b)\s*/i)
     .map((part) => part.trim())
     .filter(Boolean);
 
@@ -254,7 +254,7 @@ function normalizePlaceholderText(value) {
 }
 
 function hasInstructorListSeparator(value) {
-  return /(?:;|\/|&|\band\b|,)/i.test(String(value ?? ""));
+  return /(?:;|\/|&|\+|\band\b|,)/i.test(String(value ?? ""));
 }
 
 function isPlaceholderWordCombination(value) {
