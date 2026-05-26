@@ -9,6 +9,7 @@ const PLACEHOLDER_COMMENT_TEXT = new Set(["n/a", "na", "none", "no comment", "no
 const COURSE_CODE_PATTERN = /\b([A-Z]{2,5}-[A-Z]{2}[-\s]*\d{3,4})\b/i;
 const SPACED_COURSE_CODE_PATTERN = /\b([A-Z]{2,5}\s+[A-Z]{2}\s*0?\d{3,4})\b/i;
 const COMPACT_COURSE_CODE_PATTERN = /\b([A-Z]{2,5}[A-Z]{2}0?\d{3,4})\b/i;
+const CS_SHORTHAND_COURSE_CODE_PATTERN = /\b(CS[-\s]*0?\d{3,4})\b/i;
 const CONTROLLED_OPTION_SELECTOR = "[role='option'], [aria-selected], [aria-checked], [aria-current], [aria-pressed], [data-selected], [data-active], [data-checked], [data-current], [data-focus], [data-focused], [data-highlighted], [data-pressed], [data-state], [selected], [class]";
 const ALBERT_OBSERVER_OPTIONS = {
   childList: true,
@@ -936,7 +937,7 @@ function courseCodeForElement(element) {
 
 function courseCodeFromText(value) {
   const text = String(value ?? "");
-  return text.match(COURSE_CODE_PATTERN)?.[1] ?? text.match(SPACED_COURSE_CODE_PATTERN)?.[1] ?? text.match(COMPACT_COURSE_CODE_PATTERN)?.[1] ?? "";
+  return text.match(COURSE_CODE_PATTERN)?.[1] ?? text.match(SPACED_COURSE_CODE_PATTERN)?.[1] ?? text.match(COMPACT_COURSE_CODE_PATTERN)?.[1] ?? text.match(CS_SHORTHAND_COURSE_CODE_PATTERN)?.[1] ?? "";
 }
 
 function normalizeCourseCode(value) {
@@ -945,6 +946,7 @@ function normalizeCourseCode(value) {
     .trim()
     .replace(/\s+/g, " ")
     .toUpperCase()
+    .replace(/\bCS[-\s]*0*(\d{1,4})\b/, (_match, courseNumber) => `CSCI-UA ${Number(courseNumber)}`)
     .replace(/\b([A-Z]{2,5})\s+([A-Z]{2})\s*0*(\d{1,4})\b/, (_match, subject, school, courseNumber) => `${subject}-${school} ${Number(courseNumber)}`)
     .replace(/\b([A-Z]{2,5})([A-Z]{2})0*(\d{1,4})\b/, (_match, subject, school, courseNumber) => `${subject}-${school} ${Number(courseNumber)}`)
     .replace(/\b([A-Z]{2,5}-[A-Z]{2})[-\s]*0*(\d{1,4})\b/, (_match, prefix, courseNumber) => `${prefix} ${Number(courseNumber)}`);
