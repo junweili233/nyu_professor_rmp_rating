@@ -15,7 +15,8 @@
     {
       "matches": [
         "https://albert.nyu.edu/*",
-        "https://sis.nyu.edu/*"
+        "https://sis.nyu.edu/*",
+        "https://sis.portal.nyu.edu/*"
       ],
       "js": ["content.js"],
       "run_at": "document_idle",

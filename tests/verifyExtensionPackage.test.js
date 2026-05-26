@@ -83,12 +83,32 @@ describe("extension package verifier", () => {
     await rm(dist, { recursive: true, force: true });
   });
 
-  it("fails when the Albert content script is not enabled for nested frames", async () => {
+  it("fails when the content script omits the live SIS portal Albert host", async () => {
     const dist = await createPackageDist({
       manifestOverrides: {
         content_scripts: [
           {
             matches: ["https://albert.nyu.edu/*", "https://sis.nyu.edu/*"],
+            js: ["content.js"],
+            run_at: "document_idle",
+            all_frames: true,
+            match_about_blank: true,
+          },
+        ],
+      },
+    });
+
+    await expect(verifyExtensionPackage(dist)).rejects.toThrow("SIS portal Albert content script match is required");
+
+    await rm(dist, { recursive: true, force: true });
+  });
+
+  it("fails when the Albert content script is not enabled for nested frames", async () => {
+    const dist = await createPackageDist({
+      manifestOverrides: {
+        content_scripts: [
+          {
+            matches: ["https://albert.nyu.edu/*", "https://sis.nyu.edu/*", "https://sis.portal.nyu.edu/*"],
             js: ["content.js"],
             run_at: "document_idle",
           },
@@ -106,7 +126,7 @@ describe("extension package verifier", () => {
       manifestOverrides: {
         content_scripts: [
           {
-            matches: ["https://albert.nyu.edu/*", "https://sis.nyu.edu/*"],
+            matches: ["https://albert.nyu.edu/*", "https://sis.nyu.edu/*", "https://sis.portal.nyu.edu/*"],
             run_at: "document_idle",
             all_frames: true,
             match_about_blank: true,
@@ -125,7 +145,7 @@ describe("extension package verifier", () => {
       manifestOverrides: {
         content_scripts: [
           {
-            matches: ["https://albert.nyu.edu/*", "https://sis.nyu.edu/*"],
+            matches: ["https://albert.nyu.edu/*", "https://sis.nyu.edu/*", "https://sis.portal.nyu.edu/*"],
             js: ["content.js"],
             run_at: "document_idle",
             all_frames: true,
@@ -174,7 +194,7 @@ async function createPackageDist({ manifestOverrides = {}, files = {} } = {}) {
     background: { service_worker: "background.js", type: "module" },
     content_scripts: [
       {
-        matches: ["https://albert.nyu.edu/*", "https://sis.nyu.edu/*"],
+        matches: ["https://albert.nyu.edu/*", "https://sis.nyu.edu/*", "https://sis.portal.nyu.edu/*"],
         js: ["content.js"],
         run_at: "document_idle",
         all_frames: true,

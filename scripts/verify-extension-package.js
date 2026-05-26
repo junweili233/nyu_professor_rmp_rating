@@ -31,6 +31,9 @@ export async function verifyExtensionPackage(distDir = "dist") {
   if (!albertContentScript.matches?.includes("https://sis.nyu.edu/*")) {
     throw new Error("SIS Albert content script match is required");
   }
+  if (!albertContentScript.matches?.includes("https://sis.portal.nyu.edu/*")) {
+    throw new Error("SIS portal Albert content script match is required");
+  }
   if (!Array.isArray(albertContentScript.js) || albertContentScript.js.length === 0) {
     throw new Error("Albert content script JavaScript entry is required");
   }

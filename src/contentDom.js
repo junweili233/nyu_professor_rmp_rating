@@ -7,6 +7,7 @@ const MAX_RENDERED_COMMENTS = 3;
 const RMP_COMMENT_SAMPLE_SIZE = 20;
 const MIN_CONFIDENT_RATING_COUNT = 5;
 const PLACEHOLDER_COMMENT_TEXT = new Set(["n/a", "na", "none", "no comment", "no comments", "no comments yet"]);
+const HEADERED_SINGLE_NAME_EXCLUSIONS = new Set(["course", "credits", "days", "department", "enrolled", "instructor", "location", "meeting", "open", "section", "status", "tba", "time", "times", "units", "waitlist"]);
 const COURSE_CODE_PATTERN = /\b([A-Z]{2,5}-[A-Z]{2}[.\-\s]*\d{3,4})\b/i;
 const SPACED_COURSE_CODE_PATTERN = /\b([A-Z]{2,5}\s+[A-Z]{2}\s*0?\d{3,4})\b/i;
 const COMPACT_COURSE_CODE_PATTERN = /\b([A-Z]{2,5}[A-Z]{2}0?\d{3,4})\b/i;
@@ -242,6 +243,7 @@ function isAlbertPage(location) {
   const pathname = String(location?.pathname ?? "").toLowerCase();
   return hostname === "albert.nyu.edu"
     || hostname === "sis.nyu.edu"
+    || hostname === "sis.portal.nyu.edu"
     || hostname.startsWith("albert.")
     || pathname.includes("albert");
 }
@@ -629,9 +631,25 @@ function instructorNamesFromHeaderedCell(element) {
 
   return instructorNameSegments(element)
     .flatMap(splitInstructorList)
-    .filter(isLikelyInstructorName)
+    .filter(isLikelyHeaderedInstructorName)
     .map(normalizeInstructorName)
     .filter(Boolean);
+}
+
+function isLikelyHeaderedInstructorName(value) {
+  if (isLikelyInstructorName(value)) {
+    return true;
+  }
+
+  const normalized = normalizeInstructorName(value);
+  if (!normalized) {
+    return false;
+  }
+
+  const words = normalized.toLowerCase().split(/\s+/).filter(Boolean);
+  return words.length === 1
+    && !HEADERED_SINGLE_NAME_EXCLUSIONS.has(words[0])
+    && /^[a-z][a-z'.-]{1,}$/i.test(normalized);
 }
 
 function isInstructorHeaderedCell(element) {
@@ -1606,6 +1624,8 @@ function commentFitSignal(comments = [], tags = [], albertCourseCode = "") {
     /\bflexible\s+deadlines?\b/,
     /\ballows?\s+extensions?\b/,
     /\bextensions?\s+(?:are|is|were|was)?\s*allowed\b/,
+    /\b(?:choose|pick)\s+(?:your\s+own\s+)?partners?\b/,
+    /\blets?\s+you\s+(?:choose|pick)\s+partners?\b/,
     /(?<!no\s)(?<!without\s)\bpartial\s+credit\b/,
     /\bdetailed\s+rubrics?\b/,
     /\bgrading\s+criteria\b/,

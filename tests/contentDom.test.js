@@ -128,6 +128,27 @@ describe("Albert content DOM injection", () => {
     expect(observe).toHaveBeenCalledWith(document.body, expect.objectContaining({ childList: true, subtree: true }));
   });
 
+  it("scans the live SIS portal Albert host at startup", async () => {
+    document.body.innerHTML = `<div>Instructor: Ada Lovelace</div>`;
+    const lookupProfessor = vi.fn(async () => null);
+    const observe = vi.fn();
+    const windowMock = {
+      location: new URL("https://sis.portal.nyu.edu/psp/ihprod/EMPLOYEE/EMPL/h/?tab=IS_SSS_TAB&jsconfig=IS_ED_SSS_SUMMARYLnk"),
+      MutationObserver: class {
+        observe = observe;
+      },
+      clearTimeout: vi.fn(),
+      setTimeout: vi.fn(),
+    };
+
+    const observer = startAlbertRmpEnhancer({ document, window: windowMock, lookupProfessor });
+    await flushPromises();
+
+    expect(observer).not.toBeNull();
+    expect(lookupProfessor).toHaveBeenCalledWith("Ada Lovelace");
+    expect(observe).toHaveBeenCalledWith(document.body, expect.objectContaining({ childList: true, subtree: true }));
+  });
+
   it("subscribes to in-place Albert text and metadata updates", async () => {
     document.body.innerHTML = `<div>Loading class details</div>`;
     const lookupProfessor = vi.fn(async () => null);
@@ -1418,6 +1439,42 @@ describe("Albert content DOM injection", () => {
     expect(document.querySelector(".nyu-rmp-radar").getAttribute("aria-label")).toContain("comment signal 0 out of 100");
     expect(document.querySelector(".nyu-rmp-comments-course-match").className).toBe("nyu-rmp-comments-course-match is-weak");
     expect(document.querySelector(".nyu-rmp-comment").className).toBe("nyu-rmp-comment is-course-match is-weak");
+  });
+
+  it("treats choosing CS201 project partners as course support", async () => {
+    document.body.innerHTML = `
+      <table>
+        <tbody>
+          <tr>
+            <td>CSCI-UA 201 Computer Systems Organization</td>
+            <td>Instructor: Ada Lovelace</td>
+          </tr>
+        </tbody>
+      </table>
+    `;
+    const lookupProfessor = vi.fn(async (name) => ({
+      name,
+      department: "Computer Science",
+      rating: 4.2,
+      difficulty: 2.8,
+      ratingsCount: 61,
+      wouldTakeAgain: 82,
+      tags: [],
+      topComments: [
+        {
+          text: "CS201 lets you choose partners for group projects.",
+          course: "CSCI-UA 201",
+        },
+      ],
+      url: "https://www.ratemyprofessors.com/professor/123",
+    }));
+
+    await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
+
+    expect(Array.from(document.querySelectorAll(".nyu-rmp-evidence-chip")).map((node) => node.textContent)).toContain("CSCI-UA 201 comment support 100/100");
+    expect(document.querySelector(".nyu-rmp-radar").getAttribute("aria-label")).toContain("comment signal 100 out of 100");
+    expect(document.querySelector(".nyu-rmp-comments-course-match").className).toBe("nyu-rmp-comments-course-match is-strong");
+    expect(document.querySelector(".nyu-rmp-comment").className).toBe("nyu-rmp-comment is-course-match is-strong");
   });
 
   it("treats mandatory CS201 attendance and graded participation as course risk", async () => {
@@ -7775,6 +7832,49 @@ describe("Albert content DOM injection", () => {
     expect(lookupProfessor).toHaveBeenCalledWith("Chee Keng Yap");
     expect(document.querySelectorAll(".nyu-rmp-card")).toHaveLength(1);
     expect(document.body.textContent).toContain("Column-header instructor cells should render.");
+  });
+
+  it("injects ratings for live Albert enrolled rows that show instructor last names only", async () => {
+    document.body.innerHTML = `
+      <table>
+        <thead>
+          <tr>
+            <th>Course (Units/Grading Basis)</th>
+            <th>Instructor</th>
+            <th>Days/Times</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Operating Systems<br />CSCI-UA 202 001 (4)</td>
+            <td>Walfish</td>
+            <td>MoWe 9:30AM - 10:45AM</td>
+          </tr>
+          <tr>
+            <td>Linear Algebra<br />MATH-UA 140 015</td>
+            <td>TBA</td>
+            <td>Tu 8:00AM - 9:15AM</td>
+          </tr>
+        </tbody>
+      </table>
+    `;
+    const lookupProfessor = vi.fn(async (name) => ({
+      name,
+      rating: 4.1,
+      difficulty: 3.2,
+      ratingsCount: 27,
+      tags: [],
+      topComments: ["Live Albert last-name instructor cells should render."],
+      url: "https://www.ratemyprofessors.com/professor/419998",
+    }));
+
+    await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
+
+    expect(lookupProfessor).toHaveBeenCalledTimes(1);
+    expect(lookupProfessor).toHaveBeenCalledWith("Walfish");
+    expect(document.querySelectorAll(".nyu-rmp-card")).toHaveLength(1);
+    expect(document.body.textContent).toContain("Live Albert last-name instructor cells should render.");
+    expect(document.body.textContent).toContain("Albert CSCI-UA 202");
   });
 
   it("injects ratings when Albert labels responsive table cells with data-label", async () => {
