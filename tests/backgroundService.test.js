@@ -140,6 +140,24 @@ describe("background professor lookup service", () => {
     expect(findProfessorRating).not.toHaveBeenCalled();
   });
 
+  it("shares cache keys for Albert last-first and normalized professor names", async () => {
+    const cachedRating = {
+      name: "Chee Keng Yap",
+      rating: 2.1,
+      topComments: ["Albert name order should reuse the same cache entry."],
+    };
+    const storage = createStorageMock({
+      [professorCacheKey("Chee Keng Yap")]: cachedRating,
+    });
+    const findProfessorRating = vi.fn();
+    const service = createProfessorLookupService({ storage, findProfessorRating });
+
+    await expect(service.lookup("YAP, CHEE KENG")).resolves.toMatchObject(cachedRating);
+
+    expect(professorCacheKey("YAP, CHEE KENG")).toBe(professorCacheKey("Chee Keng Yap"));
+    expect(findProfessorRating).not.toHaveBeenCalled();
+  });
+
   it("reuses fresh timestamped persisted cache entries", async () => {
     const now = new Date("2026-05-24T12:00:00Z").getTime();
     const cachedRating = {

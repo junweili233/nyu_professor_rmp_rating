@@ -1,4 +1,5 @@
 import { findProfessorRating as defaultFindProfessorRating } from "./shared/rmpClient.js";
+import { normalizeInstructorName, splitInstructorList } from "./shared/albertParser.js";
 
 export const CACHE_TTL_MS = 7 * 24 * 60 * 60 * 1000;
 
@@ -67,11 +68,20 @@ export function createProfessorLookupService({
 }
 
 export function professorCacheKey(name) {
-  return `professor:${foldDiacritics(name)
+  return `professor:${foldDiacritics(normalizeProfessorCacheName(name))
     .replace(/[^\p{L}\p{N}]+/gu, " ")
     .trim()
     .replace(/\s+/g, " ")
     .toLowerCase()}`;
+}
+
+function normalizeProfessorCacheName(name) {
+  const pieces = splitInstructorList(name);
+  if (pieces.length === 1) {
+    return normalizeInstructorName(pieces[0]) || pieces[0];
+  }
+
+  return normalizeInstructorName(String(name ?? "")) || name;
 }
 
 function foldDiacritics(value) {
