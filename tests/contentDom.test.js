@@ -107,6 +107,24 @@ describe("Albert content DOM injection", () => {
     expect(styles).toContain("white-space: normal");
   });
 
+  it("keeps processed Albert cells from squeezing original content into vertical columns", () => {
+    injectStyles(document);
+
+    const styles = document.getElementById("nyu-rmp-rating-styles").textContent;
+    const processedCellStart = styles.indexOf('[role="gridcell"][data-nyu-rmp-processed="true"]');
+    const originalStart = styles.indexOf('td[data-nyu-rmp-processed="true"] > .nyu-rmp-albert-original');
+    const nextRuleStart = styles.indexOf("display: block", originalStart);
+    const processedCellStyles = styles.slice(processedCellStart, originalStart);
+    const processedChildStyles = styles.slice(originalStart, nextRuleStart);
+
+    expect(processedCellStyles).toContain("flex-wrap: wrap");
+    expect(processedCellStyles).toContain("grid-template-columns: minmax(0, 1fr)");
+    expect(processedCellStyles).toContain("min-width: 0");
+    expect(processedChildStyles).toContain("flex: 0 0 100%");
+    expect(processedChildStyles).toContain("width: 100%");
+    expect(processedChildStyles).toContain('[role="gridcell"][data-nyu-rmp-processed="true"] > .nyu-rmp-rating-root.is-cell-mounted');
+  });
+
   it("prevents long RMP text from forcing Albert cells wider", () => {
     injectStyles(document);
 

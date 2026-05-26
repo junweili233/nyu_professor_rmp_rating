@@ -1983,6 +1983,27 @@ export function injectStyles(document = globalThis.document) {
 	      justify-self: start;
 	      margin-top: 6px;
 	    }
+	    td[data-nyu-rmp-processed="true"],
+	    th[data-nyu-rmp-processed="true"],
+	    [role="cell"][data-nyu-rmp-processed="true"],
+	    [role="gridcell"][data-nyu-rmp-processed="true"] {
+	      align-items: flex-start;
+	      box-sizing: border-box;
+	      flex-wrap: wrap;
+	      grid-template-columns: minmax(0, 1fr);
+	      min-width: 0;
+	    }
+	    td[data-nyu-rmp-processed="true"] > .nyu-rmp-albert-original,
+	    th[data-nyu-rmp-processed="true"] > .nyu-rmp-albert-original,
+	    [role="cell"][data-nyu-rmp-processed="true"] > .nyu-rmp-albert-original,
+	    [role="gridcell"][data-nyu-rmp-processed="true"] > .nyu-rmp-albert-original,
+	    td[data-nyu-rmp-processed="true"] > .nyu-rmp-rating-root.is-cell-mounted,
+	    th[data-nyu-rmp-processed="true"] > .nyu-rmp-rating-root.is-cell-mounted,
+	    [role="cell"][data-nyu-rmp-processed="true"] > .nyu-rmp-rating-root.is-cell-mounted,
+	    [role="gridcell"][data-nyu-rmp-processed="true"] > .nyu-rmp-rating-root.is-cell-mounted {
+	      flex: 0 0 100%;
+	      width: 100%;
+	    }
 	    .nyu-rmp-albert-original {
 	      display: block;
 	      flex-basis: 100%;
