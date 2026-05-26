@@ -1317,7 +1317,7 @@ describe("Rate My Professors client", () => {
     });
   });
 
-  it("requests enough RMP ratings to choose useful comments from more than the first page edge", async () => {
+  it("requests enough RMP ratings to choose useful comments from a deeper sample", async () => {
     const fetchImpl = vi.fn(async () => ({
       ok: true,
       json: async () => ({
@@ -1334,7 +1334,7 @@ describe("Rate My Professors client", () => {
     await findProfessorRating("Ada Lovelace", { fetchImpl });
 
     const requestBody = JSON.parse(fetchImpl.mock.calls[0][1].body);
-    expect(requestBody.query).toContain("ratings(first: 8)");
+    expect(requestBody.query).toContain("ratings(first: 20)");
   });
 
   it("treats RMP GraphQL errors as lookup failures instead of empty results", async () => {
