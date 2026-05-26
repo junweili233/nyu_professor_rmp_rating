@@ -1594,6 +1594,8 @@ function commentFitSignal(comments = [], tags = [], albertCourseCode = "") {
     /\breview\s+sessions?\b/,
     /\bstudy\s+guides?\b/,
     /\bexam\s+prep\b/,
+    /\b(?:slides?|recordings?|notes?)\s+(?:are|is|were|was)?\s*posted\b/,
+    /\bposts?\s+(?:slides?|recordings?|notes?)\b/,
     /\bnot\s+hard\b/,
     /\bnot\s+very\s+hard\b/,
     /\bnot\s+tough\b/,
