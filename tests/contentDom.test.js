@@ -914,6 +914,12 @@ describe("Albert content DOM injection", () => {
     expect(scoreStrip.textContent.replace(/\s+/g, " ").trim()).toBe("RMP 4.7 Strong rating 38 ratings");
     expect(toggles.map((button) => button.textContent)).toEqual(["Recent comments", "Radar map"]);
     expect(toggles.map((button) => button.getAttribute("aria-expanded"))).toEqual(["false", "false"]);
+    expect(quickGrid.textContent.replace(/\s+/g, " ").trim()).toBe("RMP 4.7 Strong rating 38 ratings Recent comments Radar map");
+    expect(quickGrid.textContent).not.toContain("Computer Science");
+    expect(quickGrid.textContent).not.toContain("Difficulty");
+    expect(quickGrid.textContent).not.toContain("Take again");
+    expect(quickGrid.textContent).not.toContain("Helpful");
+    expect(quickGrid.textContent).not.toContain("Explains low-level systems clearly.");
     expect(visibleChildClasses).toEqual(["nyu-rmp-quick-grid"]);
     expect(card.querySelector(":scope > .nyu-rmp-card-head")).toBeNull();
     expect(card.querySelector(":scope > .nyu-rmp-department")).toBeNull();
