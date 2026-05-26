@@ -1067,6 +1067,10 @@ function updateRatingCard(card, result, { requestedName = "Professor", lookupPro
   const sortedTopComments = prioritizeCourseMatchedComments(result.topComments, courseCode);
   const usefulTopComments = sortedTopComments
     .filter((comment) => isUsefulCommentText(normalizeComment(comment).text));
+  const tagNames = asArray(result.tags)
+    .map(normalizeTagName)
+    .filter(Boolean);
+  const commentSignal = commentFitSignal(usefulTopComments, tagNames, courseCode);
   const displayedTopComments = usefulTopComments.slice(0, MAX_RENDERED_COMMENTS);
   const courseMatchedCommentCount = countCourseMatchedComments(usefulTopComments, courseCode);
   const courseContext = renderCourseContext(courseCode);
@@ -1074,11 +1078,7 @@ function updateRatingCard(card, result, { requestedName = "Professor", lookupPro
     .map((comment, index) => formatComment(comment, commentTextId(card, index), courseCode, { hidden: index >= MAX_RENDERED_COMMENTS }))
     .join("");
   const commentCount = Math.min(usefulTopComments.length, MAX_RENDERED_COMMENTS);
-  const commentsPanel = renderCommentsPanel(comments, { courseMatchedCommentCount, courseCode, totalUsefulCommentCount: usefulTopComments.length, visibleCommentCount: commentCount, listId: `nyu-rmp-comments-${card.dataset.nyuRmpCardId || "0"}` });
-  const tagNames = asArray(result.tags)
-    .map(normalizeTagName)
-    .filter(Boolean);
-  const commentSignal = commentFitSignal(usefulTopComments, tagNames, courseCode);
+  const commentsPanel = renderCommentsPanel(comments, { courseMatchedCommentCount, courseCode, commentSignal, totalUsefulCommentCount: usefulTopComments.length, visibleCommentCount: commentCount, listId: `nyu-rmp-comments-${card.dataset.nyuRmpCardId || "0"}` });
   const radarFit = radarFitDetails({
     rating,
     ease,
@@ -2266,6 +2266,26 @@ export function injectStyles(document = globalThis.document) {
 	      padding: 2px 6px;
 	      text-transform: uppercase;
 	    }
+	    .nyu-rmp-comments-course-match.is-strong {
+	      background: #eaf7f0;
+	      border-color: #b9dfca;
+	      color: #155b3a;
+	    }
+	    .nyu-rmp-comments-course-match.is-mixed {
+	      background: #fef7ed;
+	      border-color: #e8cf9a;
+	      color: #8a5a14;
+	    }
+	    .nyu-rmp-comments-course-match.is-weak {
+	      background: #fef4f4;
+	      border-color: #e8b8b8;
+	      color: #a82020;
+	    }
+	    .nyu-rmp-comments-course-match.is-limited {
+	      background: #f6f4f8;
+	      border-color: #ddd6e8;
+	      color: #6b5e7a;
+	    }
 	    .nyu-rmp-comments-course-match.is-empty {
 	      background: #f6f4f8;
 	      border-color: #ddd6e8;
@@ -2621,7 +2641,7 @@ function commentMatchesCourse(comment, albertCourseCode = "") {
     .some((value) => normalizeCourseCode(value) === normalizedAlbertCourseCode);
 }
 
-function renderCommentsPanel(comments, { courseMatchedCommentCount = 0, courseCode = "", totalUsefulCommentCount, visibleCommentCount, listId = "nyu-rmp-comments" } = {}) {
+function renderCommentsPanel(comments, { courseMatchedCommentCount = 0, courseCode = "", commentSignal = null, totalUsefulCommentCount, visibleCommentCount, listId = "nyu-rmp-comments" } = {}) {
   const renderedCommentCount = countRenderedComments(comments);
   const shownCommentCount = Number.isFinite(visibleCommentCount) ? visibleCommentCount : renderedCommentCount;
   const heading = shownCommentCount > 0 ? `Most useful comments (${shownCommentCount})` : "Most useful comments";
@@ -2632,7 +2652,7 @@ function renderCommentsPanel(comments, { courseMatchedCommentCount = 0, courseCo
   const hasCourseContext = Boolean(courseCode);
   const hasUsefulComments = usefulCommentCount > 0;
   const matchBadge = courseMatchedCommentCount > 0 && hasCourseContext
-    ? `<span class="nyu-rmp-comments-course-match">${escapeHtml(formatCourseMatchBadge(courseMatchedCommentCount, courseCode))}</span>`
+    ? renderCourseMatchBadge(courseMatchedCommentCount, courseCode, commentSignal)
     : hasCourseContext && hasUsefulComments
       ? `<span class="nyu-rmp-comments-course-match is-empty">${escapeHtml(formatNoCourseMatchBadge(courseCode))}</span>`
       : "";
@@ -2668,6 +2688,11 @@ function renderCommentsPanel(comments, { courseMatchedCommentCount = 0, courseCo
       ${expandControl}
     </div>
   `;
+}
+
+function renderCourseMatchBadge(courseMatchedCommentCount, courseCode, commentSignal = null) {
+  const state = commentSignalEvidenceState(commentSignal);
+  return `<span class="nyu-rmp-comments-course-match is-${escapeHtml(state)}" aria-label="${escapeHtml(evidenceChipStatePrefix(state))}: ${escapeHtml(formatCourseMatchSummary(courseMatchedCommentCount, courseCode))}">${escapeHtml(formatCourseMatchBadge(courseMatchedCommentCount, courseCode))}</span>`;
 }
 
 function formatCourseMatchBadge(courseMatchedCommentCount, courseCode) {

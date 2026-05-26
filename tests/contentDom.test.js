@@ -60,6 +60,17 @@ describe("Albert content DOM injection", () => {
     expect(styles).toContain("display: none");
   });
 
+  it("styles course-match badges by comment signal state", () => {
+    injectStyles(document);
+
+    const styles = document.getElementById("nyu-rmp-rating-styles").textContent;
+    expect(styles).toContain(".nyu-rmp-comments-course-match.is-strong");
+    expect(styles).toContain(".nyu-rmp-comments-course-match.is-mixed");
+    expect(styles).toContain(".nyu-rmp-comments-course-match.is-weak");
+    expect(styles).toContain("background: #fef4f4");
+    expect(styles).toContain("color: #a82020");
+  });
+
   it("does not scan Albert pages when the overlay is disabled", () => {
     document.body.innerHTML = `<div>Instructor: Ada Lovelace</div>`;
     const lookupProfessor = vi.fn();
@@ -883,7 +894,10 @@ describe("Albert content DOM injection", () => {
     expect(Array.from(document.querySelectorAll(".nyu-rmp-radar-legend li")).map((node) => node.textContent)).toContain("Comments 25/100");
     expect(document.querySelector(".nyu-rmp-radar").getAttribute("aria-label")).toContain("comment signal 25 out of 100");
     expect(document.querySelector(".nyu-rmp-card").getAttribute("aria-label")).toContain("CSCI-UA 201 comment risk 25 out of 100");
-    expect(document.querySelector(".nyu-rmp-comments-course-match").textContent).toBe("1 CSCI-UA 201 match");
+    const badge = document.querySelector(".nyu-rmp-comments-course-match");
+    expect(badge.textContent).toBe("1 CSCI-UA 201 match");
+    expect(badge.className).toBe("nyu-rmp-comments-course-match is-weak");
+    expect(badge.getAttribute("aria-label")).toBe("Risk signal: 1 useful comment matches Albert course CSCI-UA 201");
   });
 
   it("labels positive Albert course-matched comment support in the evidence chips", async () => {
@@ -919,7 +933,10 @@ describe("Albert content DOM injection", () => {
 
     expect(Array.from(document.querySelectorAll(".nyu-rmp-evidence-chip")).map((node) => node.textContent)).toContain("CSCI-UA 201 comment support 86/100");
     expect(Array.from(document.querySelectorAll(".nyu-rmp-radar-legend li")).map((node) => node.textContent)).toContain("Comments 86/100");
-    expect(document.querySelector(".nyu-rmp-comments-course-match").textContent).toBe("1 CSCI-UA 201 match");
+    const badge = document.querySelector(".nyu-rmp-comments-course-match");
+    expect(badge.textContent).toBe("1 CSCI-UA 201 match");
+    expect(badge.className).toBe("nyu-rmp-comments-course-match is-strong");
+    expect(badge.getAttribute("aria-label")).toBe("Support signal: 1 useful comment matches Albert course CSCI-UA 201");
   });
 
   it("summarizes the professor radar as a rating-weighted fit score", async () => {
