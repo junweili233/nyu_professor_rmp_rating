@@ -1581,6 +1581,33 @@ describe("Albert content DOM injection", () => {
     );
   });
 
+  it("keeps a manual RMP search fallback when the automatic match is fuzzy", async () => {
+    document.body.innerHTML = `<div>Instructor: Chee Keng Yap</div>`;
+    const lookupProfessor = vi.fn(async () => ({
+      name: "Chee Yap",
+      department: "Computer Science",
+      rating: 2.1,
+      difficulty: 4.5,
+      ratingsCount: 92,
+      matchConfidence: "fuzzy",
+      topComments: [],
+      url: "https://www.ratemyprofessors.com/professor/419998",
+    }));
+
+    await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
+
+    const actions = document.querySelector(".nyu-rmp-actions");
+    const links = Array.from(actions.querySelectorAll("a"));
+    const profileLink = links.find((link) => link.textContent === "RMP");
+    const searchLink = links.find((link) => link.textContent === "Search RMP");
+
+    expect(profileLink.getAttribute("aria-label")).toBe("Open RMP profile for Chee Yap");
+    expect(profileLink.href).toBe("https://www.ratemyprofessors.com/professor/419998");
+    expect(searchLink.href).toBe("https://www.ratemyprofessors.com/search/professors/1381?q=Chee%20Keng%20Yap");
+    expect(searchLink.getAttribute("aria-label")).toBe("Search RMP for Chee Keng Yap");
+    expect(searchLink.getAttribute("rel")).toBe("noreferrer noopener");
+  });
+
   it("refreshes a professor card with a cache-bypassing lookup", async () => {
     document.body.innerHTML = `<div>Instructor: Ada Lovelace</div>`;
     const lookupProfessor = vi.fn()

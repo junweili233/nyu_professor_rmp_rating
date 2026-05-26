@@ -1039,6 +1039,9 @@ function updateRatingCard(card, result, { requestedName = "Professor", lookupPro
   const department = String(result.department ?? "").trim();
   const updatedAt = formatUpdatedAt(result.cacheUpdatedAt);
   const matchNote = formatMatchNote(professorName, requestedName, result.matchConfidence);
+  const fuzzySearchAction = matchNote
+    ? `<a class="nyu-rmp-search" href="${escapeHtml(rmpSearchUrl(requestedName))}" target="_blank" rel="noreferrer noopener" aria-label="${escapeHtml(searchLabel(requestedName))}">Search RMP</a>`
+    : "";
   const sortedTopComments = prioritizeCourseMatchedComments(result.topComments, courseCode);
   const courseMatchedCommentCount = countCourseMatchedComments(sortedTopComments, courseCode);
   const comments = sortedTopComments
@@ -1073,6 +1076,7 @@ function updateRatingCard(card, result, { requestedName = "Professor", lookupPro
       <div class="nyu-rmp-actions" aria-label="${escapeHtml(`RMP actions for ${professorName}`)}">
         <button class="nyu-rmp-refresh" type="button" aria-label="${escapeHtml(refreshLabel(requestedName))}">Refresh</button>
         <a href="${escapeHtml(rmpUrl)}" target="_blank" rel="noreferrer noopener" aria-label="${escapeHtml(profileLabel(professorName))}">RMP</a>
+        ${fuzzySearchAction}
       </div>
     </div>
     ${department ? `<div class="nyu-rmp-department">${escapeHtml(department)}</div>` : ""}
