@@ -32,9 +32,13 @@ export async function verifyLiveReadiness({
   }
 }
 
+export function liveReadinessArgs(argv = process.argv.slice(2)) {
+  const [distDir = "dist", userDataDir, extensionPath = distDir] = argv;
+  return { distDir, userDataDir, extensionPath };
+}
+
 if (import.meta.url === pathToFileURL(process.argv[1]).href) {
-  const distDir = process.argv[2] ?? "dist";
-  const result = await verifyLiveReadiness({ distDir });
+  const result = await verifyLiveReadiness(liveReadinessArgs());
   console.log(
     `${result.extensionName} is ready for live Albert verification in ${result.chromeProfile.profileName}`,
   );

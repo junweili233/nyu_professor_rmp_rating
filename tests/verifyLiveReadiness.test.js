@@ -2,9 +2,22 @@ import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { describe, expect, it } from "vitest";
-import { verifyLiveReadiness } from "../scripts/verify-live-readiness.js";
+import { liveReadinessArgs, verifyLiveReadiness } from "../scripts/verify-live-readiness.js";
 
 describe("live Albert readiness verifier", () => {
+  it("parses optional CLI user-data and extension paths", () => {
+    expect(liveReadinessArgs([])).toEqual({
+      distDir: "dist",
+      userDataDir: undefined,
+      extensionPath: "dist",
+    });
+    expect(liveReadinessArgs(["build-output", "C:\\Chrome\\User Data", "D:\\NYU-Professor-RMP-Rating\\dist"])).toEqual({
+      distDir: "build-output",
+      userDataDir: "C:\\Chrome\\User Data",
+      extensionPath: "D:\\NYU-Professor-RMP-Rating\\dist",
+    });
+  });
+
   it("passes when the package is valid and Chrome has the unpacked extension from dist", async () => {
     const workspace = await createWorkspace({ installedFromDist: true });
 

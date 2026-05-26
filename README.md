@@ -52,6 +52,12 @@ npm run verify:chrome-profile
 npm run verify:live
 ```
 
+To check a specific Chrome user-data folder, pass it after `dist`:
+
+```powershell
+node scripts/verify-live-readiness.js dist "%LOCALAPPDATA%\Google\Chrome\User Data" "D:\NYU-Professor-RMP-Rating\dist"
+```
+
 ## Live Albert Verification Troubleshooting
 
 If `npm run verify:live` reports that NYU Albert RMP Ratings is not installed from `dist`, Chrome is not running the built extension from this checkout yet.
