@@ -122,13 +122,21 @@ describe("Albert content DOM injection", () => {
     expect(processedCellStyles).toContain("align-items: flex-start !important");
     expect(processedCellStyles).toContain("flex-wrap: wrap !important");
     expect(processedCellStyles).toContain("grid-template-columns: minmax(0, 1fr) !important");
+    expect(processedCellStyles).toContain("min-inline-size: 0 !important");
     expect(processedCellStyles).toContain("min-width: 0 !important");
+    expect(processedCellStyles).toContain("overflow-wrap: normal !important");
+    expect(processedCellStyles).toContain("white-space: normal !important");
+    expect(processedCellStyles).toContain("word-break: normal !important");
     expect(ariaDisplayStyles).toContain('[role="gridcell"][data-nyu-rmp-processed="true"]');
     expect(ariaDisplayStyles).toContain("display: block !important");
     expect(ariaDisplayStyles).not.toContain("td[data-nyu-rmp-processed");
     expect(ariaDisplayStyles).not.toContain("th[data-nyu-rmp-processed");
     expect(processedChildStyles).toContain("flex: 0 0 100% !important");
+    expect(processedChildStyles).toContain("min-inline-size: 0 !important");
+    expect(processedChildStyles).toContain("overflow-wrap: normal !important");
+    expect(processedChildStyles).toContain("white-space: normal !important");
     expect(processedChildStyles).toContain("width: 100% !important");
+    expect(processedChildStyles).toContain("word-break: normal !important");
     expect(processedChildStyles).toContain('[role="gridcell"][data-nyu-rmp-processed="true"] > .nyu-rmp-rating-root.is-cell-mounted');
   });
 
@@ -9464,21 +9472,37 @@ describe("Albert content DOM injection", () => {
     expect(instructorCell.style.alignItems).toBe("flex-start");
     expect(instructorCell.style.flexWrap).toBe("wrap");
     expect(instructorCell.style.gridTemplateColumns).toBe("minmax(0, 1fr)");
+    expect(instructorCell.style.minInlineSize).toBe("0px");
     expect(instructorCell.style.minWidth).toBe("0px");
+    expect(instructorCell.style.overflowWrap).toBe("normal");
+    expect(instructorCell.style.whiteSpace).toBe("normal");
+    expect(instructorCell.style.wordBreak).toBe("normal");
     expect(instructorCell.style.getPropertyPriority("display")).toBe("important");
     expect(instructorCell.style.getPropertyPriority("align-items")).toBe("important");
     expect(instructorCell.style.getPropertyPriority("flex-wrap")).toBe("important");
     expect(instructorCell.style.getPropertyPriority("grid-template-columns")).toBe("important");
+    expect(instructorCell.style.getPropertyPriority("min-inline-size")).toBe("important");
     expect(instructorCell.style.getPropertyPriority("min-width")).toBe("important");
+    expect(instructorCell.style.getPropertyPriority("overflow-wrap")).toBe("important");
+    expect(instructorCell.style.getPropertyPriority("white-space")).toBe("important");
+    expect(instructorCell.style.getPropertyPriority("word-break")).toBe("important");
     for (const mountedChild of [originalContent, ratingRoot]) {
       expect(mountedChild.style.flex).toBe("0 0 100%");
       expect(mountedChild.style.gridColumn).toBe("1 / -1");
+      expect(mountedChild.style.minInlineSize).toBe("0px");
       expect(mountedChild.style.minWidth).toBe("0px");
+      expect(mountedChild.style.overflowWrap).toBe("normal");
+      expect(mountedChild.style.whiteSpace).toBe("normal");
       expect(mountedChild.style.width).toBe("100%");
+      expect(mountedChild.style.wordBreak).toBe("normal");
       expect(mountedChild.style.getPropertyPriority("flex")).toBe("important");
       expect(mountedChild.style.getPropertyPriority("grid-column")).toBe("important");
+      expect(mountedChild.style.getPropertyPriority("min-inline-size")).toBe("important");
       expect(mountedChild.style.getPropertyPriority("min-width")).toBe("important");
+      expect(mountedChild.style.getPropertyPriority("overflow-wrap")).toBe("important");
+      expect(mountedChild.style.getPropertyPriority("white-space")).toBe("important");
       expect(mountedChild.style.getPropertyPriority("width")).toBe("important");
+      expect(mountedChild.style.getPropertyPriority("word-break")).toBe("important");
     }
     expect(Array.from(instructorCell.children).map((child) => child.className)).toEqual([
       "nyu-rmp-albert-original",
@@ -9547,12 +9571,20 @@ describe("Albert content DOM injection", () => {
     for (const mountedChild of [originalContent, ratingRoot]) {
       expect(mountedChild.style.flex).toBe("0 0 100%");
       expect(mountedChild.style.gridColumn).toBe("1 / -1");
+      expect(mountedChild.style.minInlineSize).toBe("0px");
       expect(mountedChild.style.minWidth).toBe("0px");
+      expect(mountedChild.style.overflowWrap).toBe("normal");
+      expect(mountedChild.style.whiteSpace).toBe("normal");
       expect(mountedChild.style.width).toBe("100%");
+      expect(mountedChild.style.wordBreak).toBe("normal");
       expect(mountedChild.style.getPropertyPriority("flex")).toBe("important");
       expect(mountedChild.style.getPropertyPriority("grid-column")).toBe("important");
+      expect(mountedChild.style.getPropertyPriority("min-inline-size")).toBe("important");
       expect(mountedChild.style.getPropertyPriority("min-width")).toBe("important");
+      expect(mountedChild.style.getPropertyPriority("overflow-wrap")).toBe("important");
+      expect(mountedChild.style.getPropertyPriority("white-space")).toBe("important");
       expect(mountedChild.style.getPropertyPriority("width")).toBe("important");
+      expect(mountedChild.style.getPropertyPriority("word-break")).toBe("important");
     }
     expect(lookupProfessor).toHaveBeenCalledWith("Ada Lovelace");
   });

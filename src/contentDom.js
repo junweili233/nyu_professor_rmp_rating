@@ -10,7 +10,21 @@ const PROCESSED_CELL_LAYOUT_PROPERTIES = [
   ["flex-wrap", "wrap"],
   ["grid-template-columns", "minmax(0, 1fr)"],
   ["min-width", "0"],
+  ["min-inline-size", "0"],
+  ["overflow-wrap", "normal"],
+  ["white-space", "normal"],
+  ["word-break", "normal"],
   ["display", "block", { ariaOnly: true }],
+];
+const CELL_MOUNTED_CHILD_LAYOUT_PROPERTIES = [
+  ["flex", "0 0 100%"],
+  ["grid-column", "1 / -1"],
+  ["min-width", "0"],
+  ["min-inline-size", "0"],
+  ["overflow-wrap", "normal"],
+  ["white-space", "normal"],
+  ["width", "100%"],
+  ["word-break", "normal"],
 ];
 const ELEMENT_NODE_TYPE = 1;
 const TEXT_NODE_TYPE = 3;
@@ -1075,10 +1089,9 @@ function wrapOriginalAlbertCellContent(element, document) {
 }
 
 function applyCellMountedChildLayoutSafeguards(element) {
-  element.style.setProperty("flex", "0 0 100%", "important");
-  element.style.setProperty("grid-column", "1 / -1", "important");
-  element.style.setProperty("min-width", "0", "important");
-  element.style.setProperty("width", "100%", "important");
+  for (const [property, value] of CELL_MOUNTED_CHILD_LAYOUT_PROPERTIES) {
+    element.style.setProperty(property, value, "important");
+  }
 }
 
 function applyProcessedCellLayoutSafeguards(element) {
@@ -2084,7 +2097,11 @@ export function injectStyles(document = globalThis.document) {
 	      box-sizing: border-box;
 	      flex-wrap: wrap !important;
 	      grid-template-columns: minmax(0, 1fr) !important;
+	      min-inline-size: 0 !important;
 	      min-width: 0 !important;
+	      overflow-wrap: normal !important;
+	      white-space: normal !important;
+	      word-break: normal !important;
 	    }
 	    [role="cell"][data-nyu-rmp-processed="true"],
 	    [role="gridcell"][data-nyu-rmp-processed="true"] {
@@ -2099,7 +2116,11 @@ export function injectStyles(document = globalThis.document) {
 	    [role="cell"][data-nyu-rmp-processed="true"] > .nyu-rmp-rating-root.is-cell-mounted,
 	    [role="gridcell"][data-nyu-rmp-processed="true"] > .nyu-rmp-rating-root.is-cell-mounted {
 	      flex: 0 0 100% !important;
+	      min-inline-size: 0 !important;
+	      overflow-wrap: normal !important;
+	      white-space: normal !important;
 	      width: 100% !important;
+	      word-break: normal !important;
 	    }
 	    .nyu-rmp-albert-original {
 	      display: block;
