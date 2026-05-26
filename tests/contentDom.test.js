@@ -786,6 +786,43 @@ describe("Albert content DOM injection", () => {
     ]);
   });
 
+  it("adds useful-comment signal to the professor radar when comments are available", async () => {
+    document.body.innerHTML = `<div>Instructor: Ada Lovelace</div>`;
+    const lookupProfessor = vi.fn(async (name) => ({
+      name,
+      department: "Computer Science",
+      rating: 4.5,
+      difficulty: 2.0,
+      ratingsCount: 64,
+      wouldTakeAgain: 80,
+      tags: ["Clear grading criteria"],
+      topComments: [
+        "Explains systems clearly and gives helpful labs.",
+        "Fair exams, but projects are hard if you start late.",
+      ],
+      url: "https://www.ratemyprofessors.com/professor/123",
+    }));
+
+    await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
+
+    const radar = document.querySelector(".nyu-rmp-radar");
+    const fit = document.querySelector(".nyu-rmp-radar-fit");
+    const legend = document.querySelector(".nyu-rmp-radar-legend");
+
+    expect(Array.from(radar.querySelectorAll(".nyu-rmp-radar-axis")).map((node) => node.textContent)).toEqual([
+      "Rating",
+      "Ease",
+      "Volume",
+      "Again",
+      "Comments",
+    ]);
+    expect(fit.getAttribute("aria-label")).toBe("Professor fit score 83 out of 100, based on 5 of 5 radar metrics");
+    expect(radar.getAttribute("aria-label")).toContain("comment signal 83 out of 100");
+    expect(radar.querySelector("desc")?.textContent).toContain("comment signal 83 out of 100");
+    expect(Array.from(legend.querySelectorAll("li")).map((node) => node.textContent)).toContain("Comments 83/100");
+    expect(Array.from(document.querySelectorAll(".nyu-rmp-radar-node")).map((node) => node.getAttribute("aria-label"))).toContain("Radar metric Comments: 83 out of 100");
+  });
+
   it("summarizes the professor radar as a rating-weighted fit score", async () => {
     document.body.innerHTML = `<div>Instructor: Ada Lovelace</div>`;
     const lookupProfessor = vi.fn(async (name) => ({

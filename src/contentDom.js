@@ -1053,13 +1053,6 @@ function updateRatingCard(card, result, { requestedName = "Professor", lookupPro
   const ratingClass = ratingVerdict.className;
   const professorName = result.name || requestedName;
   const ratingsCountLabel = formatOptionalRatingsCount(result.ratingsCount);
-  const radarFit = radarFitDetails({
-    rating,
-    ease,
-    normalizedRatingsCount: optionalNonNegativeCount(result.ratingsCount),
-    wouldTakeAgain,
-  });
-  const recommendation = getPickRecommendation(radarFit);
   const rmpUrl = safeRmpProfileUrl(result.url);
   const department = String(result.department ?? "").trim();
   const updatedAt = formatUpdatedAt(result.cacheUpdatedAt);
@@ -1085,6 +1078,15 @@ function updateRatingCard(card, result, { requestedName = "Professor", lookupPro
   const tagNames = asArray(result.tags)
     .map(normalizeTagName)
     .filter(Boolean);
+  const commentSignal = commentFitSignal(usefulTopComments, tagNames);
+  const radarFit = radarFitDetails({
+    rating,
+    ease,
+    normalizedRatingsCount: optionalNonNegativeCount(result.ratingsCount),
+    wouldTakeAgain,
+    commentSignal,
+  });
+  const recommendation = getPickRecommendation(radarFit);
   const tags = tagNames
     .map((tag) => `<span role="listitem">${escapeHtml(tag)}</span>`)
     .join(" ");
@@ -1096,6 +1098,7 @@ function updateRatingCard(card, result, { requestedName = "Professor", lookupPro
     difficulty,
     ratingsCount: result.ratingsCount,
     wouldTakeAgain,
+    commentSignal,
     recommendationClassName: recommendation.className,
   });
   const recommendationEvidence = renderRecommendationEvidence({ rating, difficulty, ratingsCount: result.ratingsCount, wouldTakeAgain });
@@ -1182,15 +1185,17 @@ function updateErrorCard(card, { requestedName, lookupProfessor, message, course
   wireRefreshAction(card, requestedName, lookupProfessor);
 }
 
-function renderRadarChart({ chartId, professorName = "Professor", rating, difficulty, ratingsCount, wouldTakeAgain, recommendationClassName = "" }) {
+function renderRadarChart({ chartId, professorName = "Professor", rating, difficulty, ratingsCount, wouldTakeAgain, commentSignal = null, recommendationClassName = "" }) {
   const ease = difficulty == null ? null : 5 - difficulty;
   const normalizedRatingsCount = optionalNonNegativeCount(ratingsCount);
   const ratingsCountLabel = normalizedRatingsCount == null ? "N/A ratings" : formatRatingsCount(normalizedRatingsCount);
   const ratingsVolumeLabel = normalizedRatingsCount == null ? "N/A" : normalizedRatingsCount;
+  const commentSignalLabel = commentSignal == null ? "" : `, comment signal ${Math.round(commentSignal * 100)} out of 100`;
+  const commentLegendLabel = commentSignal == null ? "" : `<li>Comments ${Math.round(commentSignal * 100)}/100</li>`;
   const safeChartId = String(chartId ?? "0").replace(/\D+/g, "") || "0";
   const titleId = `nyu-rmp-radar-title-${safeChartId}`;
   const descId = `nyu-rmp-radar-desc-${safeChartId}`;
-  const radarFit = radarFitDetails({ rating, ease, normalizedRatingsCount, wouldTakeAgain });
+  const radarFit = radarFitDetails({ rating, ease, normalizedRatingsCount, wouldTakeAgain, commentSignal });
   const axes = radarFit.axes;
   const metricCountLabel = `${radarFit.availableMetricCount} of ${radarFit.totalMetricCount} radar metrics`;
   const compactMetricCountLabel = `${radarFit.availableMetricCount}/${radarFit.totalMetricCount} metrics`;
@@ -1205,10 +1210,18 @@ function renderRadarChart({ chartId, professorName = "Professor", rating, diffic
     .map(({ value }, index) => radarPoint(value, index, axes.length))
     .map(({ x, y }) => `${x},${y}`)
     .join(" ");
-  const radarSummary = `${fitSummary}${isLimitedData ? ", limited data" : ""}, rating ${formatScore(rating)} out of 5, ease ${formatScore(ease)} out of 5, take again ${wouldTakeAgain == null ? "N/A" : `${Math.round(wouldTakeAgain)}%`}, ${ratingsCountLabel}`;
+  const radarSummary = `${fitSummary}${isLimitedData ? ", limited data" : ""}, rating ${formatScore(rating)} out of 5, ease ${formatScore(ease)} out of 5, take again ${wouldTakeAgain == null ? "N/A" : `${Math.round(wouldTakeAgain)}%`}, ${ratingsCountLabel}${commentSignalLabel}`;
   const limitedDataDescription = isLimitedData ? ` Limited data: ${metricCountLabel} available.` : "";
-  const radarDescription = `${capitalizeSentence(fitSummary)}.${limitedDataDescription} Rating ${formatScore(rating)} out of 5, ease ${formatScore(ease)} out of 5, take again ${wouldTakeAgain == null ? "N/A" : `${Math.round(wouldTakeAgain)}%`}, ${ratingsCountLabel}.`;
+  const radarDescription = `${capitalizeSentence(fitSummary)}.${limitedDataDescription} Rating ${formatScore(rating)} out of 5, ease ${formatScore(ease)} out of 5, take again ${wouldTakeAgain == null ? "N/A" : `${Math.round(wouldTakeAgain)}%`}, ${ratingsCountLabel}${commentSignalLabel}.`;
   const ariaLabel = `Professor radar: ${radarSummary}`;
+  const outerGridPoints = radarGridPoints(48, axes.length);
+  const innerGridPoints = radarGridPoints(24, axes.length);
+  const spokes = axes
+    .map((_, index) => {
+      const { x, y } = radarPoint(48 / 42, index, axes.length);
+      return `<line class="nyu-rmp-radar-spoke" x1="60" y1="60" x2="${x}" y2="${y}"></line>`;
+    })
+    .join("");
   const radarFitClassName = [
     "nyu-rmp-radar-fit",
     recommendationClassName ? `is-${recommendationClassName}` : "",
@@ -1222,14 +1235,11 @@ function renderRadarChart({ chartId, professorName = "Professor", rating, diffic
       <svg class="nyu-rmp-radar" viewBox="0 0 120 120" role="img" aria-label="${escapeHtml(ariaLabel)}" aria-labelledby="${titleId}" aria-describedby="${descId}" focusable="false">
         <title id="${titleId}">Professor rating radar</title>
         <desc id="${descId}">${escapeHtml(radarDescription)}</desc>
-        <polygon class="nyu-rmp-radar-grid" points="60,12 108,60 60,108 12,60"></polygon>
-        <polygon class="nyu-rmp-radar-grid inner" points="60,36 84,60 60,84 36,60"></polygon>
-        <line class="nyu-rmp-radar-spoke" x1="60" y1="60" x2="60" y2="12"></line>
-        <line class="nyu-rmp-radar-spoke" x1="60" y1="60" x2="108" y2="60"></line>
-        <line class="nyu-rmp-radar-spoke" x1="60" y1="60" x2="60" y2="108"></line>
-        <line class="nyu-rmp-radar-spoke" x1="60" y1="60" x2="12" y2="60"></line>
+        <polygon class="nyu-rmp-radar-grid" points="${outerGridPoints}"></polygon>
+        <polygon class="nyu-rmp-radar-grid inner" points="${innerGridPoints}"></polygon>
+        ${spokes}
         <polygon class="nyu-rmp-radar-shape" points="${escapeHtml(points)}"></polygon>
-        ${axes.map((axis, index) => radarMetricNode(axis, index, axes.length, { rating, ease, normalizedRatingsCount, wouldTakeAgain })).join("")}
+        ${axes.map((axis, index) => radarMetricNode(axis, index, axes.length, { rating, ease, normalizedRatingsCount, wouldTakeAgain, commentSignal })).join("")}
         ${axes.map(({ label }, index) => radarAxisLabel(label, index, axes.length)).join("")}
       </svg>
       <div class="nyu-rmp-radar-summary">
@@ -1240,6 +1250,7 @@ function renderRadarChart({ chartId, professorName = "Professor", rating, diffic
           <li>Ease ${formatScore(ease)}/5</li>
           <li>Volume ${ratingsVolumeLabel}</li>
           <li>Take again ${wouldTakeAgain == null ? "N/A" : `${Math.round(wouldTakeAgain)}%`}</li>
+          ${commentLegendLabel}
         </ul>
       </div>
     </div>
@@ -1253,7 +1264,7 @@ function radarMetricNode(axis, index, total, metrics) {
   return `<circle class="${className}" cx="${x}" cy="${y}" r="3.5" role="img" aria-label="${escapeHtml(`Radar metric ${label}`)}"><title>${escapeHtml(label)}</title></circle>`;
 }
 
-function radarMetricLabel(label, { rating, ease, normalizedRatingsCount, wouldTakeAgain }) {
+function radarMetricLabel(label, { rating, ease, normalizedRatingsCount, wouldTakeAgain, commentSignal }) {
   if (label === "Rating") {
     return `Rating: ${formatScore(rating)} out of 5`;
   }
@@ -1266,16 +1277,22 @@ function radarMetricLabel(label, { rating, ease, normalizedRatingsCount, wouldTa
   if (label === "Again") {
     return `Take again: ${wouldTakeAgain == null ? "N/A" : `${Math.round(wouldTakeAgain)}%`}`;
   }
+  if (label === "Comments") {
+    return `Comments: ${commentSignal == null ? "N/A" : `${Math.round(commentSignal * 100)} out of 100`}`;
+  }
   return `${label}: N/A`;
 }
 
-function radarFitDetails({ rating, ease, normalizedRatingsCount, wouldTakeAgain }) {
+function radarFitDetails({ rating, ease, normalizedRatingsCount, wouldTakeAgain, commentSignal = null }) {
   const axes = [
     { label: "Rating", value: scaleFivePoint(rating), available: rating != null },
     { label: "Ease", value: scaleFivePoint(ease), available: ease != null },
     { label: "Volume", value: scaleRatingVolume(normalizedRatingsCount), available: normalizedRatingsCount != null },
     { label: "Again", value: scalePercent(wouldTakeAgain), available: wouldTakeAgain != null },
   ];
+  if (commentSignal != null) {
+    axes.push({ label: "Comments", value: clamp01(commentSignal), available: true });
+  }
   return {
     axes,
     score: radarFitScore(axes),
@@ -1286,12 +1303,21 @@ function radarFitDetails({ rating, ease, normalizedRatingsCount, wouldTakeAgain 
 }
 
 function radarFitScore(axes) {
-  const weights = {
-    Rating: 0.5,
-    Ease: 0.2,
-    Volume: 0.1,
-    Again: 0.2,
-  };
+  const hasCommentSignal = axes.some((axis) => axis.label === "Comments");
+  const weights = hasCommentSignal
+    ? {
+        Rating: 0.5,
+        Ease: 0.17,
+        Volume: 0.07,
+        Again: 0.16,
+        Comments: 0.1,
+      }
+    : {
+        Rating: 0.5,
+        Ease: 0.2,
+        Volume: 0.1,
+        Again: 0.2,
+      };
   const weighted = axes.reduce((total, axis) => total + axis.value * (weights[axis.label] ?? 0), 0);
   const availableWeight = axes.reduce((total, axis) => total + (axis.available ? weights[axis.label] ?? 0 : 0), 0);
   return Math.round((weighted / (availableWeight || 1)) * 100);
@@ -1400,6 +1426,54 @@ function ratingsCountEvidenceLabel(ratingsCount) {
   return normalizedRatingsCount == null ? "N/A ratings" : formatRatingsCount(normalizedRatingsCount);
 }
 
+function commentFitSignal(comments = [], tags = []) {
+  const sources = [
+    ...asArray(comments).map((comment) => normalizeComment(comment).text),
+    ...asArray(tags),
+  ]
+    .map((value) => String(value ?? "").toLowerCase())
+    .filter(Boolean);
+  if (sources.length === 0) {
+    return null;
+  }
+
+  const positiveSignals = [
+    /\bclear(?:ly)?\b/,
+    /\bexplain(?:s|ed|ing)?\b/,
+    /\bhelpful\b/,
+    /\bfair\b/,
+    /\borganized\b/,
+    /\bpractical\b/,
+    /\bexcellent\b/,
+    /\bgreat\b/,
+    /\bmanageable\b/,
+  ];
+  const riskSignals = [
+    /\bhard\b/,
+    /\btough\b/,
+    /\bavoid\b/,
+    /\bconfusing\b/,
+    /\bdisorganized\b/,
+    /\bunclear\b/,
+    /\bunfair\b/,
+    /\bfast\b/,
+    /\boverwhelming\b/,
+  ];
+  const positives = countSignalMatches(sources, positiveSignals);
+  const risks = countSignalMatches(sources, riskSignals);
+  const totalSignals = positives + risks;
+  if (totalSignals === 0) {
+    return 0.5;
+  }
+  return clamp01(0.5 + ((positives - risks) / totalSignals) * 0.5);
+}
+
+function countSignalMatches(sources, patterns) {
+  return sources.reduce((count, source) => (
+    count + patterns.reduce((matches, pattern) => matches + (pattern.test(source) ? 1 : 0), 0)
+  ), 0);
+}
+
 function optionalNonNegativeCount(value) {
   const number = Number(value);
   if (!Number.isFinite(number) || number < 0) {
@@ -1425,6 +1499,12 @@ function radarPoint(value, index, total) {
     x: roundRadarCoordinate(60 + Math.cos(angle) * radius),
     y: roundRadarCoordinate(60 + Math.sin(angle) * radius),
   };
+}
+
+function radarGridPoints(radius, total) {
+  return Array.from({ length: total }, (_, index) => radarPoint(radius / 42, index, total))
+    .map(({ x, y }) => `${x},${y}`)
+    .join(" ");
 }
 
 function roundRadarCoordinate(value) {

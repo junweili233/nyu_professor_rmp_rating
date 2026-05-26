@@ -12,6 +12,7 @@ describe("README", () => {
     expect(readme).toContain("Search RMP");
     expect(readme).toContain("Fuzzy RMP match");
     expect(readme).toContain("radar fit score");
+    expect(readme).toContain("comment signal");
     expect(readme).toContain("pick recommendation");
     expect(readme).toContain("course-match badge");
     expect(readme).toContain("CSCI-UA 0201");
