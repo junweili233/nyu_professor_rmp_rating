@@ -821,6 +821,7 @@ describe("Albert content DOM injection", () => {
     expect(radar.querySelector("desc")?.textContent).toContain("comment signal 83 out of 100");
     expect(Array.from(legend.querySelectorAll("li")).map((node) => node.textContent)).toContain("Comments 83/100");
     expect(Array.from(document.querySelectorAll(".nyu-rmp-radar-node")).map((node) => node.getAttribute("aria-label"))).toContain("Radar metric Comments: 83 out of 100");
+    expect(Array.from(document.querySelectorAll(".nyu-rmp-evidence-chip")).map((node) => node.textContent)).toContain("Positive comment signal 83/100");
   });
 
   it("summarizes the professor radar as a rating-weighted fit score", async () => {

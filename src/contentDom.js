@@ -1101,7 +1101,7 @@ function updateRatingCard(card, result, { requestedName = "Professor", lookupPro
     commentSignal,
     recommendationClassName: recommendation.className,
   });
-  const recommendationEvidence = renderRecommendationEvidence({ rating, difficulty, ratingsCount: result.ratingsCount, wouldTakeAgain });
+  const recommendationEvidence = renderRecommendationEvidence({ rating, difficulty, ratingsCount: result.ratingsCount, wouldTakeAgain, commentSignal });
   const collapsedCardLabel = formatCardSummaryLabel({ professorName, department, rating, ratingVerdict: ratingVerdict.label, recommendation, radarFit, ratingsCountLabel, difficulty, ease, wouldTakeAgain, commentCount, courseMatchedCommentCount, courseCode, tagNames, updatedAt, matchNote, cacheNotice });
   const expandedCardLabel = formatCardSummaryLabel({ professorName, department, rating, ratingVerdict: ratingVerdict.label, recommendation, radarFit, ratingsCountLabel, difficulty, ease, wouldTakeAgain, commentCount: usefulTopComments.length, courseMatchedCommentCount, courseCode, tagNames, updatedAt, matchNote, cacheNotice });
   card.dataset.nyuRmpCollapsedLabel = collapsedCardLabel;
@@ -1366,12 +1366,13 @@ function getPickRecommendation(radarFit) {
   };
 }
 
-function renderRecommendationEvidence({ rating, difficulty, ratingsCount, wouldTakeAgain }) {
+function renderRecommendationEvidence({ rating, difficulty, ratingsCount, wouldTakeAgain, commentSignal = null }) {
   const chips = [
     ratingEvidenceLabel(rating),
     difficultyEvidenceLabel(difficulty),
     takeAgainEvidenceLabel(wouldTakeAgain),
     ratingsCountEvidenceLabel(ratingsCount),
+    commentSignalEvidenceLabel(commentSignal),
   ].filter(Boolean);
 
   return `
@@ -1379,6 +1380,20 @@ function renderRecommendationEvidence({ rating, difficulty, ratingsCount, wouldT
       ${chips.map((chip) => `<span class="nyu-rmp-evidence-chip" role="listitem">${escapeHtml(chip)}</span>`).join("")}
     </div>
   `;
+}
+
+function commentSignalEvidenceLabel(commentSignal) {
+  if (commentSignal == null) {
+    return null;
+  }
+  const score = Math.round(commentSignal * 100);
+  if (score >= 70) {
+    return `Positive comment signal ${score}/100`;
+  }
+  if (score <= 40) {
+    return `Risky comment signal ${score}/100`;
+  }
+  return `Mixed comment signal ${score}/100`;
 }
 
 function ratingEvidenceLabel(rating) {
