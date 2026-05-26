@@ -1104,6 +1104,9 @@ function renderRadarChart({ chartId, rating, difficulty, ratingsCount, wouldTake
   const isLimitedData = radarFit.availableMetricCount < radarFit.totalMetricCount;
   const limitedDataLabel = isLimitedData ? ", limited data" : "";
   const limitedDataText = isLimitedData ? " <em>Limited data</em>" : "";
+  const legendLabel = isLimitedData
+    ? `Radar chart values, limited data: ${radarFit.availableMetricCount} of ${radarFit.totalMetricCount} metrics available`
+    : "Radar chart values";
   const fitSummary = `professor fit ${radarFit.score} out of 100`;
   const points = axes
     .map(({ value }, index) => radarPoint(value, index, axes.length))
@@ -1130,7 +1133,7 @@ function renderRadarChart({ chartId, rating, difficulty, ratingsCount, wouldTake
       </svg>
       <div class="nyu-rmp-radar-summary">
         <div class="nyu-rmp-radar-fit${isLimitedData ? " is-limited" : ""}" aria-label="Professor fit score ${radarFit.score} out of 100, based on ${metricCountLabel}${limitedDataLabel}"><span>Fit</span> <strong>${radarFit.score}</strong> <em>${compactMetricCountLabel}</em>${limitedDataText}</div>
-        <ul class="nyu-rmp-radar-legend" aria-label="Radar chart values">
+        <ul class="nyu-rmp-radar-legend" aria-label="${escapeHtml(legendLabel)}">
           <li>Rating ${formatScore(rating)}/5</li>
           <li>Ease ${formatScore(ease)}/5</li>
           <li>Volume ${ratingsVolumeLabel}</li>

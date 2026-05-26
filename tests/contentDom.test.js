@@ -607,7 +607,9 @@ describe("Albert content DOM injection", () => {
     expect(radar.getAttribute("aria-label")).toBe("Professor radar: professor fit 81 out of 100, limited data, rating 4.5 out of 5, ease 3.0 out of 5, take again N/A, N/A ratings");
     expect(radar.querySelector("desc")?.textContent).toBe("Professor fit 81 out of 100. Limited data: 2 of 4 radar metrics available. Rating 4.5 out of 5, ease 3.0 out of 5, take again N/A, N/A ratings.");
     expect(shapePoints).not.toMatch(/NaN|Infinity/);
-    expect(Array.from(document.querySelectorAll(".nyu-rmp-radar-legend li")).map((node) => node.textContent)).toEqual([
+    const legend = document.querySelector(".nyu-rmp-radar-legend");
+    expect(legend.getAttribute("aria-label")).toBe("Radar chart values, limited data: 2 of 4 metrics available");
+    expect(Array.from(legend.querySelectorAll("li")).map((node) => node.textContent)).toEqual([
       "Rating 4.5/5",
       "Ease 3.0/5",
       "Volume N/A",
