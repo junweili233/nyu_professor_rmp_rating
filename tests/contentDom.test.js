@@ -9470,6 +9470,16 @@ describe("Albert content DOM injection", () => {
     expect(instructorCell.style.getPropertyPriority("flex-wrap")).toBe("important");
     expect(instructorCell.style.getPropertyPriority("grid-template-columns")).toBe("important");
     expect(instructorCell.style.getPropertyPriority("min-width")).toBe("important");
+    for (const mountedChild of [originalContent, ratingRoot]) {
+      expect(mountedChild.style.flex).toBe("0 0 100%");
+      expect(mountedChild.style.gridColumn).toBe("1 / -1");
+      expect(mountedChild.style.minWidth).toBe("0px");
+      expect(mountedChild.style.width).toBe("100%");
+      expect(mountedChild.style.getPropertyPriority("flex")).toBe("important");
+      expect(mountedChild.style.getPropertyPriority("grid-column")).toBe("important");
+      expect(mountedChild.style.getPropertyPriority("min-width")).toBe("important");
+      expect(mountedChild.style.getPropertyPriority("width")).toBe("important");
+    }
     expect(Array.from(instructorCell.children).map((child) => child.className)).toEqual([
       "nyu-rmp-albert-original",
       "nyu-rmp-rating-root is-cell-mounted",

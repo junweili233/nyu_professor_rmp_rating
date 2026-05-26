@@ -974,6 +974,9 @@ function mountRatings({ element, names, processedElements = [], document, lookup
     container.className = isCellMount ? `${ROOT_CLASS} is-cell-mounted` : ROOT_CLASS;
     container.dataset.nyuRmpVersion = EXTENSION_VERSION;
   }
+  if (isCellMount) {
+    applyCellMountedChildLayoutSafeguards(container);
+  }
   const courseCode = courseCodeForElement(element);
 
   const pendingLookups = [];
@@ -991,7 +994,10 @@ function mountRatings({ element, names, processedElements = [], document, lookup
   }
 
   if (isCellMount) {
-    wrapOriginalAlbertCellContent(element, document);
+    const originalContent = wrapOriginalAlbertCellContent(element, document);
+    if (originalContent) {
+      applyCellMountedChildLayoutSafeguards(originalContent);
+    }
     element.append(container);
   } else {
     element.insertAdjacentElement("afterend", container);
@@ -1042,14 +1048,15 @@ function pruneStaleMountedProfessorCards(container, currentNameKeys) {
 }
 
 function wrapOriginalAlbertCellContent(element, document) {
-  if (element.querySelector?.(`:scope > .${ORIGINAL_CONTENT_CLASS}`)) {
-    return;
+  const existingWrapper = element.querySelector?.(`:scope > .${ORIGINAL_CONTENT_CLASS}`);
+  if (existingWrapper) {
+    return existingWrapper;
   }
 
   const originalNodes = Array.from(element.childNodes)
     .filter((node) => !(node.nodeType === ELEMENT_NODE_TYPE && node.classList?.contains(ROOT_CLASS)));
   if (originalNodes.length === 0 || originalNodes.every(isEmptyTextNode)) {
-    return;
+    return null;
   }
 
   const wrapper = document.createElement("div");
@@ -1060,6 +1067,14 @@ function wrapOriginalAlbertCellContent(element, document) {
   for (const node of originalNodes) {
     wrapper.append(node);
   }
+  return wrapper;
+}
+
+function applyCellMountedChildLayoutSafeguards(element) {
+  element.style.setProperty("flex", "0 0 100%", "important");
+  element.style.setProperty("grid-column", "1 / -1", "important");
+  element.style.setProperty("min-width", "0", "important");
+  element.style.setProperty("width", "100%", "important");
 }
 
 function applyProcessedCellLayoutSafeguards(element) {
