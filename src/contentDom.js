@@ -1233,6 +1233,7 @@ function renderRadarChart({ chartId, professorName = "Professor", rating, diffic
       </svg>
       <div class="nyu-rmp-radar-summary">
         <div class="${escapeHtml(radarFitClassName)}" aria-label="Professor fit score ${radarFit.score} out of 100, based on ${metricCountLabel}${limitedDataLabel}"><span>Fit</span> <strong>${radarFit.score}</strong> <em>${compactMetricCountLabel}</em>${limitedDataText}</div>
+        <div class="nyu-rmp-radar-weight-note" role="note">Rating-led fit: rating counts most.</div>
         <ul class="nyu-rmp-radar-legend" aria-label="${escapeHtml(legendLabel)}">
           <li>Rating ${formatScore(rating)}/5</li>
           <li>Ease ${formatScore(ease)}/5</li>
@@ -1900,6 +1901,12 @@ export function injectStyles(document = globalThis.document) {
 	      color: #f2d28a;
 	      font-weight: 750;
 	      text-transform: uppercase;
+	    }
+	    .nyu-rmp-radar-weight-note {
+	      color: #526173;
+	      font-size: 10px;
+	      font-weight: 700;
+	      line-height: 1.2;
 	    }
 	    .nyu-rmp-radar-legend li {
 	      background: #f8fafc;

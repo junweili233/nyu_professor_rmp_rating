@@ -804,10 +804,13 @@ describe("Albert content DOM injection", () => {
 
     const radar = document.querySelector(".nyu-rmp-radar");
     const fit = document.querySelector(".nyu-rmp-radar-fit");
+    const weightingNote = document.querySelector(".nyu-rmp-radar-weight-note");
     expect(fit).not.toBeNull();
     expect(fit.getAttribute("aria-label")).toBe("Professor fit score 82 out of 100, based on 4 of 4 radar metrics");
     expect(fit.textContent).toContain("Fit 82");
     expect(fit.textContent).toContain("4/4 metrics");
+    expect(weightingNote.getAttribute("role")).toBe("note");
+    expect(weightingNote.textContent).toBe("Rating-led fit: rating counts most.");
     expect(radar.getAttribute("aria-label")).toContain("professor fit 82 out of 100");
     expect(radar.querySelector("desc")?.textContent).toContain("Professor fit 82 out of 100.");
   });
