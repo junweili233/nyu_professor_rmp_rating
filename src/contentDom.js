@@ -1652,6 +1652,10 @@ function commentFitSignal(comments = [], tags = [], albertCourseCode = "") {
     /\bnot\s+fast\b/,
     /\bnot\s+very\s+fast\b/,
     /\bnot\s+too\s+fast\b/,
+    /\blight\s+workload\b/,
+    /\breasonable\s+workload\b/,
+    /\bworkload\s+(?:is|was|feels?)\s+(?:light|reasonable)\b/,
+    /\breasonable\s+homework\b/,
     /\bnot\s+heavy\s+workload\b/,
     /\bnot\s+too\s+heavy\s+workload\b/,
   ];
