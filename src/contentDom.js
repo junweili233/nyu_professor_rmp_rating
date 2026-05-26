@@ -1030,24 +1030,24 @@ function updateRatingCard(card, result, { requestedName = "Professor", lookupPro
     ${department ? `<div class="nyu-rmp-department">${escapeHtml(department)}</div>` : ""}
     ${matchNote ? `<div class="nyu-rmp-match-note">${escapeHtml(matchNote)}</div>` : ""}
     ${updatedAt ? `<div class="nyu-rmp-updated">${escapeHtml(updatedAt)}</div>` : ""}
-    <div class="nyu-rmp-score-row nyu-rmp-metrics">
+    <dl class="nyu-rmp-score-row nyu-rmp-metrics">
       <div class="nyu-rmp-metric nyu-rmp-rating-metric">
-        <span class="nyu-rmp-metric-label">Rating</span>
-        <span class="nyu-rmp-score" aria-label="${escapeHtml(formatRatingLabel(rating))}">${formatScore(rating)}</span>
-        <span class="nyu-rmp-verdict">${escapeHtml(ratingVerdict.label)}</span>
-        <span class="nyu-rmp-rating-count">${escapeHtml(formatRatingsCount(ratingsCount))}</span>
+        <dt class="nyu-rmp-metric-label">Rating</dt>
+        <dd class="nyu-rmp-score nyu-rmp-metric-value" aria-label="${escapeHtml(formatRatingLabel(rating))}">${formatScore(rating)}</dd>
+        <dd class="nyu-rmp-verdict">${escapeHtml(ratingVerdict.label)}</dd>
+        <dd class="nyu-rmp-rating-count">${escapeHtml(formatRatingsCount(ratingsCount))}</dd>
       </div>
       <div class="nyu-rmp-metric">
-        <span class="nyu-rmp-metric-label">Difficulty</span>
-        <span class="nyu-rmp-metric-value">Difficulty ${formatScore(difficulty)}</span>
+        <dt class="nyu-rmp-metric-label">Difficulty</dt>
+        <dd class="nyu-rmp-metric-value">Difficulty ${formatScore(difficulty)}</dd>
       </div>
       ${wouldTakeAgain == null ? "" : `
         <div class="nyu-rmp-metric">
-          <span class="nyu-rmp-metric-label">Take again</span>
-          <span class="nyu-rmp-metric-value">${Math.round(wouldTakeAgain)}% take again</span>
+          <dt class="nyu-rmp-metric-label">Take again</dt>
+          <dd class="nyu-rmp-metric-value">${Math.round(wouldTakeAgain)}% take again</dd>
         </div>
       `}
-    </div>
+    </dl>
     ${tags ? `<div class="nyu-rmp-tags">${tags}</div>` : ""}
     ${comments ? `<div class="nyu-rmp-comments-panel"><ul class="nyu-rmp-comments">${comments}</ul></div>` : ""}
   `;
@@ -1224,6 +1224,10 @@ export function injectStyles(document = globalThis.document) {
 	      gap: 6px;
 	      grid-template-columns: minmax(92px, 1.25fr) repeat(2, minmax(72px, 1fr));
 	      margin: 8px 0 7px;
+	    }
+	    .nyu-rmp-metrics dt,
+	    .nyu-rmp-metrics dd {
+	      margin: 0;
 	    }
 	    .nyu-rmp-metric {
 	      align-content: start;
