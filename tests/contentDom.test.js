@@ -306,6 +306,35 @@ describe("Albert content DOM injection", () => {
     expect(document.querySelector(".nyu-rmp-score").tagName).toBe("DD");
   });
 
+  it("renders an accessible radar chart from professor rating metrics", async () => {
+    document.body.innerHTML = `<div>Instructor: Ada Lovelace</div>`;
+    const lookupProfessor = vi.fn(async (name) => ({
+      name,
+      department: "Computer Science",
+      rating: 4.5,
+      difficulty: 2.0,
+      ratingsCount: 64,
+      wouldTakeAgain: 80,
+      tags: [],
+      topComments: [],
+      url: "https://www.ratemyprofessors.com/professor/123",
+    }));
+
+    await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
+
+    const radar = document.querySelector(".nyu-rmp-radar");
+    expect(radar).not.toBeNull();
+    expect(radar.getAttribute("role")).toBe("img");
+    expect(radar.getAttribute("aria-label")).toBe("Professor radar: rating 4.5 out of 5, ease 3.0 out of 5, take again 80%, 64 ratings");
+    expect(radar.querySelector(".nyu-rmp-radar-shape")).not.toBeNull();
+    expect(Array.from(radar.querySelectorAll(".nyu-rmp-radar-axis")).map((node) => node.textContent)).toEqual([
+      "Rating",
+      "Ease",
+      "Volume",
+      "Again",
+    ]);
+  });
+
   it("renders useful-comment metadata from RMP ratings", async () => {
     document.body.innerHTML = `<div>Instructor: Ada Lovelace</div>`;
     const lookupProfessor = vi.fn(async (name) => ({

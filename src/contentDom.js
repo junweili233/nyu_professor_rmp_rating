@@ -1013,6 +1013,7 @@ function updateRatingCard(card, result, { requestedName = "Professor", lookupPro
     .filter(Boolean)
     .map((tag) => `<span>${escapeHtml(tag)}</span>`)
     .join("");
+  const radar = renderRadarChart({ rating, difficulty, ratingsCount, wouldTakeAgain });
 
   card.classList.add(`rating-${ratingClass}`);
   card.setAttribute(
@@ -1048,6 +1049,7 @@ function updateRatingCard(card, result, { requestedName = "Professor", lookupPro
         </div>
       `}
     </dl>
+    ${radar}
     ${tags ? `<div class="nyu-rmp-tags">${tags}</div>` : ""}
     ${comments ? `<div class="nyu-rmp-comments-panel"><ul class="nyu-rmp-comments">${comments}</ul></div>` : ""}
   `;
@@ -1070,6 +1072,73 @@ function updateErrorCard(card, { requestedName, lookupProfessor, message }) {
     </div>
   `;
   wireRefreshAction(card, requestedName, lookupProfessor);
+}
+
+function renderRadarChart({ rating, difficulty, ratingsCount, wouldTakeAgain }) {
+  const axes = [
+    { label: "Rating", value: scaleFivePoint(rating) },
+    { label: "Ease", value: scaleFivePoint(difficulty == null ? null : 5 - difficulty) },
+    { label: "Volume", value: scaleRatingVolume(ratingsCount) },
+    { label: "Again", value: scalePercent(wouldTakeAgain) },
+  ];
+  const points = axes
+    .map(({ value }, index) => radarPoint(value, index, axes.length))
+    .map(({ x, y }) => `${x},${y}`)
+    .join(" ");
+  const ariaLabel = `Professor radar: rating ${formatScore(rating)} out of 5, ease ${formatScore(difficulty == null ? null : 5 - difficulty)} out of 5, take again ${wouldTakeAgain == null ? "N/A" : `${Math.round(wouldTakeAgain)}%`}, ${formatRatingsCount(ratingsCount)}`;
+
+  return `
+    <svg class="nyu-rmp-radar" viewBox="0 0 120 120" role="img" aria-label="${escapeHtml(ariaLabel)}" focusable="false">
+      <polygon class="nyu-rmp-radar-grid" points="60,12 108,60 60,108 12,60"></polygon>
+      <polygon class="nyu-rmp-radar-grid inner" points="60,36 84,60 60,84 36,60"></polygon>
+      <line class="nyu-rmp-radar-spoke" x1="60" y1="60" x2="60" y2="12"></line>
+      <line class="nyu-rmp-radar-spoke" x1="60" y1="60" x2="108" y2="60"></line>
+      <line class="nyu-rmp-radar-spoke" x1="60" y1="60" x2="60" y2="108"></line>
+      <line class="nyu-rmp-radar-spoke" x1="60" y1="60" x2="12" y2="60"></line>
+      <polygon class="nyu-rmp-radar-shape" points="${escapeHtml(points)}"></polygon>
+      ${axes.map(({ label }, index) => radarAxisLabel(label, index, axes.length)).join("")}
+    </svg>
+  `;
+}
+
+function radarAxisLabel(label, index, total) {
+  const { x, y } = radarPoint(1.14, index, total);
+  return `<text class="nyu-rmp-radar-axis" x="${x}" y="${y}">${escapeHtml(label)}</text>`;
+}
+
+function radarPoint(value, index, total) {
+  const angle = -Math.PI / 2 + (Math.PI * 2 * index) / total;
+  const radius = 42 * clamp01(value);
+  return {
+    x: roundRadarCoordinate(60 + Math.cos(angle) * radius),
+    y: roundRadarCoordinate(60 + Math.sin(angle) * radius),
+  };
+}
+
+function roundRadarCoordinate(value) {
+  return Math.round(value * 10) / 10;
+}
+
+function scaleFivePoint(value) {
+  return value == null ? 0 : clamp01(value / 5);
+}
+
+function scalePercent(value) {
+  return value == null ? 0 : clamp01(value / 100);
+}
+
+function scaleRatingVolume(value) {
+  if (value == null) {
+    return 0;
+  }
+  return clamp01(Math.log10(value + 1) / 2);
+}
+
+function clamp01(value) {
+  if (!Number.isFinite(value)) {
+    return 0;
+  }
+  return Math.min(1, Math.max(0, value));
 }
 
 function statusMarkup(message) {
@@ -1260,6 +1329,41 @@ export function injectStyles(document = globalThis.document) {
 	      font-size: 11px;
 	      font-weight: 650;
 	      line-height: 1.25;
+	    }
+	    .nyu-rmp-radar {
+	      display: block;
+	      height: 118px;
+	      margin: 5px auto 8px;
+	      max-width: 180px;
+	      overflow: visible;
+	      width: min(180px, 100%);
+	    }
+	    .nyu-rmp-radar-grid {
+	      fill: #f8fafc;
+	      stroke: #dbe3ee;
+	      stroke-width: 1;
+	    }
+	    .nyu-rmp-radar-grid.inner {
+	      fill: none;
+	      opacity: 0.8;
+	    }
+	    .nyu-rmp-radar-spoke {
+	      stroke: #e4eaf2;
+	      stroke-width: 1;
+	    }
+	    .nyu-rmp-radar-shape {
+	      fill: rgba(87, 6, 140, 0.16);
+	      stroke: #57068c;
+	      stroke-linejoin: round;
+	      stroke-width: 2;
+	    }
+	    .nyu-rmp-radar-axis {
+	      fill: #667085;
+	      font-size: 8.5px;
+	      font-weight: 700;
+	      letter-spacing: 0;
+	      text-anchor: middle;
+	      text-transform: uppercase;
 	    }
 	    .nyu-rmp-score-row .nyu-rmp-verdict {
 	      align-self: center;
