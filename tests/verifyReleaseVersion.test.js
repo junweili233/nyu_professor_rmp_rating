@@ -6,22 +6,22 @@ import { verifyReleaseVersion } from "../scripts/verify-release-version.js";
 
 describe("release version verifier", () => {
   it("passes when package, runtime, source manifest, dist manifest, and tag align", async () => {
-    await expect(verifyReleaseVersion({ distDir: "dist", releaseTag: "v0.1.6" })).resolves.toMatchObject({
+    await expect(verifyReleaseVersion({ distDir: "dist", releaseTag: "v0.1.7" })).resolves.toMatchObject({
       ok: true,
-      packageVersion: "0.1.6",
-      runtimeVersion: "0.1.6",
-      sourceManifestVersion: "0.1.6",
-      distManifestVersion: "0.1.6",
-      expectedTag: "v0.1.6",
-      expectedAssetName: "nyu-albert-rmp-ratings-v0.1.6.zip",
+      packageVersion: "0.1.7",
+      runtimeVersion: "0.1.7",
+      sourceManifestVersion: "0.1.7",
+      distManifestVersion: "0.1.7",
+      expectedTag: "v0.1.7",
+      expectedAssetName: "nyu-albert-rmp-ratings-v0.1.7.zip",
     });
   });
 
   it("fails when the built dist manifest is stale", async () => {
     const staleDist = await createDistManifest("0.1.1");
 
-    await expect(verifyReleaseVersion({ distDir: staleDist, releaseTag: "v0.1.6" })).rejects.toThrow(
-      "dist manifest version 0.1.1 does not match package.json 0.1.6",
+    await expect(verifyReleaseVersion({ distDir: staleDist, releaseTag: "v0.1.7" })).rejects.toThrow(
+      "dist manifest version 0.1.1 does not match package.json 0.1.7",
     );
 
     await rm(staleDist, { recursive: true, force: true });
@@ -29,7 +29,7 @@ describe("release version verifier", () => {
 
   it("fails when the release tag does not match package.json", async () => {
     await expect(verifyReleaseVersion({ distDir: "dist", releaseTag: "v0.1.1" })).rejects.toThrow(
-      "release tag v0.1.1 does not match package.json version v0.1.6",
+      "release tag v0.1.1 does not match package.json version v0.1.7",
     );
   });
 });

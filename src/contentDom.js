@@ -605,12 +605,17 @@ function isUnprocessedVisibleCandidate(element) {
   return element.dataset.nyuRmpProcessed !== "true"
     && element.dataset.nyuRmpRatingCell !== "true"
     && !isAlbertCourseSearchFilterElement(element)
+    && !isPeopleSoftClassSearchResultElement(element)
     && !element.closest("[data-nyu-rmp-processed='true']")
     && !element.closest("[data-nyu-rmp-rating-cell='true']")
     && !element.querySelector?.("[data-nyu-rmp-processed='true']")
     && !element.closest(`.${ROOT_CLASS}`)
     && !containsAlbertSelectButton(element)
     && isElementVisible(element);
+}
+
+function isPeopleSoftClassSearchResultElement(element) {
+  return Boolean(element.closest?.("[id^='win0divNYU_CLS_DTL_CLASS_NBR$'], [id^='win0divSSR_CLSRSLT_WRK_GROUPBOX2$']"));
 }
 
 function isAlbertCourseSearchFilterElement(element) {

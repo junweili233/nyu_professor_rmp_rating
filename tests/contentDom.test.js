@@ -42,9 +42,9 @@ describe("Albert content DOM injection", () => {
     injectStyles(document);
 
     const style = document.getElementById("nyu-rmp-rating-styles");
-    expect(style.dataset.nyuRmpVersion).toBe("0.1.6");
-    expect(style.textContent).toContain("NYU Albert RMP Ratings v0.1.6");
-    expect(style.textContent).toContain("--nyu-rmp-extension-version: \"0.1.6\"");
+    expect(style.dataset.nyuRmpVersion).toBe("0.1.7");
+    expect(style.textContent).toContain("NYU Albert RMP Ratings v0.1.7");
+    expect(style.textContent).toContain("--nyu-rmp-extension-version: \"0.1.7\"");
   });
 
   it("includes narrow Albert cell layout safeguards for the radar and metrics", () => {
@@ -4738,8 +4738,8 @@ describe("Albert content DOM injection", () => {
 
     await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
 
-    expect(document.querySelector(".nyu-rmp-rating-root").dataset.nyuRmpVersion).toBe("0.1.6");
-    expect(document.querySelector(".nyu-rmp-card").dataset.nyuRmpVersion).toBe("0.1.6");
+    expect(document.querySelector(".nyu-rmp-rating-root").dataset.nyuRmpVersion).toBe("0.1.7");
+    expect(document.querySelector(".nyu-rmp-card").dataset.nyuRmpVersion).toBe("0.1.7");
   });
 
   it("ignores hidden Albert instructor templates during scans", async () => {
@@ -9770,8 +9770,8 @@ describe("Albert content DOM injection", () => {
             <td>YAP, CHEE KENG</td>
             <td>Open</td>
             <td data-nyu-rmp-rating-cell="true">
-              <div class="nyu-rmp-rating-root is-cell-mounted" data-nyu-rmp-version="0.1.6">
-                <article class="nyu-rmp-card rating-poor" data-nyu-rmp-requested-name="Chee Keng Yap" data-nyu-rmp-version="0.1.6">
+              <div class="nyu-rmp-rating-root is-cell-mounted" data-nyu-rmp-version="0.1.7">
+                <article class="nyu-rmp-card rating-poor" data-nyu-rmp-requested-name="Chee Keng Yap" data-nyu-rmp-version="0.1.7">
                   <div class="nyu-rmp-quick-grid">RMP 2.1 Recent comments Radar map</div>
                 </article>
               </div>
@@ -9910,6 +9910,61 @@ describe("Albert content DOM injection", () => {
     expect(lookupProfessor).toHaveBeenCalledWith("Chee Keng Yap");
   });
 
+  it("does not treat SCA Course Search notes about Faculty Electives as professor names", async () => {
+    document.body.innerHTML = `
+      <div id="win0divNYU_CLS_DTL_CLASS_NBR$52" class="ps_box-group psc_layout psc_num">
+        <div id="win0divNYU_CLS_DERIVED_HTMLAREA3$52" class="ps_box-htmlarea">
+          <div class="ps-htmlarea">
+            <table>
+              <tbody>
+                <tr>
+                  <td>
+                    <div><b>SCA-UA 366</b> | 4 units</div>
+                    <div><span>Class#:</span> 6690</div>
+                    <br>09/02/2026 - 12/14/2026 Tue,Thu 4.55 PM - 6.10 PM at 40 W 4th St Room LC5 with Ouyang, Elizabeth
+                    <br><span class="boldText"><b>Notes: </b></span>
+                    Spaces are reserved for majors/minors in the 7 SCA programs the first week of registration.
+                    Counts as SCA Faculty Elective for these majors/minors: Africana, American,
+                    Asian/Pacific/American, Latino, and SCA.
+                    <br><a href="https://example.edu/bookstore">Visit the Bookstore</a>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div class="ps_box-button" id="win0divSELECT_BUTTON$52">
+          <span id="SELECT_BUTTON$span$52" class="ps-button-wrapper">
+            <a id="SELECT_BUTTON$52" class="ps-button" role="button">Select Class #6690</a>
+          </span>
+        </div>
+      </div>
+    `;
+    const lookupProfessor = vi.fn(async (name) => ({
+      name,
+      rating: 4.2,
+      difficulty: 2.8,
+      ratingsCount: 18,
+      topComments: [`${name} SCA result comment.`],
+      url: "https://www.ratemyprofessors.com/professor/419998",
+    }));
+
+    await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
+
+    const htmlArea = document.getElementById("win0divNYU_CLS_DERIVED_HTMLAREA3$52");
+    const selectButtonContainer = document.getElementById("win0divSELECT_BUTTON$52");
+    const ratingRoot = selectButtonContainer.nextElementSibling;
+    const cards = Array.from(document.querySelectorAll(".nyu-rmp-card"));
+    expect(htmlArea.querySelector(".nyu-rmp-rating-root")).toBeNull();
+    expect(ratingRoot.className).toBe("nyu-rmp-rating-root");
+    expect(cards).toHaveLength(1);
+    expect(cards[0].dataset.nyuRmpRequestedName).toBe("Elizabeth Ouyang");
+    expect(document.body.textContent).not.toContain("Elective For These Majors");
+    expect(document.body.textContent).not.toContain("Minors: Africana");
+    expect(lookupProfessor).toHaveBeenCalledTimes(1);
+    expect(lookupProfessor).toHaveBeenCalledWith("Elizabeth Ouyang");
+  });
+
   it("keeps Albert gridcell instructor text readable when marking it processed", async () => {
     document.body.innerHTML = `
       <div role="row" id="grid-row">
@@ -9929,7 +9984,7 @@ describe("Albert content DOM injection", () => {
     expect(instructorCell.dataset.nyuRmpProcessed).toBe("true");
     expect(originalContent).not.toBeNull();
     expect(originalContent.dataset.nyuRmpOriginal).toBe("true");
-    expect(originalContent.dataset.nyuRmpVersion).toBe("0.1.6");
+    expect(originalContent.dataset.nyuRmpVersion).toBe("0.1.7");
     expect(originalContent.textContent.trim()).toBe("YAP, CHEE KENG");
     expect(instructorCell.style.display).toBe("block");
     expect(instructorCell.style.alignItems).toBe("flex-start");
@@ -10025,7 +10080,7 @@ describe("Albert content DOM injection", () => {
       <div role="row">
         <div role="gridcell" id="grid-instructor" data-nyu-rmp-processed="true">
           <div class="nyu-rmp-albert-original" data-nyu-rmp-original="true">Ada Lovelace</div>
-          <div class="nyu-rmp-rating-root is-cell-mounted" data-nyu-rmp-version="0.1.6"></div>
+          <div class="nyu-rmp-rating-root is-cell-mounted" data-nyu-rmp-version="0.1.7"></div>
         </div>
       </div>
     `;
@@ -10083,8 +10138,8 @@ describe("Albert content DOM injection", () => {
       <div role="row">
         <div role="gridcell" id="grid-instructor" data-nyu-rmp-processed="true">
           <div class="nyu-rmp-albert-original" data-nyu-rmp-original="true">Ada Lovelace</div>
-          <div class="nyu-rmp-rating-root is-cell-mounted" data-nyu-rmp-version="0.1.6">
-            <article class="nyu-rmp-card rating-good" data-nyu-rmp-requested-name="Ada Lovelace" data-nyu-rmp-version="0.1.6">
+          <div class="nyu-rmp-rating-root is-cell-mounted" data-nyu-rmp-version="0.1.7">
+            <article class="nyu-rmp-card rating-good" data-nyu-rmp-requested-name="Ada Lovelace" data-nyu-rmp-version="0.1.7">
               <div class="nyu-rmp-card-head"><strong>Ada Lovelace</strong></div>
               <div class="nyu-rmp-department">Computer Science</div>
               <dl class="nyu-rmp-score-row nyu-rmp-metrics"></dl>
@@ -10112,7 +10167,7 @@ describe("Albert content DOM injection", () => {
     const ratingRoot = document.querySelector("[data-nyu-rmp-rating-cell='true'] > .nyu-rmp-rating-root");
     const card = ratingRoot.querySelector(".nyu-rmp-card");
     const quickGrid = card.querySelector(":scope > .nyu-rmp-quick-grid");
-    expect(ratingRoot.dataset.nyuRmpVersion).toBe("0.1.6");
+    expect(ratingRoot.dataset.nyuRmpVersion).toBe("0.1.7");
     expect(ratingRoot.querySelectorAll(".nyu-rmp-card")).toHaveLength(1);
     expect(quickGrid).not.toBeNull();
     expect(quickGrid.textContent.replace(/\s+/g, " ").trim()).toBe("RMP 4.7 Strong rating 38 ratings Recent comments Radar map");
@@ -10158,7 +10213,7 @@ describe("Albert content DOM injection", () => {
     document.body.innerHTML = `
       <div role="gridcell" id="grid-instructor" data-nyu-rmp-processed="true">
         <div class="nyu-rmp-albert-original" data-nyu-rmp-original="true">Ada Lovelace</div>
-        <div class="nyu-rmp-rating-root is-cell-mounted" data-nyu-rmp-version="0.1.6"></div>
+        <div class="nyu-rmp-rating-root is-cell-mounted" data-nyu-rmp-version="0.1.7"></div>
       </div>
     `;
 
