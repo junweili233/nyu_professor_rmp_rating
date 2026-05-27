@@ -42,9 +42,9 @@ describe("Albert content DOM injection", () => {
     injectStyles(document);
 
     const style = document.getElementById("nyu-rmp-rating-styles");
-    expect(style.dataset.nyuRmpVersion).toBe("0.1.5");
-    expect(style.textContent).toContain("NYU Albert RMP Ratings v0.1.5");
-    expect(style.textContent).toContain("--nyu-rmp-extension-version: \"0.1.5\"");
+    expect(style.dataset.nyuRmpVersion).toBe("0.1.6");
+    expect(style.textContent).toContain("NYU Albert RMP Ratings v0.1.6");
+    expect(style.textContent).toContain("--nyu-rmp-extension-version: \"0.1.6\"");
   });
 
   it("includes narrow Albert cell layout safeguards for the radar and metrics", () => {
@@ -4738,8 +4738,8 @@ describe("Albert content DOM injection", () => {
 
     await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
 
-    expect(document.querySelector(".nyu-rmp-rating-root").dataset.nyuRmpVersion).toBe("0.1.5");
-    expect(document.querySelector(".nyu-rmp-card").dataset.nyuRmpVersion).toBe("0.1.5");
+    expect(document.querySelector(".nyu-rmp-rating-root").dataset.nyuRmpVersion).toBe("0.1.6");
+    expect(document.querySelector(".nyu-rmp-card").dataset.nyuRmpVersion).toBe("0.1.6");
   });
 
   it("ignores hidden Albert instructor templates during scans", async () => {
@@ -9579,8 +9579,71 @@ describe("Albert content DOM injection", () => {
     expect(ratingCell).toBe(row.lastElementChild);
     expect(ratingCell.querySelector(".nyu-rmp-rating-root")).not.toBeNull();
     expect(row.children[1].querySelector(".nyu-rmp-rating-root")).toBeNull();
+    expect(ratingCell.getAttribute("data-label")).toBe("RMP");
+    expect(document.querySelector("[data-nyu-rmp-rating-header='true']")).toBeNull();
     expect(ratingCell.style.minWidth).toBe("280px");
     expect(ratingCell.style.getPropertyPriority("min-width")).toBe("important");
+  });
+
+  it("adds an RMP header for Albert accordion rating columns", async () => {
+    document.body.innerHTML = `
+      <table id="isSSS_ShCtSchTable" class="isSSS_ShCtSchTable accordion-table" summary="Enrolled Courses">
+        <tbody>
+          <tr class="hidden-accordion-row">
+            <th id="tbl_Course_2_1268" class="hidden-accordion-row">Course&nbsp;(Units/Grading Basis)</th>
+            <th id="tbl_Instructor_2_1268" class="hidden-accordion-row">Instructor</th>
+            <th id="tbl_Location_2_1268" class="hidden-accordion-row">Instruction Mode and Location</th>
+            <th id="tbl_Time_2_1268" class="hidden-accordion-row">Time</th>
+            <th id="tbl_Day_2_1268" class="hidden-accordion-row">Day</th>
+            <th id="tbl_StartDate_2_1268" class="hidden-accordion-row">Dates</th>
+            <th id="tbl_Deadlines_2_1268" class="hidden-accordion-row">Deadlines</th>
+          </tr>
+          <tr class="accordion-row accordion-row-open" id="operating-systems-row">
+            <td class="accordion-head" headers="tbl_Course_2_1268" data-label="Course(Units/Grading Basis)">Operating Systems<br>CSCI-UA&nbsp; 202<br>&nbsp;001&nbsp;(4)</td>
+            <td class="accordion-data" headers="tbl_Instructor_2_1268" data-label="Instructor">Walfish</td>
+            <td class="accordion-data" headers="tbl_Location_2_1268" data-label="Instruction Mode and Location">Washington Square</td>
+            <td class="accordion-data" headers="tbl_Time_2_1268" data-label="Time">11:00 AM - 12:15 PM</td>
+            <td class="accordion-data" headers="tbl_Day_2_1268" data-label="Day">MW</td>
+            <td class="accordion-data" headers="tbl_StartDate_2_1268" data-label="Dates">9/2/2026 - 12/14/2026</td>
+            <td class="accordion-data" headers="tbl_Deadlines_2_1268" data-label="Deadlines"></td>
+          </tr>
+          <tr class="accordion-row accordion-row-closed" id="calculus-row">
+            <td class="accordion-head" headers="tbl_Course_2_1268" data-label="Course(Units/Grading Basis)">Calculus III<br>MATH-UA&nbsp; 123<br>&nbsp;011&nbsp;(4)</td>
+            <td class="accordion-data" headers="tbl_Instructor_2_1268" data-label="Instructor">Pang</td>
+            <td class="accordion-data" headers="tbl_Location_2_1268" data-label="Instruction Mode and Location">Washington Square</td>
+            <td class="accordion-data" headers="tbl_Time_2_1268" data-label="Time">9:30 AM - 10:45 AM</td>
+            <td class="accordion-data" headers="tbl_Day_2_1268" data-label="Day">TTh</td>
+            <td class="accordion-data" headers="tbl_StartDate_2_1268" data-label="Dates">9/2/2026 - 12/14/2026</td>
+            <td class="accordion-data" headers="tbl_Deadlines_2_1268" data-label="Deadlines"></td>
+          </tr>
+        </tbody>
+      </table>
+    `;
+    const lookupProfessor = vi.fn(async (name) => ({
+      name,
+      rating: 3.5,
+      difficulty: 3.1,
+      ratingsCount: 12,
+      topComments: [],
+      url: "https://www.ratemyprofessors.com/professor/419998",
+    }));
+
+    await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
+
+    const header = document.querySelector("[data-nyu-rmp-rating-header='true']");
+    const ratingCells = Array.from(document.querySelectorAll("[data-nyu-rmp-rating-cell='true']"));
+    expect(header).not.toBeNull();
+    expect(header.tagName).toBe("TH");
+    expect(header.textContent).toBe("RMP");
+    expect(header.className).toBe("hidden-accordion-row");
+    expect(document.querySelectorAll("[data-nyu-rmp-rating-header='true']")).toHaveLength(1);
+    expect(ratingCells).toHaveLength(2);
+    expect(ratingCells.map((cell) => cell.getAttribute("data-label"))).toEqual(["RMP", "RMP"]);
+    expect(ratingCells.map((cell) => cell.getAttribute("headers"))).toEqual([header.id, header.id]);
+    expect(document.querySelector("#operating-systems-row").children).toHaveLength(8);
+    expect(document.querySelector("#calculus-row").children).toHaveLength(8);
+    expect(lookupProfessor).toHaveBeenCalledWith("Walfish", { courseCode: "CSCI-UA 202" });
+    expect(lookupProfessor).toHaveBeenCalledWith("Pang", { courseCode: "MATH-UA 123" });
   });
 
   it("adds the matching professor rating beside every Albert SELECT_BUTTON row", async () => {
@@ -9707,8 +9770,8 @@ describe("Albert content DOM injection", () => {
             <td>YAP, CHEE KENG</td>
             <td>Open</td>
             <td data-nyu-rmp-rating-cell="true">
-              <div class="nyu-rmp-rating-root is-cell-mounted" data-nyu-rmp-version="0.1.5">
-                <article class="nyu-rmp-card rating-poor" data-nyu-rmp-requested-name="Chee Keng Yap" data-nyu-rmp-version="0.1.5">
+              <div class="nyu-rmp-rating-root is-cell-mounted" data-nyu-rmp-version="0.1.6">
+                <article class="nyu-rmp-card rating-poor" data-nyu-rmp-requested-name="Chee Keng Yap" data-nyu-rmp-version="0.1.6">
                   <div class="nyu-rmp-quick-grid">RMP 2.1 Recent comments Radar map</div>
                 </article>
               </div>
@@ -9866,7 +9929,7 @@ describe("Albert content DOM injection", () => {
     expect(instructorCell.dataset.nyuRmpProcessed).toBe("true");
     expect(originalContent).not.toBeNull();
     expect(originalContent.dataset.nyuRmpOriginal).toBe("true");
-    expect(originalContent.dataset.nyuRmpVersion).toBe("0.1.5");
+    expect(originalContent.dataset.nyuRmpVersion).toBe("0.1.6");
     expect(originalContent.textContent.trim()).toBe("YAP, CHEE KENG");
     expect(instructorCell.style.display).toBe("block");
     expect(instructorCell.style.alignItems).toBe("flex-start");
@@ -9962,7 +10025,7 @@ describe("Albert content DOM injection", () => {
       <div role="row">
         <div role="gridcell" id="grid-instructor" data-nyu-rmp-processed="true">
           <div class="nyu-rmp-albert-original" data-nyu-rmp-original="true">Ada Lovelace</div>
-          <div class="nyu-rmp-rating-root is-cell-mounted" data-nyu-rmp-version="0.1.5"></div>
+          <div class="nyu-rmp-rating-root is-cell-mounted" data-nyu-rmp-version="0.1.6"></div>
         </div>
       </div>
     `;
@@ -10020,8 +10083,8 @@ describe("Albert content DOM injection", () => {
       <div role="row">
         <div role="gridcell" id="grid-instructor" data-nyu-rmp-processed="true">
           <div class="nyu-rmp-albert-original" data-nyu-rmp-original="true">Ada Lovelace</div>
-          <div class="nyu-rmp-rating-root is-cell-mounted" data-nyu-rmp-version="0.1.5">
-            <article class="nyu-rmp-card rating-good" data-nyu-rmp-requested-name="Ada Lovelace" data-nyu-rmp-version="0.1.5">
+          <div class="nyu-rmp-rating-root is-cell-mounted" data-nyu-rmp-version="0.1.6">
+            <article class="nyu-rmp-card rating-good" data-nyu-rmp-requested-name="Ada Lovelace" data-nyu-rmp-version="0.1.6">
               <div class="nyu-rmp-card-head"><strong>Ada Lovelace</strong></div>
               <div class="nyu-rmp-department">Computer Science</div>
               <dl class="nyu-rmp-score-row nyu-rmp-metrics"></dl>
@@ -10049,7 +10112,7 @@ describe("Albert content DOM injection", () => {
     const ratingRoot = document.querySelector("[data-nyu-rmp-rating-cell='true'] > .nyu-rmp-rating-root");
     const card = ratingRoot.querySelector(".nyu-rmp-card");
     const quickGrid = card.querySelector(":scope > .nyu-rmp-quick-grid");
-    expect(ratingRoot.dataset.nyuRmpVersion).toBe("0.1.5");
+    expect(ratingRoot.dataset.nyuRmpVersion).toBe("0.1.6");
     expect(ratingRoot.querySelectorAll(".nyu-rmp-card")).toHaveLength(1);
     expect(quickGrid).not.toBeNull();
     expect(quickGrid.textContent.replace(/\s+/g, " ").trim()).toBe("RMP 4.7 Strong rating 38 ratings Recent comments Radar map");
@@ -10095,7 +10158,7 @@ describe("Albert content DOM injection", () => {
     document.body.innerHTML = `
       <div role="gridcell" id="grid-instructor" data-nyu-rmp-processed="true">
         <div class="nyu-rmp-albert-original" data-nyu-rmp-original="true">Ada Lovelace</div>
-        <div class="nyu-rmp-rating-root is-cell-mounted" data-nyu-rmp-version="0.1.5"></div>
+        <div class="nyu-rmp-rating-root is-cell-mounted" data-nyu-rmp-version="0.1.6"></div>
       </div>
     `;
 

@@ -323,6 +323,10 @@ export function removeAlbertRmpEnhancements(document = globalThis.document) {
     ratingCell.remove();
   }
 
+  for (const ratingHeader of document.querySelectorAll("[data-nyu-rmp-rating-header='true']")) {
+    ratingHeader.remove();
+  }
+
   for (const wrapper of document.querySelectorAll(`.${ORIGINAL_CONTENT_CLASS}`)) {
     unwrapOriginalAlbertContent(wrapper);
   }
@@ -1428,7 +1432,8 @@ function ratingMountElementForCell(element, document, { mountInSourceCell = elem
     return existingCell;
   }
 
-  const ratingCell = createRatingCellForRow(row, document);
+  const headerId = ensureRatingHeaderForRow(row, document);
+  const ratingCell = createRatingCellForRow(row, document, { headerId });
   row.append(ratingCell);
   return ratingCell;
 }
@@ -1485,11 +1490,55 @@ function closestAlbertRow(element) {
   return row && row.contains(element) ? row : null;
 }
 
-function createRatingCellForRow(row, document) {
+function ensureRatingHeaderForRow(row, document) {
+  if (row.tagName !== "TR") {
+    return "";
+  }
+
+  const table = row.closest("table");
+  const headerRow = table ? Array.from(table.rows).find((candidateRow) => (
+    candidateRow !== row
+      && Array.from(candidateRow.cells).some((cell) => cell.tagName === "TH")
+  )) : null;
+  if (!headerRow) {
+    return "";
+  }
+
+  const existingHeader = headerRow.querySelector(":scope > [data-nyu-rmp-rating-header='true']");
+  if (existingHeader) {
+    return existingHeader.id;
+  }
+
+  const header = document.createElement("th");
+  header.id = uniqueRatingHeaderId(document);
+  header.className = Array.from(headerRow.cells).find((cell) => cell.tagName === "TH")?.className ?? "";
+  header.dataset.nyuRmpRatingHeader = "true";
+  header.dataset.nyuRmpVersion = EXTENSION_VERSION;
+  header.scope = "col";
+  header.textContent = "RMP";
+  headerRow.append(header);
+  return header.id;
+}
+
+function uniqueRatingHeaderId(document) {
+  let index = 1;
+  let id = "nyu-rmp-rating-header";
+  while (document.getElementById(id)) {
+    index += 1;
+    id = `nyu-rmp-rating-header-${index}`;
+  }
+  return id;
+}
+
+function createRatingCellForRow(row, document, { headerId = "" } = {}) {
   const ratingCell = document.createElement(row.tagName === "TR" ? "td" : "div");
   ratingCell.className = RATING_CELL_CLASS;
   ratingCell.dataset.nyuRmpRatingCell = "true";
   ratingCell.dataset.nyuRmpVersion = EXTENSION_VERSION;
+  ratingCell.setAttribute("data-label", "RMP");
+  if (headerId) {
+    ratingCell.setAttribute("headers", headerId);
+  }
   if (row.getAttribute("role")?.trim().toLowerCase() === "row") {
     ratingCell.setAttribute("role", "gridcell");
   }
@@ -2603,6 +2652,15 @@ export function injectStyles(document = globalThis.document) {
 	      max-width: 100%;
 	      width: 100%;
 	    }
+	    table.accordion-table [data-nyu-rmp-rating-header="true"] {
+	      min-width: 300px;
+	      width: clamp(300px, 28vw, 420px);
+	    }
+	    table.accordion-table .nyu-rmp-rating-cell {
+	      min-inline-size: 300px !important;
+	      min-width: 300px !important;
+	      width: clamp(300px, 28vw, 420px) !important;
+	    }
 	    td[data-nyu-rmp-processed="true"],
 	    th[data-nyu-rmp-processed="true"],
 	    [role="cell"][data-nyu-rmp-processed="true"],
@@ -2865,6 +2923,15 @@ export function injectStyles(document = globalThis.document) {
 	    }
 	    .nyu-rmp-feature-toggle:active {
 	      transform: translateY(1px);
+	    }
+	    table.accordion-table .nyu-rmp-quick-grid {
+	      grid-template-columns: minmax(96px, 0.72fr) minmax(150px, 1.28fr);
+	    }
+	    table.accordion-table .nyu-rmp-quick-section {
+	      padding: 7px 8px;
+	    }
+	    table.accordion-table .nyu-rmp-feature-toggle {
+	      min-height: 36px;
 	    }
 	    .nyu-rmp-refresh {
 	      background: transparent;
