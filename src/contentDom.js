@@ -303,6 +303,7 @@ export function scanAlbertPageOnce({ document = globalThis.document, lookupProfe
   }
 
   injectStyles(document);
+  repairPeopleSoftClassSearchResultRatings(document);
   const targets = [
     ...findInstructorTargets(document),
     ...findUpdatedProcessedInstructorTargets(document),
@@ -388,6 +389,56 @@ function findPeopleSoftClassSearchResultTargets(document) {
     .filter((target) => target && target.names.length > 0);
 }
 
+function repairPeopleSoftClassSearchResultRatings(document) {
+  for (const resultContainer of document.querySelectorAll("[id^='win0divNYU_CLS_DTL_CLASS_NBR$'], [id^='win0divSSR_CLSRSLT_WRK_GROUPBOX2$']")) {
+    const buttonContainer = resultContainer.querySelector("[id^='win0divSELECT_BUTTON$'], .ps_box-button");
+    const detailsElement = peopleSoftClassSearchDetailsElement(resultContainer) ?? resultContainer;
+    const validNameKeys = new Set(instructorNamesFromPeopleSoftClassSearchText(visibleTextSegments(detailsElement).join(" "))
+      .map(compactName)
+      .filter(Boolean));
+    const expectedRoot = buttonContainer?.nextElementSibling?.classList?.contains(ROOT_CLASS)
+      ? buttonContainer.nextElementSibling
+      : null;
+
+    for (const root of Array.from(resultContainer.querySelectorAll(`.${ROOT_CLASS}`))) {
+      if (root !== expectedRoot) {
+        root.remove();
+        continue;
+      }
+      pruneInvalidPeopleSoftClassSearchCards(root, validNameKeys);
+      if (isStaleRatingRoot(root) || root.querySelectorAll(".nyu-rmp-card").length === 0) {
+        root.remove();
+      }
+    }
+
+    if (!expectedRoot?.isConnected) {
+      clearPeopleSoftSelectButtonProcessedState(buttonContainer);
+    }
+    delete detailsElement.dataset.nyuRmpProcessed;
+  }
+}
+
+function pruneInvalidPeopleSoftClassSearchCards(root, validNameKeys) {
+  if (validNameKeys.size === 0) {
+    root.remove();
+    return;
+  }
+  for (const card of Array.from(root.querySelectorAll(".nyu-rmp-card"))) {
+    const key = compactName(card.dataset.nyuRmpRequestedName);
+    if (!key || !validNameKeys.has(key)) {
+      card.remove();
+    }
+  }
+}
+
+function clearPeopleSoftSelectButtonProcessedState(buttonContainer) {
+  if (!buttonContainer) {
+    return;
+  }
+  delete buttonContainer.dataset.nyuRmpProcessed;
+  delete buttonContainer.dataset.nyuRmpSelectButtonRating;
+}
+
 function peopleSoftClassSearchResultTarget(selectButton) {
   const buttonContainer = closestPeopleSoftSelectButtonContainer(selectButton);
   if (!buttonContainer || buttonContainer.dataset.nyuRmpProcessed === "true" || buttonContainer.dataset.nyuRmpSelectButtonRating === "true") {
@@ -410,7 +461,7 @@ function peopleSoftClassSearchResultTarget(selectButton) {
 
   return {
     element: buttonContainer,
-    processedElements: [buttonContainer, detailsElement],
+    processedElements: [buttonContainer],
     names,
     preferContainer: true,
     mountInSourceCell: true,
