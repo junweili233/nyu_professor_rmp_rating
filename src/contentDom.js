@@ -371,9 +371,76 @@ export function findInstructorTargets(document = globalThis.document) {
       .filter(isUnprocessedVisibleCandidate)
       .flatMap((element) => findInstructorTargetsForElement(element)),
     ...findSelectButtonRowInstructorTargets(document),
+    ...findPeopleSoftClassSearchResultTargets(document),
   ];
 
   return preferMostSpecificTargets(candidates);
+}
+
+function findPeopleSoftClassSearchResultTargets(document) {
+  return uniqueElements(Array.from(document.querySelectorAll("button, input, a, [role='button'], [id], [name], [data-automation-id], [data-automationid], [data-testid]"))
+    .filter(isAlbertSelectButton))
+    .map(peopleSoftClassSearchResultTarget)
+    .filter((target) => target && target.names.length > 0);
+}
+
+function peopleSoftClassSearchResultTarget(selectButton) {
+  const buttonContainer = closestPeopleSoftSelectButtonContainer(selectButton);
+  if (!buttonContainer || buttonContainer.dataset.nyuRmpProcessed === "true" || buttonContainer.dataset.nyuRmpSelectButtonRating === "true") {
+    return null;
+  }
+  if (hasAdjacentMountedRating(buttonContainer)) {
+    return null;
+  }
+
+  const resultContainer = closestPeopleSoftClassSearchResultContainer(buttonContainer);
+  if (!resultContainer || !isElementVisible(resultContainer)) {
+    return null;
+  }
+
+  const detailsElement = peopleSoftClassSearchDetailsElement(resultContainer) ?? resultContainer;
+  const names = instructorNamesFromPeopleSoftClassSearchText(visibleTextSegments(detailsElement).join(" "));
+  if (names.length === 0) {
+    return null;
+  }
+
+  return {
+    element: buttonContainer,
+    processedElements: [buttonContainer, detailsElement],
+    names,
+    preferContainer: true,
+    mountInSourceCell: true,
+  };
+}
+
+function closestPeopleSoftSelectButtonContainer(selectButton) {
+  return selectButton.closest?.("[id^='win0divSELECT_BUTTON$']")
+    ?? selectButton.closest?.(".ps_box-button")
+    ?? selectButton;
+}
+
+function closestPeopleSoftClassSearchResultContainer(element) {
+  return element.closest?.("[id^='win0divNYU_CLS_DTL_CLASS_NBR$'], [id^='win0divSSR_CLSRSLT_WRK_GROUPBOX2$'], .ps_box-group");
+}
+
+function peopleSoftClassSearchDetailsElement(resultContainer) {
+  return resultContainer.querySelector?.("[id^='win0divNYU_CLS_DERIVED_HTMLAREA3$'], [id^='win0divSSR_CLSRSLT_WRK_GROUPBOX2$'], .ps_box-htmlarea");
+}
+
+function hasAdjacentMountedRating(element) {
+  return element.nextElementSibling?.classList?.contains(ROOT_CLASS);
+}
+
+function instructorNamesFromPeopleSoftClassSearchText(text) {
+  const matchedNames = [
+    ...String(text ?? "").matchAll(/\bwith\s+([A-Z][\p{L}'.-]+(?:\s+[A-Z][\p{L}'.-]+)*\s*,\s*[A-Z][\p{L}'.-]+(?:\s+[A-Z][\p{L}'.-]+)*)(?=\s+(?:Notes?:|Class Notes?:|Enrollment Information|Visit the Bookstore|Select Class\s+#|$))/giu),
+  ].map((match) => match[1]);
+
+  return uniqueNames(matchedNames
+    .flatMap(splitInstructorList)
+    .filter(isLikelyInstructorName)
+    .map(normalizeInstructorName)
+    .filter(Boolean));
 }
 
 function findSelectButtonRowInstructorTargets(document) {
@@ -533,12 +600,23 @@ function hasInstructorText(text) {
 function isUnprocessedVisibleCandidate(element) {
   return element.dataset.nyuRmpProcessed !== "true"
     && element.dataset.nyuRmpRatingCell !== "true"
+    && !isAlbertCourseSearchFilterElement(element)
     && !element.closest("[data-nyu-rmp-processed='true']")
     && !element.closest("[data-nyu-rmp-rating-cell='true']")
     && !element.querySelector?.("[data-nyu-rmp-processed='true']")
     && !element.closest(`.${ROOT_CLASS}`)
     && !containsAlbertSelectButton(element)
     && isElementVisible(element);
+}
+
+function isAlbertCourseSearchFilterElement(element) {
+  return Boolean(element.closest?.([
+    "#win0divFILTER",
+    "#win0divFILTERgrp",
+    "#win0divCRITERIA",
+    "#win0divNYU_CLS_WRK_SSR_COMPONENT",
+    "[id='win0div$ICField47']",
+  ].join(", ")));
 }
 
 function containsAlbertSelectButton(element) {

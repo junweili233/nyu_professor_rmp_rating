@@ -9773,6 +9773,80 @@ describe("Albert content DOM injection", () => {
     expect(lookupProfessor).toHaveBeenCalledWith("Chee Keng Yap");
   });
 
+  it("shows ratings under PeopleSoft Course Search result SELECT_BUTTON cards", async () => {
+    document.body.innerHTML = `
+      <div id="win0divNYU_CLS_DTL_CLASS_NBR$0" class="ps_box-group">
+        <div id="win0divNYU_CLS_DERIVED_HTMLAREA3$0" class="ps_box-htmlarea">
+          <div>Intro to Computer Science CSCI-UA 1 | 4 units Class#: 21698</div>
+          <div>09/02/2026 - 12/14/2026 Tue,Thu 3.30 PM - 4.45 PM at 194 Mercer St Room 208 with Canziani, Alfredo Notes: Visit the Bookstore</div>
+        </div>
+        <div id="win0divSELECT_BUTTON$0" class="ps_box-button">
+          <a id="SELECT_BUTTON$0" role="button">Select Class #21698</a>
+        </div>
+      </div>
+    `;
+    const lookupProfessor = vi.fn(async (name) => ({
+      name,
+      rating: 4.6,
+      difficulty: 2.4,
+      ratingsCount: 86,
+      topComments: ["Course Search result comment."],
+      url: "https://www.ratemyprofessors.com/professor/419998",
+    }));
+
+    await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
+
+    const selectButtonContainer = document.getElementById("win0divSELECT_BUTTON$0");
+    const ratingRoot = selectButtonContainer.nextElementSibling;
+    expect(selectButtonContainer.dataset.nyuRmpSelectButtonRating).toBe("true");
+    expect(ratingRoot.className).toBe("nyu-rmp-rating-root");
+    expect(ratingRoot.querySelector(".nyu-rmp-card").dataset.nyuRmpRequestedName).toBe("Alfredo Canziani");
+    expect(ratingRoot.textContent).toContain("Course Search result comment.");
+    expect(document.querySelector("[data-nyu-rmp-rating-cell='true']")).toBeNull();
+    expect(lookupProfessor).toHaveBeenCalledWith("Alfredo Canziani");
+  });
+
+  it("renders repeated PeopleSoft Course Search result SELECT_BUTTON cards without duplicate lookups", async () => {
+    document.body.innerHTML = `
+      <div id="win0divNYU_CLS_DTL_CLASS_NBR$0" class="ps_box-group">
+        <div id="win0divNYU_CLS_DERIVED_HTMLAREA3$0" class="ps_box-htmlarea">
+          <div>Computer Systems Organization CSCI-UA 201 | 4 units Class#: 11111</div>
+          <div>Tue,Thu 9.30 AM - 10.45 AM at Washington Square with Yap, Chee Keng Notes: Section one</div>
+        </div>
+        <div id="win0divSELECT_BUTTON$0" class="ps_box-button">
+          <a id="SELECT_BUTTON$0" role="button">Select Class #11111</a>
+        </div>
+      </div>
+      <div id="win0divNYU_CLS_DTL_CLASS_NBR$1" class="ps_box-group">
+        <div id="win0divNYU_CLS_DERIVED_HTMLAREA3$1" class="ps_box-htmlarea">
+          <div>Computer Systems Organization CSCI-UA 201 | 4 units Class#: 22222</div>
+          <div>Tue,Thu 2.00 PM - 3.15 PM at Washington Square with Yap, Chee Keng Notes: Section two</div>
+        </div>
+        <div id="win0divSELECT_BUTTON$1" class="ps_box-button">
+          <a id="SELECT_BUTTON$1" role="button">Select Class #22222</a>
+        </div>
+      </div>
+    `;
+    const lookupProfessor = vi.fn(async () => ({
+      name: "Chee Keng Yap",
+      rating: 2.1,
+      difficulty: 4.5,
+      ratingsCount: 92,
+      topComments: ["Course Search should show this below every selectable class card."],
+      url: "https://www.ratemyprofessors.com/professor/419998",
+    }));
+
+    await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
+    await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
+
+    const cards = Array.from(document.querySelectorAll(".ps_box-button[data-nyu-rmp-select-button-rating='true'] + .nyu-rmp-rating-root .nyu-rmp-card"));
+    expect(cards).toHaveLength(2);
+    expect(cards.map((card) => card.dataset.nyuRmpRequestedName)).toEqual(["Chee Keng Yap", "Chee Keng Yap"]);
+    expect(cards.every((card) => card.textContent.includes("Course Search should show this below every selectable class card."))).toBe(true);
+    expect(lookupProfessor).toHaveBeenCalledTimes(1);
+    expect(lookupProfessor).toHaveBeenCalledWith("Chee Keng Yap");
+  });
+
   it("keeps Albert gridcell instructor text readable when marking it processed", async () => {
     document.body.innerHTML = `
       <div role="row" id="grid-row">
@@ -10122,6 +10196,30 @@ describe("Albert content DOM injection", () => {
     expect(document.querySelector("[data-label='Instructor']").dataset.nyuRmpProcessed).toBe("true");
     expect(document.querySelector("[data-nyu-rmp-rating-cell='true'] .nyu-rmp-card").dataset.nyuRmpRequestedName).toBe("Walfish");
     expect(lookupProfessor).toHaveBeenCalledWith("Walfish", { courseCode: "CSCI-UA 202" });
+  });
+
+  it("does not scan Albert course search filter dropdown options as instructors", async () => {
+    document.body.innerHTML = `
+      <div id="win0divFILTER">
+        <div id="win0divCRITERIA">
+          <div id="win0divNYU_CLS_WRK_SSR_COMPONENT">
+            <label for="NYU_CLS_WRK_SSR_COMPONENT$27$">Component:</label>
+            <select id="NYU_CLS_WRK_SSR_COMPONENT$27$">
+              <option>Grp Instr in the Perform Arts</option>
+              <option selected>Ind Instr in the Perform Arts</option>
+              <option>Research</option>
+              <option>Seminar</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    `;
+    const lookupProfessor = vi.fn(async () => null);
+
+    await Promise.all(scanAlbertPageOnce({ document, lookupProfessor }).pendingLookups);
+
+    expect(document.querySelector(".nyu-rmp-rating-root")).toBeNull();
+    expect(lookupProfessor).not.toHaveBeenCalled();
   });
 
   it("scans a newly added co-instructor inside an already processed Albert gridcell", async () => {
